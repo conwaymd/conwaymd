@@ -1,6 +1,6 @@
 # conway-markdown
 
-Conway's fence-style markdown, implemented in [Python][cmd.py].
+Conway's fence-style markdown (CMD), implemented in [Python][cmd.py].
 
 See also: [GitHub pages documentation][cmd-docs]
 
