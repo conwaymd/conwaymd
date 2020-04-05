@@ -1409,7 +1409,7 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
   r'\\': '<br>',
   r'\ ': ' ',
   '~': '&nbsp;',
-  r'\_': '&numsp;',
+  r'\0': '&numsp;',
   r'\,': '&thinsp;',
   '---': '—',
   '--': '–',
@@ -1423,7 +1423,7 @@ def process_punctuation(markup):
     \\  becomes <br>
     \   becomes   U+0020 SPACE
     ~   becomes &nbsp;
-    \_  becomes &numsp;
+    \0  becomes &numsp;
     \,  becomes &thinsp;
     --- becomes — U+2014 EM DASH
     --  becomes – U+2013 EN DASH
