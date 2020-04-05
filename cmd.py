@@ -1400,6 +1400,94 @@ def process_preamble_match(
 
 
 ################################################################
+# Punctuation
+################################################################
+
+
+PUNCTUATION_REPLACEMENT_DICTIONARY = {
+  r'\\': '<br>',
+  r'\ ': ' ',
+  '~': '&nbsp;',
+  r'\_': '&numsp;',
+  r'\,': '&thinsp;',
+  '---': '—',
+  '--': '–',
+  r'\P': '¶',
+}
+
+
+def process_punctuation(markup):
+  r"""
+  Process punctuation.
+    \\  becomes <br>
+    \   becomes   U+0020 SPACE
+    ~   becomes &nbsp;
+    \_  becomes &numsp;
+    \,  becomes &thinsp;
+    --- becomes — U+2014 EM DASH
+    --  becomes – U+2013 EN DASH
+    \P  becomes ¶ U+00B6 PILCROW SIGN
+  Most of these are based on LaTeX syntax.
+  """
+  
+  markup = (
+    replace_by_ordinary_dictionary(PUNCTUATION_REPLACEMENT_DICTIONARY, markup)
+  )
+  
+  return markup
+
+
+################################################################
+# Whitespace
+################################################################
+
+
+def process_whitespace(markup):
+  """
+  Process whitespace.
+  
+  (1) Leading and trailing horizontal whitespace is removed.
+  (2) Empty lines are removed.
+      (In the implementation, consecutive newlines
+      are normalised to a single newline.)
+  (3) Backslash line continuation is effected.
+  (4) Whitespace before line break elements <br> is removed.
+  (5) Whitespace for attributes is canonicalised:
+      (a) a single space is used before the attribute name, and
+      (b) no whitespace is used around the equals sign.
+  """
+  
+  markup = re.sub(
+    f'''
+      ^  {HORIZONTAL_WHITESPACE_REGEX} +
+        |
+      {HORIZONTAL_WHITESPACE_REGEX} +  $
+    ''',
+    '',
+    markup,
+    flags=re.MULTILINE|re.VERBOSE
+  )
+  markup = re.sub(r'[\n]+', r'\n', markup)
+  markup = re.sub(r'\\\n', '', markup)
+  markup = re.sub(r'[\s]+(?=<br>)', '', markup)
+  markup = re.sub(
+    r'''
+      [\s] +?
+        (?P<attribute_name>  [\S] +?  )
+      [\s] *?
+        =
+      [\s] *?
+        (?P<quoted_attribute_value>  "  [^"] *?  ")
+    ''',
+    r' \g<attribute_name>=\g<quoted_attribute_value>',
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  return markup
+
+
+################################################################
 # Headings
 ################################################################
 
@@ -1946,94 +2034,6 @@ def process_inline_link_match(placeholder_storage, match_object):
 
 
 ################################################################
-# Punctuation
-################################################################
-
-
-PUNCTUATION_REPLACEMENT_DICTIONARY = {
-  r'\\': '<br>',
-  r'\ ': ' ',
-  '~': '&nbsp;',
-  r'\_': '&numsp;',
-  r'\,': '&thinsp;',
-  '---': '—',
-  '--': '–',
-  r'\P': '¶',
-}
-
-
-def process_punctuation(markup):
-  r"""
-  Process punctuation.
-    \\  becomes <br>
-    \   becomes   U+0020 SPACE
-    ~   becomes &nbsp;
-    \_  becomes &numsp;
-    \,  becomes &thinsp;
-    --- becomes — U+2014 EM DASH
-    --  becomes – U+2013 EN DASH
-    \P  becomes ¶ U+00B6 PILCROW SIGN
-  Most of these are based on LaTeX syntax.
-  """
-  
-  markup = (
-    replace_by_ordinary_dictionary(PUNCTUATION_REPLACEMENT_DICTIONARY, markup)
-  )
-  
-  return markup
-
-
-################################################################
-# Whitespace
-################################################################
-
-
-def process_whitespace(markup):
-  """
-  Process whitespace.
-  
-  (1) Leading and trailing horizontal whitespace is removed.
-  (2) Empty lines are removed.
-      (In the implementation, consecutive newlines
-      are normalised to a single newline.)
-  (3) Backslash line continuation is effected.
-  (4) Whitespace before line break elements <br> is removed.
-  (5) Whitespace for attributes is canonicalised:
-      (a) a single space is used before the attribute name, and
-      (b) no whitespace is used around the equals sign.
-  """
-  
-  markup = re.sub(
-    f'''
-      ^  {HORIZONTAL_WHITESPACE_REGEX} +
-        |
-      {HORIZONTAL_WHITESPACE_REGEX} +  $
-    ''',
-    '',
-    markup,
-    flags=re.MULTILINE|re.VERBOSE
-  )
-  markup = re.sub(r'[\n]+', r'\n', markup)
-  markup = re.sub(r'\\\n', '', markup)
-  markup = re.sub(r'[\s]+(?=<br>)', '', markup)
-  markup = re.sub(
-    r'''
-      [\s] +?
-        (?P<attribute_name>  [\S] +?  )
-      [\s] *?
-        =
-      [\s] *?
-        (?P<quoted_attribute_value>  "  [^"] *?  ")
-    ''',
-    r' \g<attribute_name>=\g<quoted_attribute_value>',
-    markup,
-    flags=re.VERBOSE
-  )
-  
-  return markup
-
-
-################################################################
 # Converter
 ################################################################
 
@@ -2083,6 +2083,12 @@ def cmd_to_html(cmd, cmd_name):
   property_storage = PropertyStorage()
   markup = process_preamble(placeholder_storage, property_storage, markup)
   
+  # Process punctuation
+  markup = process_punctuation(markup)
+  
+  # Process whitespace
+  markup = process_whitespace(markup)
+  
   # Process headings
   markup = process_headings(placeholder_storage, markup)
   
@@ -2098,12 +2104,6 @@ def cmd_to_html(cmd, cmd_name):
   # Process links
   link_definition_storage = LinkDefinitionStorage()
   markup = process_links(placeholder_storage, link_definition_storage, markup)
-  
-  # Process punctuation
-  markup = process_punctuation(markup)
-  
-  # Process whitespace
-  markup = process_whitespace(markup)
   
   # Replace placeholders strings with markup portions
   markup = placeholder_storage.replace_placeholders_with_markup(markup)
