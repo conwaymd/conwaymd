@@ -1585,9 +1585,9 @@ def process_blocks(placeholder_storage, markup):
   use a greater number of Xs in the delimiters.
   
   For list blocks, {content} is split into list items <li>
-  according to the leading occurrences of the following delimiters:
+  according to leading occurrences of the following delimiters
+  (i.e. being preceded only by whitespace on their lines):
     -
-    +
     *
     1. (or any run of digits followed by a full stop)
   """
@@ -1648,9 +1648,9 @@ def process_list_content(content):
   Process list content.
   
   {content} is split into list items <li>
-  according to the leading occurrences of the following delimiters:
+  according to leading occurrences of the following delimiters
+  (i.e. being preceded only by whitespace on their lines):
     -
-    +
     *
     1. (or any run of digits followed by a full stop)
   """
@@ -1660,7 +1660,7 @@ def process_list_content(content):
     rf'''
       ^{HORIZONTAL_WHITESPACE_REGEX}*
       (
-        [-+*]
+        [-*]
           |
         [0-9] +  [.]
       )
