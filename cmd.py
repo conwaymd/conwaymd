@@ -20,6 +20,7 @@ You   : You're crazy.
 Conway: Oh shut up, I already know that.
 
 Documentation: <https://conway-markdown.github.io/>
+GitHub: <https://github.com/conway-markdown/conway-markdown>
 
 Released into the public domain (CC0):
   <https://creativecommons.org/publicdomain/zero/1.0/>
