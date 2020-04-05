@@ -19,7 +19,7 @@ Conway: It works, really!
 You   : You're crazy.
 Conway: Oh shut up, I already know that.
 
-Documentation: <https://conway-markdown.github.io/conway-markdown/>
+Documentation: <https://conway-markdown.github.io/>
 
 Released into the public domain (CC0):
   <https://creativecommons.org/publicdomain/zero/1.0/>
