@@ -1560,7 +1560,7 @@ def process_blocks(placeholder_storage, markup):
       =  <ul>
       +  <ol>
   XX[id] [class]↵ {content} XX becomes
-  <tag_name id="[id]" class="[class]">↵{content}</tag_name>.
+  <{tag_name} id="[id]" class="[class]">↵{content}</{tag_name}>.
   For {content} containing two or more consecutive Xs
   which are not already protected by CMD literals,
   use a greater number of Xs in the delimiters.
@@ -2048,7 +2048,7 @@ def process_inline_semantics(placeholder_storage, markup):
     _   <i>
     __  <b>
   X[[class]] {content} X (c or cc) becomes
-  <tag_name class="[class]">{content}</tag_name>.
+  <{tag_name} class="[class]">{content}</{tag_name}>.
   Whitespace around {content} is stripped.
   For {content} containing one or more occurrences of c (* or _),
   use CMD literals or \* and \_.
