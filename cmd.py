@@ -2082,7 +2082,7 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (
           \[
-            (?P<class_>  {ANY_STRING_MINIMAL_REGEX}  )
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
         (?P<content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
@@ -2106,7 +2106,7 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (
           \[
-            (?P<inner_class>  {ANY_STRING_MINIMAL_REGEX}  )
+            (?P<inner_class>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
         (?P<inner_content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
@@ -2132,7 +2132,7 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (
           \[
-            (?P<inner_class>  {ANY_STRING_MINIMAL_REGEX}  )
+            (?P<inner_class>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
         (?P<inner_content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
@@ -2158,7 +2158,7 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (
           \[
-            (?P<class_>  {ANY_STRING_MINIMAL_REGEX}  )
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
         (?P<content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
@@ -2177,7 +2177,7 @@ def process_inline_semantics(placeholder_storage, markup):
       (?P<delimiter>  {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}  )
         (
           \[
-            (?P<class_>  {ANY_STRING_MINIMAL_REGEX}  )
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
         (?P<content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
