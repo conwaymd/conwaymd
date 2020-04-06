@@ -1576,14 +1576,14 @@ def process_heading_match(placeholder_storage, match_object):
 ################################################################
 
 
-BLOCK_DELIMITER_DICTIONARY = {
+BLOCK_DELIMITER_TAG_NAME_DICTIONARY = {
   '/': 'p',
   '|': 'div',
   '"': 'blockquote',
   '=': 'ul',
   '+': 'ol',
 }
-BLOCK_DELIMITERS_STRING = ''.join(BLOCK_DELIMITER_DICTIONARY.keys())
+BLOCK_DELIMITERS_STRING = ''.join(BLOCK_DELIMITER_TAG_NAME_DICTIONARY.keys())
 BLOCK_DELIMITER_REGEX = f'[{BLOCK_DELIMITERS_STRING}]'
 
 LIST_TAG_NAMES = ['ul', 'ol']
@@ -1646,7 +1646,7 @@ def process_block_match(placeholder_storage, match_object):
   """
   
   delimiter = match_object.group('delimiter')
-  tag_name = BLOCK_DELIMITER_DICTIONARY[delimiter]
+  tag_name = BLOCK_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   is_list = tag_name in LIST_TAG_NAMES
   
   id_ = match_object.group('id_')
@@ -2070,7 +2070,7 @@ def process_inline_link_match(placeholder_storage, match_object):
 ################################################################
 
 
-INLINE_SEMANTIC_DELIMITER_DICTIONARY = {
+INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY = {
   '*': 'em',
   '**': 'strong',
   '_' : 'i',
@@ -2243,7 +2243,7 @@ def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
   """
   
   delimiter = match_object.group('delimiter')
-  tag_name = INLINE_SEMANTIC_DELIMITER_DICTIONARY[delimiter]
+  tag_name = INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
   class_ = match_object.group('class_')
   if class_ == None:
@@ -2280,13 +2280,17 @@ def process_inline_semantic_match_2_layer(placeholder_storage, match_object):
   inner_content = process_inline_semantics(placeholder_storage, inner_content)
   
   inner_delimiter = match_object.group('inner_delimiter')
-  inner_tag_name = INLINE_SEMANTIC_DELIMITER_DICTIONARY[inner_delimiter]
+  inner_tag_name = (
+    INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[inner_delimiter]
+  )
   
   outer_content = match_object.group('outer_content')
   outer_content = outer_content.rstrip()
   
   outer_delimiter = match_object.group('outer_delimiter')
-  outer_tag_name = INLINE_SEMANTIC_DELIMITER_DICTIONARY[outer_delimiter]
+  outer_tag_name = (
+    INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[outer_delimiter]
+  )
   
   # Process nested inline semantics (outer)
   outer_content = process_inline_semantics(placeholder_storage, outer_content)
