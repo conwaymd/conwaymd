@@ -1443,6 +1443,30 @@ def process_punctuation(markup):
 
 
 ################################################################
+# Line continuation
+################################################################
+
+
+def process_line_continuation(markup):
+  """
+  Process backslash line continuation.
+  """
+  
+  markup = re.sub(
+    rf'''
+      \\
+      \n
+      {HORIZONTAL_WHITESPACE_REGEX} *
+    ''',
+    '',
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  return markup
+
+
+################################################################
 # Whitespace
 ################################################################
 
@@ -1455,9 +1479,8 @@ def process_whitespace(markup):
   (2) Empty lines are removed.
       (In the implementation, consecutive newlines
       are normalised to a single newline.)
-  (3) Backslash line continuation is effected.
-  (4) Whitespace before line break elements <br> is removed.
-  (5) Whitespace for attributes is canonicalised:
+  (3) Whitespace before line break elements <br> is removed.
+  (4) Whitespace for attributes is canonicalised:
       (a) a single space is used before the attribute name, and
       (b) no whitespace is used around the equals sign.
   """
@@ -1473,7 +1496,6 @@ def process_whitespace(markup):
     flags=re.MULTILINE|re.VERBOSE
   )
   markup = re.sub(r'[\n]+', r'\n', markup)
-  markup = re.sub(r'\\\n', '', markup)
   markup = re.sub(r'[\s]+(?=<br>)', '', markup)
   markup = re.sub(
     r'''
@@ -2090,6 +2112,9 @@ def cmd_to_html(cmd, cmd_name):
   
   # Process punctuation
   markup = process_punctuation(markup)
+  
+  # Process line continuation
+  markup = process_line_continuation(markup)
   
   # Process whitespace
   markup = process_whitespace(markup)
