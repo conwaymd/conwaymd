@@ -1443,13 +1443,13 @@ def process_punctuation(markup):
 
 
 ################################################################
-# Line continuation
+# Line continuations
 ################################################################
 
 
-def process_line_continuation(markup):
+def process_line_continuations(markup):
   """
-  Process backslash line continuation.
+  Process backslash line continuations.
   """
   
   markup = re.sub(
@@ -2113,8 +2113,8 @@ def cmd_to_html(cmd, cmd_name):
   # Process punctuation
   markup = process_punctuation(markup)
   
-  # Process line continuation
-  markup = process_line_continuation(markup)
+  # Process line continuations
+  markup = process_line_continuations(markup)
   
   # Process headings
   markup = process_headings(placeholder_storage, markup)
