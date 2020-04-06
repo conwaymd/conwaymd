@@ -43,6 +43,9 @@ import re
 
 ANY_CHARACTER_REGEX = r'[\s\S]'
 ANY_STRING_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}*?'
+
+NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX = r'[^]]*?'
+
 HORIZONTAL_WHITESPACE_REGEX = r'[^\S\n]'
 NOT_WHITESPACE_MAXIMAL_REGEX = r'[\S]*'
 NOT_NEWLINE_MAXIMAL_REGEX = r'[^\n]*'
@@ -1715,7 +1718,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
       (?P<at_signs>  @  {{2,}})
         !
         \[
-          (?P<label>  {ANY_STRING_MINIMAL_REGEX}  )
+          (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
         \]
         (?P<class_>  {NOT_NEWLINE_MAXIMAL_REGEX}  )
       \n
@@ -1738,11 +1741,11 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     rf'''
       !
       \[
-        (?P<alt>  {ANY_STRING_MINIMAL_REGEX}  )
+        (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       [ ] ?
       \[
-        (?P<label>  {ANY_STRING_MINIMAL_REGEX}  )
+        (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
     ''',
     functools.partial(process_reference_image_match,
@@ -1758,7 +1761,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     rf'''
       !
       \[
-        (?P<alt>  {ANY_STRING_MINIMAL_REGEX}  )
+        (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       \(
         (?P<src>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
@@ -1898,7 +1901,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<at_signs>  @  {{2,}})
         \[
-          (?P<label>  {ANY_STRING_MINIMAL_REGEX}  )
+          (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
         \]
         (?P<class_>  {NOT_NEWLINE_MAXIMAL_REGEX}  )
       \n
@@ -1919,11 +1922,11 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   markup = re.sub(
     rf'''
       \[
-        (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
+        (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       [ ] ?
       \[
-        (?P<label>  {ANY_STRING_MINIMAL_REGEX}  )
+        (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
     ''',
     functools.partial(process_reference_link_match, link_definition_storage),
@@ -1935,7 +1938,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   markup = re.sub(
     rf'''
       \[
-        (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
+        (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       \(
         (?P<href>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
