@@ -46,6 +46,7 @@ ANY_STRING_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}*?'
 NON_EMPTY_STRING_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}+?'
 
 NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX = r'[^]]*?'
+NOT_QUOTE_MINIMAL_REGEX = r'[^"]*?'
 
 HORIZONTAL_WHITESPACE_REGEX = r'[^\S\n]'
 
@@ -2289,13 +2290,13 @@ def process_whitespace(markup):
   markup = re.sub(r'[\n]+', r'\n', markup)
   markup = re.sub(r'[\s]+(?=<br>)', '', markup)
   markup = re.sub(
-    r'''
+    rf'''
       [\s] +?
         (?P<attribute_name>  [\S] +?  )
       [\s] *?
         =
       [\s] *?
-        (?P<quoted_attribute_value>  "  [^"] *?  ")
+        (?P<quoted_attribute_value>  "  {NOT_QUOTE_MINIMAL_REGEX}  ")
     ''',
     r' \g<attribute_name>=\g<quoted_attribute_value>',
     markup,
