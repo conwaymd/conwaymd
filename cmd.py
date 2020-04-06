@@ -1558,6 +1558,8 @@ def process_blocks(placeholder_storage, markup):
   which are not already protected by CMD literals,
   use a greater number of Xs in the delimiters.
   
+  A recursive call is used to process nested blocks.
+  
   For list blocks, {content} is split into list items <li>
   according to leading occurrences of the following delimiters
   (i.e. being preceded only by whitespace on their lines):
