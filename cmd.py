@@ -993,6 +993,50 @@ def process_inclusion_match(placeholder_storage, match_object):
 
 
 ################################################################
+# Protected elements
+################################################################
+
+
+PROTECTED_ELEMENT_TAG_NAME_REGEX = '(script|style)'
+
+
+def process_protected_elements(placeholder_storage, markup):
+  """
+  Process protected elements <script> and <style>.
+  
+  These elements are protected from any further processing
+  (i.e. kept as is) using the placeholder storage class.
+  """
+  
+  markup = re.sub(
+    f'''
+      <
+        (?P<tag_name>  {PROTECTED_ELEMENT_TAG_NAME_REGEX}  )
+      >
+        {ANY_STRING_MINIMAL_REGEX}
+      </
+        (?P=tag_name)
+      >
+    ''',
+    functools.partial(process_protected_element_match, placeholder_storage),
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  return markup
+
+
+def process_protected_element_match(placeholder_storage, match_object):
+  """
+  Process a single protected-element match object.
+  """
+  
+  match_string = match_object.group()
+  
+  return placeholder_storage.create_placeholder_store_markup(match_string)
+
+
+################################################################
 # Regex replacements
 ################################################################
 
@@ -2342,6 +2386,7 @@ def cmd_to_html(cmd, cmd_name):
   markup = process_display_maths(placeholder_storage, markup)
   markup = process_inline_maths(placeholder_storage, markup)
   markup = process_inclusions(placeholder_storage, markup)
+  markup = process_protected_elements(placeholder_storage, markup)
   
   # Process regex replacements
   regex_replacement_storage = RegexReplacementStorage()
