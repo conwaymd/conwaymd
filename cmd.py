@@ -45,6 +45,7 @@ ANY_CHARACTER_REGEX = r'[\s\S]'
 ANY_STRING_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}*?'
 HORIZONTAL_WHITESPACE_REGEX = r'[^\S\n]'
 NON_WHITESPACE_MAXIMAL_REGEX = r'[\S]*'
+NON_NEWLINE_MAXIMAL_REGEX = r'[^\n]*'
 
 
 def de_indent(string):
@@ -695,7 +696,7 @@ def process_display_code(placeholder_storage, markup):
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<backticks>  ` {{2,}}  )
         (?P<id_>  {NON_WHITESPACE_MAXIMAL_REGEX}  )
-        (?P<class_>  [^\n] *  )
+        (?P<class_>  {NON_NEWLINE_MAXIMAL_REGEX}  )
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=backticks)
@@ -842,7 +843,7 @@ def process_display_maths(placeholder_storage, markup):
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<dollar_signs>  [$] {{2,}}  )
         (?P<id_>  {NON_WHITESPACE_MAXIMAL_REGEX}  )
-        (?P<class_>  [^\n] *  )
+        (?P<class_>  {NON_NEWLINE_MAXIMAL_REGEX}  )
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=dollar_signs)
@@ -1599,7 +1600,7 @@ def process_blocks(placeholder_storage, markup):
         (?P=delimiter) +
       )
         (?P<id_>  {NON_WHITESPACE_MAXIMAL_REGEX}  )
-        (?P<class_>  [^\n] *  )
+        (?P<class_>  {NON_NEWLINE_MAXIMAL_REGEX}  )
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=delimiters)
@@ -1740,7 +1741,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
         \[
           (?P<label>  {ANY_STRING_MINIMAL_REGEX}  )
         \]
-        (?P<class_>  [^\n] *  )
+        (?P<class_>  {NON_NEWLINE_MAXIMAL_REGEX}  )
       \n
       [\s] *
         (?P<src>  {NON_WHITESPACE_MAXIMAL_REGEX}  )
@@ -1923,7 +1924,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         \[
           (?P<label>  {ANY_STRING_MINIMAL_REGEX}  )
         \]
-        (?P<class_>  [^\n] *  )
+        (?P<class_>  {NON_NEWLINE_MAXIMAL_REGEX}  )
       \n
       [\s] *
         (?P<href>  {NON_WHITESPACE_MAXIMAL_REGEX}  )
