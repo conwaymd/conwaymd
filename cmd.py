@@ -1467,54 +1467,6 @@ def process_line_continuation(markup):
 
 
 ################################################################
-# Whitespace
-################################################################
-
-
-def process_whitespace(markup):
-  """
-  Process whitespace.
-  
-  (1) Leading and trailing horizontal whitespace is removed.
-  (2) Empty lines are removed.
-      (In the implementation, consecutive newlines
-      are normalised to a single newline.)
-  (3) Whitespace before line break elements <br> is removed.
-  (4) Whitespace for attributes is canonicalised:
-      (a) a single space is used before the attribute name, and
-      (b) no whitespace is used around the equals sign.
-  """
-  
-  markup = re.sub(
-    f'''
-      ^  {HORIZONTAL_WHITESPACE_REGEX} +
-        |
-      {HORIZONTAL_WHITESPACE_REGEX} +  $
-    ''',
-    '',
-    markup,
-    flags=re.MULTILINE|re.VERBOSE
-  )
-  markup = re.sub(r'[\n]+', r'\n', markup)
-  markup = re.sub(r'[\s]+(?=<br>)', '', markup)
-  markup = re.sub(
-    r'''
-      [\s] +?
-        (?P<attribute_name>  [\S] +?  )
-      [\s] *?
-        =
-      [\s] *?
-        (?P<quoted_attribute_value>  "  [^"] *?  ")
-    ''',
-    r' \g<attribute_name>=\g<quoted_attribute_value>',
-    markup,
-    flags=re.VERBOSE
-  )
-  
-  return markup
-
-
-################################################################
 # Headings
 ################################################################
 
@@ -2061,6 +2013,54 @@ def process_inline_link_match(placeholder_storage, match_object):
 
 
 ################################################################
+# Whitespace
+################################################################
+
+
+def process_whitespace(markup):
+  """
+  Process whitespace.
+  
+  (1) Leading and trailing horizontal whitespace is removed.
+  (2) Empty lines are removed.
+      (In the implementation, consecutive newlines
+      are normalised to a single newline.)
+  (3) Whitespace before line break elements <br> is removed.
+  (4) Whitespace for attributes is canonicalised:
+      (a) a single space is used before the attribute name, and
+      (b) no whitespace is used around the equals sign.
+  """
+  
+  markup = re.sub(
+    f'''
+      ^  {HORIZONTAL_WHITESPACE_REGEX} +
+        |
+      {HORIZONTAL_WHITESPACE_REGEX} +  $
+    ''',
+    '',
+    markup,
+    flags=re.MULTILINE|re.VERBOSE
+  )
+  markup = re.sub(r'[\n]+', r'\n', markup)
+  markup = re.sub(r'[\s]+(?=<br>)', '', markup)
+  markup = re.sub(
+    r'''
+      [\s] +?
+        (?P<attribute_name>  [\S] +?  )
+      [\s] *?
+        =
+      [\s] *?
+        (?P<quoted_attribute_value>  "  [^"] *?  ")
+    ''',
+    r' \g<attribute_name>=\g<quoted_attribute_value>',
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  return markup
+
+
+################################################################
 # Converter
 ################################################################
 
@@ -2116,9 +2116,6 @@ def cmd_to_html(cmd, cmd_name):
   # Process line continuation
   markup = process_line_continuation(markup)
   
-  # Process whitespace
-  markup = process_whitespace(markup)
-  
   # Process headings
   markup = process_headings(placeholder_storage, markup)
   
@@ -2134,6 +2131,9 @@ def cmd_to_html(cmd, cmd_name):
   # Process links
   link_definition_storage = LinkDefinitionStorage()
   markup = process_links(placeholder_storage, link_definition_storage, markup)
+  
+  # Process whitespace
+  markup = process_whitespace(markup)
   
   # Replace placeholders strings with markup portions
   markup = placeholder_storage.replace_placeholders_with_markup(markup)
