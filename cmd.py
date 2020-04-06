@@ -43,10 +43,12 @@ import re
 
 ANY_CHARACTER_REGEX = r'[\s\S]'
 ANY_STRING_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}*?'
+NON_EMPTY_STRING_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}+?'
 
 NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX = r'[^]]*?'
 
 HORIZONTAL_WHITESPACE_REGEX = r'[^\S\n]'
+
 NOT_WHITESPACE_MAXIMAL_REGEX = r'[\S]*'
 NOT_NEWLINE_MAXIMAL_REGEX = r'[^\n]*'
 
@@ -2018,6 +2020,244 @@ def process_inline_link_match(placeholder_storage, match_object):
 
 
 ################################################################
+# Inline semantics
+################################################################
+
+
+INLINE_SEMANTIC_DELIMITER_DICTIONARY = {
+  '*': 'em',
+  '**': 'strong',
+  '_' : 'i',
+  '__': 'b',
+}
+INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX = '[*_]'
+
+
+def process_inline_semantics(placeholder_storage, markup):
+  r"""
+  Process inline semantics X[[class]] {content} X.
+  {content} must be non-empty.
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
+  
+  The following delimiters (X) are used:
+    *   <em>
+    **  <strong>
+    _   <i>
+    __  <b>
+  X[[class]] {content} X (c or cc) becomes
+  <tag_name class="[class]">{content}</tag_name>.
+  Whitespace around {content} is stripped.
+  For {content} containing one or more occurrences of c (* or _),
+  use CMD literals or \* and \_.
+  
+  Separate patterns are required
+  for the following groupings of delimiting characters (c)
+  so that the processing is performed in this order:
+    33    ccc[[class]] {content} ccc
+    312   ccc[[inner_class]] {inner_content} c {outer_content} cc
+    321   ccc[[inner_class]] {inner_content} cc {outer_content} c
+    22    cc[[class]] {content} cc
+    11    cc[[class]] {content} c
+  However, once such a pattern has been matched,
+  only two cases need to be handled for the resulting match object:
+    1-layer case (for 33, 22, 11):
+      X[[class]] {content} X
+    2-layer case (for 312, 321):
+      XY[[inner_class]] {inner_content} Y {outer_content} X
+  
+  Recursive calls are used to process nested inline semantics.
+  """
+  
+  # 33
+  markup = re.sub(
+    rf'''
+      (?P<delimiter>
+        (?P<delimiter_character>
+          {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
+        )
+        (?P=delimiter_character) {{2}}
+      )
+        (
+          \[
+            (?P<class_>  {ANY_STRING_MINIMAL_REGEX}  )
+          \]
+        ) ?
+        (?P<content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
+      (?P=delimiter)
+    ''',
+    functools.partial(process_inline_semantic_match_1_layer,
+      placeholder_storage
+    ),
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  # 312
+  markup = re.sub(
+    rf'''
+      (
+        (?P<delimiter_character>
+          {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
+        )
+        (?P=delimiter_character) {{2}}
+      )
+        (
+          \[
+            (?P<inner_class>  {ANY_STRING_MINIMAL_REGEX}  )
+          \]
+        ) ?
+        (?P<inner_content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
+      (?P<inner_delimiter>  (?P=delimiter_character) {{1}} )
+        (?P<outer_content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
+      (?P<outer_delimiter>  (?P=delimiter_character) {{2}}  )
+    ''',
+    functools.partial(process_inline_semantic_match_2_layer,
+      placeholder_storage
+    ),
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  # 321
+  markup = re.sub(
+    rf'''
+      (
+        (?P<delimiter_character>
+          {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
+        )
+        (?P=delimiter_character) {{2}}
+      )
+        (
+          \[
+            (?P<inner_class>  {ANY_STRING_MINIMAL_REGEX}  )
+          \]
+        ) ?
+        (?P<inner_content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
+      (?P<inner_delimiter>  (?P=delimiter_character) {{2}}  )
+        (?P<outer_content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
+      (?P<outer_delimiter>  (?P=delimiter_character) {{1}}  )
+    ''',
+    functools.partial(process_inline_semantic_match_2_layer,
+      placeholder_storage
+    ),
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  # 22
+  markup = re.sub(
+    rf'''
+      (?P<delimiter>
+        (?P<delimiter_character>
+          {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
+        )
+        (?P=delimiter_character)
+      )
+        (
+          \[
+            (?P<class_>  {ANY_STRING_MINIMAL_REGEX}  )
+          \]
+        ) ?
+        (?P<content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
+      (?P=delimiter)
+    ''',
+    functools.partial(process_inline_semantic_match_1_layer,
+      placeholder_storage
+    ),
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  # 11
+  markup = re.sub(
+    f'''
+      (?P<delimiter>  {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}  )
+        (
+          \[
+            (?P<class_>  {ANY_STRING_MINIMAL_REGEX}  )
+          \]
+        ) ?
+        (?P<content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
+      (?P=delimiter)
+    ''',
+    functools.partial(process_inline_semantic_match_1_layer,
+      placeholder_storage
+    ),
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  return markup
+
+
+def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
+  """
+  Process a single 1-layer inline-semantic match object.
+  """
+  
+  delimiter = match_object.group('delimiter')
+  tag_name = INLINE_SEMANTIC_DELIMITER_DICTIONARY[delimiter]
+  
+  class_ = match_object.group('class_')
+  if class_ == None:
+    class_ = ''
+  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  
+  content = match_object.group('content')
+  content = content.strip()
+  
+  # Process nested inline semantics
+  content = process_inline_semantics(placeholder_storage, content)
+  
+  markup = f'<{tag_name}{class_attribute}>{content}</{tag_name}>'
+  
+  return markup
+
+
+def process_inline_semantic_match_2_layer(placeholder_storage, match_object):
+  """
+  Process a single 2-layer inline-semantic match object.
+  """
+  
+  inner_class = match_object.group('inner_class')
+  if inner_class == None:
+    inner_class = ''
+  inner_class_attribute = build_html_attribute(
+    placeholder_storage, 'class', inner_class
+  )
+  
+  inner_content = match_object.group('inner_content')
+  inner_content = inner_content.strip()
+  
+  # Process nested inline semantics (inner)
+  inner_content = process_inline_semantics(placeholder_storage, inner_content)
+  
+  inner_delimiter = match_object.group('inner_delimiter')
+  inner_tag_name = INLINE_SEMANTIC_DELIMITER_DICTIONARY[inner_delimiter]
+  
+  outer_content = match_object.group('outer_content')
+  outer_content = outer_content.rstrip()
+  
+  outer_delimiter = match_object.group('outer_delimiter')
+  outer_tag_name = INLINE_SEMANTIC_DELIMITER_DICTIONARY[outer_delimiter]
+  
+  # Process nested inline semantics (outer)
+  outer_content = process_inline_semantics(placeholder_storage, outer_content)
+  
+  markup = (
+    f'<{outer_tag_name}>'
+      f'<{inner_tag_name}{inner_class_attribute}>'
+        f'{inner_content}'
+      f'</{inner_tag_name}>'
+      f'{outer_content}'
+    f'</{outer_tag_name}>'
+  )
+  
+  return markup
+
+
+################################################################
 # Whitespace
 ################################################################
 
@@ -2136,6 +2376,9 @@ def cmd_to_html(cmd, cmd_name):
   # Process links
   link_definition_storage = LinkDefinitionStorage()
   markup = process_links(placeholder_storage, link_definition_storage, markup)
+  
+  # Process inline semantics
+  markup = process_inline_semantics(placeholder_storage, markup)
   
   # Process whitespace
   markup = process_whitespace(markup)
