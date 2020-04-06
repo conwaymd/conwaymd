@@ -45,6 +45,7 @@ ANY_CHARACTER_REGEX = r'[\s\S]'
 ANY_STRING_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}*?'
 NON_EMPTY_STRING_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}+?'
 
+NOT_CLOSING_ROUND_BRACKET_MINIMAL_REGEX = r'[^)]*?'
 NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX = r'[^]]*?'
 NOT_QUOTE_MINIMAL_REGEX = r'[^"]*?'
 
@@ -1768,7 +1769,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
       \]
       \(
         (?P<src>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
-        (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
+        (?P<title>  {NOT_CLOSING_ROUND_BRACKET_MINIMAL_REGEX}  )
       \)
     ''',
     functools.partial(process_inline_image_match, placeholder_storage),
@@ -1945,7 +1946,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
       \]
       \(
         (?P<href>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
-        (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
+        (?P<title>  {NOT_CLOSING_ROUND_BRACKET_MINIMAL_REGEX}  )
       \)
     ''',
     functools.partial(process_inline_link_match, placeholder_storage),
