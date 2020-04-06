@@ -458,8 +458,7 @@ class RegexReplacementStorage:
     Replace all patterns with their replacements.
     """
     
-    reversed_dictionary = dict(reversed(list(self.dictionary.items())))
-    string = replace_by_regex_dictionary(reversed_dictionary, string)
+    string = replace_by_regex_dictionary(self.dictionary, string)
     
     return string
 
@@ -494,8 +493,7 @@ class OrdinaryReplacementStorage:
     Replace all patterns with their replacements.
     """
     
-    reversed_dictionary = dict(reversed(list(self.dictionary.items())))
-    string = replace_by_ordinary_dictionary(reversed_dictionary, string)
+    string = replace_by_ordinary_dictionary(self.dictionary, string)
     
     return string
 
@@ -1009,7 +1007,7 @@ def process_regex_replacements(
   using the regex replacement storage class.
   If the same pattern is specified more than once,
   the latest specification shall prevail.
-  They are then applied to the markup in reverse order.
+  They are then applied to the markup in order.
   
   WARNING:
     Malicious user-defined regex replacements
@@ -1080,7 +1078,7 @@ def process_ordinary_replacements(ordinary_replacement_storage, markup):
   using the ordinary replacement storage class.
   If the same pattern is specified more than once,
   the latest specification shall prevail.
-  They are then applied to the markup in reverse order.
+  They are then applied to the markup in order.
   
   WARNING:
     Malicious user-defined ordinary replacements
