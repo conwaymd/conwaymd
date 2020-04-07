@@ -1600,7 +1600,7 @@ def process_heading_match(placeholder_storage, match_object):
 
 
 BLOCK_DELIMITER_TAG_NAME_DICTIONARY = {
-  '/': 'p',
+  '-': 'p',
   '|': 'div',
   '"': 'blockquote',
   '=': 'ul',
@@ -1620,7 +1620,7 @@ def process_blocks(placeholder_storage, markup):
   
   The following delimiters (X) are used:
     Non-lists
-      /  <p>
+      -  <p>
       |  <div>
       "  <blockquote>
     Lists
