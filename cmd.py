@@ -1464,6 +1464,7 @@ def process_preamble_match(
 
 PUNCTUATION_REPLACEMENT_DICTIONARY = {
   r'\ ': ' ',
+  r'\~': '~',
   '~': '&nbsp;',
   r'\0': '&numsp;',
   r'\,': '&thinsp;',
@@ -1482,6 +1483,7 @@ def process_punctuation(placeholder_storage, markup):
   r"""
   Process punctuation.
     \   becomes   U+0020 SPACE
+    \~  becomes ~
     ~   becomes &nbsp;
     \0  becomes &numsp;
     \,  becomes &thinsp;
