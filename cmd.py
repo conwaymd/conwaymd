@@ -1464,12 +1464,12 @@ def process_preamble_match(
 
 PUNCTUATION_REPLACEMENT_DICTIONARY = {
   r'\ ': ' ',
-  r'\&': escape_html_syntax_characters('&'),
-  r'\<': escape_html_syntax_characters('<'),
-  r'\>': escape_html_syntax_characters('>'),
   '~': '&nbsp;',
   r'\0': '&numsp;',
   r'\,': '&thinsp;',
+  r'\&': escape_html_syntax_characters('&'),
+  r'\<': escape_html_syntax_characters('<'),
+  r'\>': escape_html_syntax_characters('>'),
   '---': '—',
   '--': '–',
   r'\P': '¶',
@@ -1482,12 +1482,12 @@ def process_punctuation(placeholder_storage, markup):
   r"""
   Process punctuation.
     \   becomes   U+0020 SPACE
-    \&  becomes &amp;
-    \<  becomes &lt;
-    \>  becomes &gt;
     ~   becomes &nbsp;
     \0  becomes &numsp;
     \,  becomes &thinsp;
+    \&  becomes &amp;
+    \<  becomes &lt;
+    \>  becomes &gt;
     --- becomes — U+2014 EM DASH
     --  becomes – U+2013 EN DASH
     \P  becomes ¶ U+00B6 PILCROW SIGN
