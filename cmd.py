@@ -1626,7 +1626,7 @@ def process_blocks(placeholder_storage, markup):
     Lists
       =  <ul>
       +  <ol>
-  XX[id] [class]↵ {content} XX becomes
+  XXXX[id] [class]↵ {content} XXXX becomes
   <{tag_name} id="[id]" class="[class]">↵{content}</{tag_name}>.
   For {content} containing two or more consecutive Xs
   which are not already protected by CMD literals,
@@ -1647,7 +1647,7 @@ def process_blocks(placeholder_storage, markup):
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<delimiters>
         (?P<delimiter>  {BLOCK_DELIMITER_REGEX}  )
-        (?P=delimiter) +
+        (?P=delimiter) {{3}}
       )
         (?P<id_>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
         (?P<class_>  {NOT_NEWLINE_MAXIMAL_REGEX}  )
