@@ -1463,7 +1463,6 @@ def process_preamble_match(
 
 
 PUNCTUATION_REPLACEMENT_DICTIONARY = {
-  r'\\': '<br>',
   r'\ ': ' ',
   r'\&': escape_html_syntax_characters('&'),
   r'\<': escape_html_syntax_characters('<'),
@@ -1479,10 +1478,9 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
 }
 
 
-def process_punctuation(markup):
+def process_punctuation(placeholder_storage, markup):
   r"""
   Process punctuation.
-    \\  becomes <br>
     \   becomes   U+0020 SPACE
     \&  becomes &amp;
     \<  becomes &lt;
@@ -1496,10 +1494,21 @@ def process_punctuation(markup):
     \*  becomes *
     \_  becomes _
   Most of these are based on LaTeX syntax.
+  
+  Some of the resulting strings (*, _) must be protected
+  from further replacements using placeholder storage,
+  but <br> resulting from \\ must not be protected so
+  since whitespace before it will be removed later;
+  for the remaining strings it does not matter.
+  For simplicity in the implementation,
+  <br> alone is left unprotected
+  whilst everything else is protected.
   """
   
-  markup = (
-    replace_by_ordinary_dictionary(PUNCTUATION_REPLACEMENT_DICTIONARY, markup)
+  markup = re.sub(r'\\\\', '<br>', markup)
+  
+  markup = replace_by_ordinary_dictionary(
+    PUNCTUATION_REPLACEMENT_DICTIONARY, markup, placeholder_storage
   )
   
   return markup
@@ -2419,7 +2428,7 @@ def cmd_to_html(cmd, cmd_name):
   markup = process_preamble(placeholder_storage, property_storage, markup)
   
   # Process punctuation
-  markup = process_punctuation(markup)
+  markup = process_punctuation(placeholder_storage, markup)
   
   # Process line continuations
   markup = process_line_continuations(markup)
