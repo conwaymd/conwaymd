@@ -1459,6 +1459,9 @@ def process_preamble_match(
 PUNCTUATION_REPLACEMENT_DICTIONARY = {
   r'\\': '<br>',
   r'\ ': ' ',
+  r'\&': escape_html_syntax_characters('&'),
+  r'\<': escape_html_syntax_characters('<'),
+  r'\>': escape_html_syntax_characters('>'),
   '~': '&nbsp;',
   r'\0': '&numsp;',
   r'\,': '&thinsp;',
@@ -1475,6 +1478,9 @@ def process_punctuation(markup):
   Process punctuation.
     \\  becomes <br>
     \   becomes   U+0020 SPACE
+    \&  becomes &amp;
+    \<  becomes &lt;
+    \>  becomes &gt;
     ~   becomes &nbsp;
     \0  becomes &numsp;
     \,  becomes &thinsp;
