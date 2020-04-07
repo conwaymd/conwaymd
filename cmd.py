@@ -1458,89 +1458,6 @@ def process_preamble_match(
 
 
 ################################################################
-# Punctuation
-################################################################
-
-
-PUNCTUATION_REPLACEMENT_DICTIONARY = {
-  r'\ ': ' ',
-  r'\~': '~',
-  '~': '&nbsp;',
-  r'\0': '&numsp;',
-  r'\,': '&thinsp;',
-  r'\&': escape_html_syntax_characters('&'),
-  r'\<': escape_html_syntax_characters('<'),
-  r'\>': escape_html_syntax_characters('>'),
-  '---': '—',
-  '--': '–',
-  r'\P': '¶',
-  r'\*': '*',
-  r'\_': '_',
-}
-
-
-def process_punctuation(placeholder_storage, markup):
-  r"""
-  Process punctuation.
-    \   becomes   U+0020 SPACE
-    \~  becomes ~
-    ~   becomes &nbsp;
-    \0  becomes &numsp;
-    \,  becomes &thinsp;
-    \&  becomes &amp;
-    \<  becomes &lt;
-    \>  becomes &gt;
-    --- becomes — U+2014 EM DASH
-    --  becomes – U+2013 EN DASH
-    \P  becomes ¶ U+00B6 PILCROW SIGN
-    \*  becomes *
-    \_  becomes _
-  Most of these are based on LaTeX syntax.
-  
-  Some of the resulting strings (*, _) must be protected
-  from further replacements using placeholder storage,
-  but <br> resulting from \\ must not be protected so
-  since whitespace before it will be removed later;
-  for the remaining strings it does not matter.
-  For simplicity in the implementation,
-  <br> alone is left unprotected
-  whilst everything else is protected.
-  """
-  
-  markup = re.sub(r'\\\\', '<br>', markup)
-  
-  markup = replace_by_ordinary_dictionary(
-    PUNCTUATION_REPLACEMENT_DICTIONARY, markup, placeholder_storage
-  )
-  
-  return markup
-
-
-################################################################
-# Line continuations
-################################################################
-
-
-def process_line_continuations(markup):
-  """
-  Process backslash line continuations.
-  """
-  
-  markup = re.sub(
-    rf'''
-      \\
-      \n
-      {HORIZONTAL_WHITESPACE_REGEX} *
-    ''',
-    '',
-    markup,
-    flags=re.VERBOSE
-  )
-  
-  return markup
-
-
-################################################################
 # Headings
 ################################################################
 
@@ -1727,6 +1644,89 @@ def process_list_content(content):
     content = content + '</li>\n'
   
   return content
+
+
+################################################################
+# Punctuation
+################################################################
+
+
+PUNCTUATION_REPLACEMENT_DICTIONARY = {
+  r'\ ': ' ',
+  r'\~': '~',
+  '~': '&nbsp;',
+  r'\0': '&numsp;',
+  r'\,': '&thinsp;',
+  r'\&': escape_html_syntax_characters('&'),
+  r'\<': escape_html_syntax_characters('<'),
+  r'\>': escape_html_syntax_characters('>'),
+  '---': '—',
+  '--': '–',
+  r'\P': '¶',
+  r'\*': '*',
+  r'\_': '_',
+}
+
+
+def process_punctuation(placeholder_storage, markup):
+  r"""
+  Process punctuation.
+    \   becomes   U+0020 SPACE
+    \~  becomes ~
+    ~   becomes &nbsp;
+    \0  becomes &numsp;
+    \,  becomes &thinsp;
+    \&  becomes &amp;
+    \<  becomes &lt;
+    \>  becomes &gt;
+    --- becomes — U+2014 EM DASH
+    --  becomes – U+2013 EN DASH
+    \P  becomes ¶ U+00B6 PILCROW SIGN
+    \*  becomes *
+    \_  becomes _
+  Most of these are based on LaTeX syntax.
+  
+  Some of the resulting strings (*, _) must be protected
+  from further replacements using placeholder storage,
+  but <br> resulting from \\ must not be protected so
+  since whitespace before it will be removed later;
+  for the remaining strings it does not matter.
+  For simplicity in the implementation,
+  <br> alone is left unprotected
+  whilst everything else is protected.
+  """
+  
+  markup = re.sub(r'\\\\', '<br>', markup)
+  
+  markup = replace_by_ordinary_dictionary(
+    PUNCTUATION_REPLACEMENT_DICTIONARY, markup, placeholder_storage
+  )
+  
+  return markup
+
+
+################################################################
+# Line continuations
+################################################################
+
+
+def process_line_continuations(markup):
+  """
+  Process backslash line continuations.
+  """
+  
+  markup = re.sub(
+    rf'''
+      \\
+      \n
+      {HORIZONTAL_WHITESPACE_REGEX} *
+    ''',
+    '',
+    markup,
+    flags=re.VERBOSE
+  )
+  
+  return markup
 
 
 ################################################################
@@ -2427,17 +2427,17 @@ def cmd_to_html(cmd, cmd_name):
   property_storage = PropertyStorage()
   markup = process_preamble(placeholder_storage, property_storage, markup)
   
-  # Process punctuation
-  markup = process_punctuation(placeholder_storage, markup)
-  
-  # Process line continuations
-  markup = process_line_continuations(markup)
-  
   # Process headings
   markup = process_headings(placeholder_storage, markup)
   
   # Process blocks
   markup = process_blocks(placeholder_storage, markup)
+  
+  # Process punctuation
+  markup = process_punctuation(placeholder_storage, markup)
+  
+  # Process line continuations
+  markup = process_line_continuations(markup)
   
   # Process images
   image_definition_storage = ImageDefinitionStorage()
