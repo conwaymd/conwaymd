@@ -192,7 +192,9 @@ def build_html_attribute(
 PLACEHOLDER_MARKER = '\uE000'
 
 
-def replace_by_ordinary_dictionary(dictionary, string):
+def replace_by_ordinary_dictionary(
+  dictionary, string, placeholder_storage=None
+):
   """
   Apply a dictionary of ordinary replacements to a string.
   """
@@ -201,6 +203,10 @@ def replace_by_ordinary_dictionary(dictionary, string):
     
     replacement = dictionary[pattern]
     replacement = escape_python_backslash(replacement)
+    if placeholder_storage is not None:
+      replacement = (
+        placeholder_storage.create_placeholder_store_markup(replacement)
+      )
     
     string = re.sub(
       re.escape(pattern),
