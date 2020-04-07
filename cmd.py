@@ -1614,7 +1614,7 @@ LIST_TAG_NAMES = ['ul', 'ol']
 
 def process_blocks(placeholder_storage, markup):
   """
-  Process blocks XX[id] [class]↵ {content} XX.
+  Process blocks XXXX[id] [class]↵ {content} XXXX.
   The opening delimiter X must be the first
   non-whitespace character on its line.
   
