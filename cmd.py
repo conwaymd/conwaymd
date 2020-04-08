@@ -780,7 +780,7 @@ def process_inline_code(placeholder_storage, markup):
   use a greater number of backticks in the delimiters.
   If the start of {content} matches the syntax
   [id][[class]]↵ for display code,
-  use leading whitespace.
+  use leading horizontal whitespace in {content}.
   """
   
   markup = re.sub(
@@ -856,11 +856,13 @@ def process_comments(markup):
 
 def process_display_maths(placeholder_storage, markup):
   r"""
-  Process display maths $$[id] [class]↵ {content} $$.
+  Process display maths $$[id][[class]]↵ {content} $$.
   The opening dollar sign must be the first
   non-whitespace character on its line.
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
   
-  $$[id] [class]↵ {content} $$ becomes
+  $$[id][[class]]↵ {content} $$ becomes
   <div id="[id]" class="js-maths [class]">{content}</div>,
   with HTML syntax-character escaping
   and de-indentation for {content}.
@@ -879,8 +881,12 @@ def process_display_maths(placeholder_storage, markup):
     fr'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<dollar_signs>  [$] {{2,}}  )
-        (?P<id_>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
-        (?P<class_>  {NOT_NEWLINE_MAXIMAL_REGEX}  )
+        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+        (
+          \[
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+          \]
+        ) ?
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=dollar_signs)
@@ -932,6 +938,9 @@ def process_inline_maths(placeholder_storage, markup):
   which are not already protected by CMD literals,
   e.g. \text{$x = \infinity$ is very big},
   use a greater number of dollar signs in the delimiters.
+  If the start of {content} matches the syntax
+  [id][[class]]↵ for display maths,
+  use leading horizontal whitespace in {content}.
   
   This is to be used with some sort of Javascript code
   which renders equations based on the class "js-maths".
