@@ -52,7 +52,8 @@ NOT_QUOTE_MINIMAL_REGEX = r'[^"]*?'
 HORIZONTAL_WHITESPACE_REGEX = r'[^\S\n]'
 
 NOT_WHITESPACE_MAXIMAL_REGEX = r'[\S]*'
-NOT_NEWLINE_MAXIMAL_REGEX = r'[^\n]*'
+NOT_NEWLINE_REGEX = r'[^\n]'
+NOT_NEWLINE_MAXIMAL_REGEX = f'{NOT_NEWLINE_REGEX}*'
 
 
 def de_indent(string):
@@ -68,16 +69,23 @@ def de_indent(string):
   """
   
   # Remove trailing horizontal whitespace on the last line
-  string = re.sub(f'{HORIZONTAL_WHITESPACE_REGEX}*$', '', string)
+  string = re.sub(
+    f'''
+      {HORIZONTAL_WHITESPACE_REGEX} *  $
+    ''',
+    '',
+    string,
+    flags=re.VERBOSE
+  )
   
   # Get list of all indentations, either
   # (1) non-empty leading horizontal whitespace, or
   # (2) the leading empty string on a non-empty line.
   indentation_list = re.findall(
-    rf'''
+    f'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} +
         |
-      ^  (?=  [^\n]  )
+      ^  (?=  {NOT_NEWLINE_REGEX}  )
     ''',
     string,
     flags=re.MULTILINE|re.VERBOSE
@@ -86,10 +94,12 @@ def de_indent(string):
   # Remove longest common indentation
   longest_common_indentation = os.path.commonprefix(indentation_list)
   string = re.sub(
-    f'^{longest_common_indentation}',
+    f'''
+      ^  {re.escape(longest_common_indentation)}
+    ''',
     '',
     string,
-    flags=re.MULTILINE
+    flags=re.MULTILINE|re.VERBOSE
   )
   
   return string
@@ -302,8 +312,13 @@ class PlaceholderStorage:
     self.PLACEHOLDER_MARKER_RUN = (
       (1 + placeholder_marker_occurrences) * PLACEHOLDER_MARKER
     )
-    self.PLACEHOLDER_STRING_COMPILED_REGEX = (
-      re.compile(f'{self.PLACEHOLDER_MARKER_RUN}[0-9]+{PLACEHOLDER_MARKER}')
+    self.PLACEHOLDER_STRING_COMPILED_REGEX = re.compile(
+      f'''
+        {self.PLACEHOLDER_MARKER_RUN}
+        [0-9] +
+        {PLACEHOLDER_MARKER}
+      ''',
+      flags=re.VERBOSE
     )
     
     self.dictionary = {}
@@ -658,7 +673,7 @@ def process_literals(placeholder_storage, markup):
   markup = re.sub(
     rf'''
       \(
-        (?P<exclamation_marks>  ! +  )
+        (?P<exclamation_marks>  [!] +  )
           (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
         (?P=exclamation_marks)
       \)
@@ -707,7 +722,7 @@ def process_display_code(placeholder_storage, markup):
   markup = re.sub(
     rf'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
-      (?P<backticks>  ` {{2,}}  )
+      (?P<backticks>  [`] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
         (?P<class_>  {NOT_NEWLINE_MAXIMAL_REGEX}  )
       \n
@@ -761,7 +776,7 @@ def process_inline_code(placeholder_storage, markup):
   
   markup = re.sub(
     f'''
-      (?P<backticks>  ` +  )
+      (?P<backticks>  [`] +  )
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=backticks)
     ''',
@@ -812,9 +827,9 @@ def process_comments(markup):
     f'''
       {HORIZONTAL_WHITESPACE_REGEX} *
       <!
-        [-][-]
+        [-] {{2}}
           (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
-        [-][-]
+        [-] {{2}}
       >
     ''',
     '',
@@ -917,7 +932,7 @@ def process_inline_maths(placeholder_storage, markup):
   
   markup = re.sub(
     f'''
-      (?P<dollar_signs> [$]  +  )
+      (?P<dollar_signs> [$] +  )
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=dollar_signs)
     ''',
@@ -1080,7 +1095,7 @@ def process_regex_replacements(
   markup = re.sub(
     rf'''
       \{{
-        (?P<percent_signs>  % +  )
+        (?P<percent_signs>  [%] +  )
           (?P<pattern>  {ANY_STRING_MINIMAL_REGEX}  )
         (?P=percent_signs)
           (?P<replacement>  {ANY_STRING_MINIMAL_REGEX}  )
@@ -1263,7 +1278,7 @@ def process_preamble(placeholder_storage, property_storage, markup):
   markup, preamble_count = re.subn(
     rf'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
-      (?P<percent_signs>  % {{2,}}  )
+      (?P<percent_signs>  [%] {{2,}}  )
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=percent_signs)
@@ -1784,7 +1799,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   markup = re.sub(
     rf'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
-      (?P<at_signs>  @  {{2,}})
+      (?P<at_signs>  [@] {{2,}})
         !
         \[
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
@@ -1968,7 +1983,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   markup = re.sub(
     rf'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
-      (?P<at_signs>  @  {{2,}})
+      (?P<at_signs>  [@] {{2,}})
         \[
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
         \]
@@ -2175,7 +2190,7 @@ def process_inline_semantics(placeholder_storage, markup):
           \]
         ) ?
         (?P<inner_content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
-      (?P<inner_delimiter>  (?P=delimiter_character) {{1}} )
+      (?P<inner_delimiter>  (?P=delimiter_character) {{1}}  )
         (?P<outer_content>  {NON_EMPTY_STRING_MINIMAL_REGEX}  )
       (?P<outer_delimiter>  (?P=delimiter_character) {{2}}  )
     ''',
@@ -2482,8 +2497,8 @@ def cmd_file_to_html_file(cmd_name):
   # (2) Remove leading dot-slash for current directory
   # (3) Remove trailing "." or ".cmd" extension if given
   cmd_name = re.sub(r'\\', '/', cmd_name)
-  cmd_name = re.sub(r'^\./', '', cmd_name)
-  cmd_name = re.sub(r'\.(cmd)?$', '', cmd_name)
+  cmd_name = re.sub(r'^[.]/', '', cmd_name)
+  cmd_name = re.sub(r'[.](cmd)?$', '', cmd_name)
   
   # Read CMD from CMD file
   with open(f'{cmd_name}.cmd', 'r', encoding='utf-8') as cmd_file:
