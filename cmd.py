@@ -780,7 +780,7 @@ def process_inline_code(placeholder_storage, markup):
   use a greater number of backticks in the delimiters.
   If the start of {content} matches the syntax
   [id][[class]]↵ used for display code,
-  use CMD literals or leading horizontal whitespace in {content}.
+  use leading horizontal whitespace in {content}.
   """
   
   markup = re.sub(
@@ -940,7 +940,7 @@ def process_inline_maths(placeholder_storage, markup):
   use a greater number of dollar signs in the delimiters.
   If the start of {content} matches the syntax
   [id][[class]]↵ used for display maths,
-  use CMD literals or leading horizontal whitespace in {content}.
+  use leading horizontal whitespace in {content}.
   
   This is to be used with some sort of Javascript code
   which renders equations based on the class "js-maths".
