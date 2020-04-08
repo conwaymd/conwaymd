@@ -671,7 +671,7 @@ def process_literals(placeholder_storage, markup):
   """
   
   markup = re.sub(
-    rf'''
+    fr'''
       \(
         (?P<exclamation_marks>  [!] +  )
           (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
@@ -720,7 +720,7 @@ def process_display_code(placeholder_storage, markup):
   """
   
   markup = re.sub(
-    rf'''
+    fr'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<backticks>  [`] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
@@ -867,7 +867,7 @@ def process_display_maths(placeholder_storage, markup):
   """
   
   markup = re.sub(
-    rf'''
+    fr'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<dollar_signs>  [$] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
@@ -977,7 +977,7 @@ def process_inclusions(placeholder_storage, markup):
   """
   
   markup = re.sub(
-    rf'''
+    fr'''
       \(
         (?P<plus_signs>  [+] +  )
           (?P<file_name>  {ANY_STRING_MINIMAL_REGEX}  )
@@ -1093,7 +1093,7 @@ def process_regex_replacements(
   """
   
   markup = re.sub(
-    rf'''
+    fr'''
       \{{
         (?P<percent_signs>  [%] +  )
           (?P<pattern>  {ANY_STRING_MINIMAL_REGEX}  )
@@ -1164,7 +1164,7 @@ def process_ordinary_replacements(ordinary_replacement_storage, markup):
   """
   
   markup = re.sub(
-    rf'''
+    fr'''
       \{{
         (?P<colons>  [:] +  )
           (?P<pattern>  {ANY_STRING_MINIMAL_REGEX}  )
@@ -1276,7 +1276,7 @@ def process_preamble(placeholder_storage, property_storage, markup):
   """
   
   markup, preamble_count = re.subn(
-    rf'''
+    fr'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<percent_signs>  [%] {{2,}}  )
       \n
@@ -1454,7 +1454,7 @@ def process_preamble_match(
   if footer_remark == '':
     footer_remark_markup = ''
   else:
-    footer_remark_markup = rf'''
+    footer_remark_markup = fr'''
       \\
       {footer_remark}
     '''
@@ -1491,7 +1491,7 @@ def process_headings(placeholder_storage, markup):
   """
   
   markup = re.sub(
-    rf'''
+    fr'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<hashes>  [#] {{1,6}}  )
         (?P<id_>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
@@ -1574,7 +1574,7 @@ def process_blocks(placeholder_storage, markup):
   """
   
   markup = re.sub(
-    rf'''
+    fr'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<delimiters>
         (?P<delimiter>  {BLOCK_DELIMITER_REGEX}  )
@@ -1637,7 +1637,7 @@ def process_list_content(content):
   
   # Replace delimiters with </li>↵<li>
   content = re.sub(
-    rf'''
+    fr'''
       ^{HORIZONTAL_WHITESPACE_REGEX}*
       (
         [*]
@@ -1731,7 +1731,7 @@ def process_line_continuations(markup):
   """
   
   markup = re.sub(
-    rf'''
+    fr'''
       \\
       \n
       {HORIZONTAL_WHITESPACE_REGEX} *
@@ -1797,7 +1797,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   
   # Reference-style image definitions
   markup = re.sub(
-    rf'''
+    fr'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<at_signs>  [@] {{2,}})
         !
@@ -1822,7 +1822,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   
   # Reference-style images
   markup = re.sub(
-    rf'''
+    fr'''
       !
       \[
         (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
@@ -1842,7 +1842,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   
   # Inline-style images
   markup = re.sub(
-    rf'''
+    fr'''
       !
       \[
         (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
@@ -1981,7 +1981,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   
   # Reference-style link definitions
   markup = re.sub(
-    rf'''
+    fr'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<at_signs>  [@] {{2,}})
         \[
@@ -2004,7 +2004,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   
   # Reference-style links
   markup = re.sub(
-    rf'''
+    fr'''
       \[
         (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
@@ -2020,7 +2020,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   
   # Inline-style links
   markup = re.sub(
-    rf'''
+    fr'''
       \[
         (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
@@ -2153,7 +2153,7 @@ def process_inline_semantics(placeholder_storage, markup):
   
   # 33
   markup = re.sub(
-    rf'''
+    fr'''
       (?P<delimiter>
         (?P<delimiter_character>
           {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
@@ -2177,7 +2177,7 @@ def process_inline_semantics(placeholder_storage, markup):
   
   # 312
   markup = re.sub(
-    rf'''
+    fr'''
       (
         (?P<delimiter_character>
           {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
@@ -2203,7 +2203,7 @@ def process_inline_semantics(placeholder_storage, markup):
   
   # 321
   markup = re.sub(
-    rf'''
+    fr'''
       (
         (?P<delimiter_character>
           {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
@@ -2229,7 +2229,7 @@ def process_inline_semantics(placeholder_storage, markup):
   
   # 22
   markup = re.sub(
-    rf'''
+    fr'''
       (?P<delimiter>
         (?P<delimiter_character>
           {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
@@ -2375,7 +2375,7 @@ def process_whitespace(markup):
   markup = re.sub(r'[\n]+', r'\n', markup)
   markup = re.sub(r'[\s]+(?=<br>)', '', markup)
   markup = re.sub(
-    rf'''
+    fr'''
       [\s] +?
         (?P<attribute_name>  [\S] +?  )
       [\s] *?
