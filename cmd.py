@@ -852,7 +852,7 @@ def process_display_maths(placeholder_storage, markup):
   non-whitespace character on its line.
   
   $$[id] [class]↵ {content} $$ becomes
-  <div id="[id]" class="maths [class]">{content}</div>,
+  <div id="[id]" class="js-maths [class]">{content}</div>,
   with HTML syntax-character escaping
   and de-indentation for {content}.
   For {content} containing two or more consecutive dollar signs
@@ -861,7 +861,7 @@ def process_display_maths(placeholder_storage, markup):
   use a greater number of dollar signs in the delimiters.
   
   This is to be used with some sort of Javascript code
-  which renders equations based on the class "maths".
+  which renders equations based on the class "js-maths".
   If MathML support becomes widespread in the future,
   this ought to be replaced with some MathML converter.
   """
@@ -895,7 +895,7 @@ def process_display_maths_match(placeholder_storage, match_object):
   class_ = match_object.group('class_')
   class_ = class_.strip()
   class_attribute = build_html_attribute(
-    placeholder_storage, 'class', f'maths {class_}'
+    placeholder_storage, 'class', f'js-maths {class_}'
   )
   
   content = match_object.group('content')
@@ -916,7 +916,7 @@ def process_inline_maths(placeholder_storage, markup):
   r"""
   Process inline maths $ {content} $.
   
-  ` {content} ` becomes <span class="maths">{content}</span>,
+  ` {content} ` becomes <span class="js-maths">{content}</span>,
   with HTML syntax-character escaping for {content}.
   Whitespace around {content} is stripped.
   For {content} containing one or more consecutive dollar signs
@@ -925,7 +925,7 @@ def process_inline_maths(placeholder_storage, markup):
   use a greater number of dollar signs in the delimiters.
   
   This is to be used with some sort of Javascript code
-  which renders equations based on the class "maths".
+  which renders equations based on the class "js-maths".
   If MathML support becomes widespread in the future,
   this ought to be replaced with some MathML converter.
   """
@@ -953,7 +953,7 @@ def process_inline_maths_match(placeholder_storage, match_object):
   content = content.strip()
   content = escape_html_syntax_characters(content)
   
-  markup = f'<span class="maths">{content}</span>'
+  markup = f'<span class="js-maths">{content}</span>'
   
   return placeholder_storage.create_placeholder_store_markup(markup)
 
