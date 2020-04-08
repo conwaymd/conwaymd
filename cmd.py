@@ -779,8 +779,8 @@ def process_inline_code(placeholder_storage, markup):
   which are not already protected by CMD literals,
   use a greater number of backticks in the delimiters.
   If the start of {content} matches the syntax
-  [id][[class]]↵ for display code,
-  use leading horizontal whitespace in {content}.
+  [id][[class]]↵ used for display code,
+  use CMD literals or leading horizontal whitespace in {content}.
   """
   
   markup = re.sub(
@@ -939,8 +939,8 @@ def process_inline_maths(placeholder_storage, markup):
   e.g. \text{$x = \infinity$ is very big},
   use a greater number of dollar signs in the delimiters.
   If the start of {content} matches the syntax
-  [id][[class]]↵ for display maths,
-  use leading horizontal whitespace in {content}.
+  [id][[class]]↵ used for display maths,
+  use CMD literals or leading horizontal whitespace in {content}.
   
   This is to be used with some sort of Javascript code
   which renders equations based on the class "js-maths".
