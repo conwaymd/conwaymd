@@ -907,6 +907,8 @@ def process_display_maths_match(placeholder_storage, match_object):
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
   
   class_ = match_object.group('class_')
+  if class_ is None:
+    class_ = ''
   class_ = class_.strip()
   class_attribute = build_html_attribute(
     placeholder_storage, 'class', f'js-maths {class_}'
