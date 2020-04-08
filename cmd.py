@@ -825,9 +825,9 @@ def process_comments(markup):
     (! A <!-- B --> !) becomes A <!-- B --> with HTML escaping,
   but
     <!-- A (! B !) --> is removed entirely.
+  In this sense they are stronger than literals and code.
   Therefore, while the comment syntax is not placeholder-protected,
-  it is nevertheless accorded a place thereamong,
-  for its power is on par therewith.
+  it is nevertheless accorded this status.
   """
   
   markup = re.sub(
@@ -869,7 +869,7 @@ def process_display_maths(placeholder_storage, markup):
   e.g. \text{\$$d$, i.e.~$d$~dollars},
   use a greater number of dollar signs in the delimiters.
   
-  This is to be used with some sort of Javascript code
+  This is to be used with some sort of JavaScript code
   which renders equations based on the class "js-maths".
   If MathML support becomes widespread in the future,
   this ought to be replaced with some MathML converter.
@@ -938,7 +938,7 @@ def process_inline_maths(placeholder_storage, markup):
   e.g. \text{$x = \infinity$ is very big},
   use a greater number of dollar signs in the delimiters.
   
-  This is to be used with some sort of Javascript code
+  This is to be used with some sort of JavaScript code
   which renders equations based on the class "js-maths".
   If MathML support becomes widespread in the future,
   this ought to be replaced with some MathML converter.
