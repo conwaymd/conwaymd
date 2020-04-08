@@ -51,6 +51,7 @@ NOT_QUOTE_MINIMAL_REGEX = r'[^"]*?'
 
 HORIZONTAL_WHITESPACE_REGEX = r'[^\S\n]'
 
+NOT_WHITESPACE_MINIMAL_REGEX = r'[\S]*?'
 NOT_WHITESPACE_MAXIMAL_REGEX = r'[\S]*'
 NOT_NEWLINE_REGEX = r'[^\n]'
 NOT_NEWLINE_MAXIMAL_REGEX = f'{NOT_NEWLINE_REGEX}*'
@@ -705,11 +706,13 @@ def process_literal_match(placeholder_storage, match_object):
 
 def process_display_code(placeholder_storage, markup):
   """
-  Process display code ``[id] [class]↵ {content} ``.
+  Process display code ``[id][[class]]↵ {content} ``.
   The opening backtick must be the first
   non-whitespace character on its line.
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
   
-  ``[id] [class]↵ {content} `` becomes
+  ``[id][[class]]↵ {content} `` becomes
   <pre id="[id]" class="[class]"><code>{content}</code></pre>,
   with HTML syntax-character escaping
   and de-indentation for {content}.
@@ -722,8 +725,12 @@ def process_display_code(placeholder_storage, markup):
     fr'''
       ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<backticks>  [`] {{2,}}  )
-        (?P<id_>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
-        (?P<class_>  {NOT_NEWLINE_MAXIMAL_REGEX}  )
+        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+        (
+          \[
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+          \]
+        ) ?
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=backticks)
@@ -771,6 +778,9 @@ def process_inline_code(placeholder_storage, markup):
   For {content} containing one or more consecutive backticks
   which are not already protected by CMD literals,
   use a greater number of backticks in the delimiters.
+  If the start of {content} matches the syntax
+  [id][[class]]↵ for display code,
+  use leading whitespace.
   """
   
   markup = re.sub(
