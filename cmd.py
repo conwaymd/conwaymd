@@ -1564,9 +1564,11 @@ LIST_TAG_NAMES = ['ul', 'ol']
 
 def process_blocks(placeholder_storage, markup):
   """
-  Process blocks XXXX[id] [class]↵ {content} XXXX.
+  Process blocks XXXX[id][[class]]↵ {content} XXXX.
   The opening delimiter X must be the first
   non-whitespace character on its line.
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
   
   The following delimiters (X) are used:
     Non-lists
@@ -1576,7 +1578,7 @@ def process_blocks(placeholder_storage, markup):
     Lists
       =  <ul>
       +  <ol>
-  XXXX[id] [class]↵ {content} XXXX becomes
+  XXXX[id][[class]]↵ {content} XXXX becomes
   <{tag_name} id="[id]" class="[class]">↵{content}</{tag_name}>.
   For {content} containing two or more consecutive Xs
   which are not already protected by CMD literals,
@@ -1598,8 +1600,12 @@ def process_blocks(placeholder_storage, markup):
         (?P<delimiter>  {BLOCK_DELIMITER_REGEX}  )
         (?P=delimiter) {{3}}
       )
-        (?P<id_>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
-        (?P<class_>  {NOT_NEWLINE_MAXIMAL_REGEX}  )
+        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+        (
+          \[
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+          \]
+        ) ?
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=delimiters)
@@ -1772,13 +1778,15 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   Process images.
   
   Reference-style:
-    DEFINITION: @@![{label}] [class]↵ {src} [title] @@[width]
+    DEFINITION: @@![{label}][[class]]↵ {src} [title] @@[width]
     LINK: ![{alt}][[label]]
   The opening at sign must be the first
   non-whitespace character on its line.
   A single space may be included between [{alt}] and [[label]].
   The referencing string {label} is case insensitive
   (this is handled by the image definition storage class).
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
   
   ![{alt}][[label]] becomes <img alt="alt"{attributes}>,
   where {attributes} is the sequence of attributes
@@ -1822,7 +1830,11 @@ def process_images(placeholder_storage, image_definition_storage, markup):
         \[
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
         \]
-        (?P<class_>  {NOT_NEWLINE_MAXIMAL_REGEX}  )
+        (
+          \[
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+          \]
+        ) ?
       \n
       [\s] *
         (?P<src>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
@@ -1953,7 +1965,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   Process links.
   
   Reference-style:
-    DEFINITION: @@[{label}] [class]↵ {href} [title] @@
+    DEFINITION: @@[{label}][[class]]↵ {href} [title] @@
     LINK: [{content}][[label]]
   The opening at sign must be the first
   non-whitespace character on its line.
@@ -1962,6 +1974,8 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   (this is handled by the link definition storage class).
   If a link is supplied with an empty [label],
   {content} is used as the label for that link.
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
   
   [{content}][[label]] becomes <a{attributes}>{content}</a>,
   where {attributes} is the sequence of attributes
@@ -2005,7 +2019,11 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         \[
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
         \]
-        (?P<class_>  {NOT_NEWLINE_MAXIMAL_REGEX}  )
+        (
+          \[
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+          \]
+        ) ?
       \n
       [\s] *
         (?P<href>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
