@@ -179,17 +179,16 @@ def build_html_attribute(
   """
   Builds an HTML attribute  {attribute_name}="{attribute_value}",
   with a leading space and the necessary escaping for {attribute_value}.
-  If {attribute_value} is empty, the empty string is returned.
+  If {attribute_value} is empty or None, the empty string is returned.
   """
+  
+  if attribute_value == '' or attribute_value is None:
+    return ''
   
   attribute_value = escape_html_attribute_value(
     placeholder_storage, attribute_value
   )
-  
-  if attribute_value == '':
-    attribute = ''
-  else:
-    attribute = f' {attribute_name}="{attribute_value}"'
+  attribute = f' {attribute_name}="{attribute_value}"'
   
   return attribute
 
@@ -2282,8 +2281,6 @@ def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
   tag_name = INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
   class_ = match_object.group('class_')
-  if class_ == None:
-    class_ = ''
   class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
   
   content = match_object.group('content')
@@ -2303,8 +2300,6 @@ def process_inline_semantic_match_2_layer(placeholder_storage, match_object):
   """
   
   inner_class = match_object.group('inner_class')
-  if inner_class == None:
-    inner_class = ''
   inner_class_attribute = build_html_attribute(
     placeholder_storage, 'class', inner_class
   )
