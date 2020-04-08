@@ -1838,7 +1838,8 @@ def process_images(placeholder_storage, image_definition_storage, markup):
         ) ?
       \n
       [\s] *
-        (?P<src>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
+        (?P<src>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+      [\s] +
         (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=indentation)
       (?P=at_signs)
@@ -2028,7 +2029,8 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         ) ?
       \n
       [\s] *
-        (?P<href>  {NOT_WHITESPACE_MAXIMAL_REGEX}  )
+        (?P<href>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+      [\s] +
         (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
       (?P=indentation)
       (?P=at_signs)
