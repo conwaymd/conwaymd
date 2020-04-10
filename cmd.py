@@ -1885,7 +1885,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
         (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       \(
-        (?P<src>  {NOT_CLOSING_ROUND_BRACKET_MINIMAL_REGEX}  )
+        (?P<src>  {ANY_STRING_MINIMAL_REGEX}  )
         (
           [\s] +
           (?P<title>  {NOT_CLOSING_ROUND_BRACKET_MINIMAL_REGEX}  )
@@ -2075,7 +2075,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       \(
-        (?P<href>  {NOT_CLOSING_ROUND_BRACKET_MINIMAL_REGEX}  )
+        (?P<href>  {ANY_STRING_MINIMAL_REGEX}  )
         (
           [\s] +
           (?P<title>  {NOT_CLOSING_ROUND_BRACKET_MINIMAL_REGEX}  )
