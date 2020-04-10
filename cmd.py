@@ -1843,7 +1843,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
           [\s] *
           (?P<src>  {ANY_STRING_MINIMAL_REGEX}  )
           (
-            [\s] +
+            [\s] +?
             (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
           ) ??
         ) ??
@@ -2041,7 +2041,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
           [\s] *
           (?P<href>  {ANY_STRING_MINIMAL_REGEX}  )
           (
-            [\s] +
+            [\s] +?
             (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
           ) ??
         ) ??
