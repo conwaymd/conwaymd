@@ -1696,6 +1696,7 @@ def process_list_content(content):
 
 
 PUNCTUATION_REPLACEMENT_DICTIONARY = {
+  r'\/': '',
   r'\ ': ' ',
   r'\~': '~',
   '~': '&nbsp;',
@@ -1716,6 +1717,7 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
 def process_punctuation(placeholder_storage, markup):
   r"""
   Process punctuation.
+    \/  becomes the empty string
     \   becomes   U+0020 SPACE
     \~  becomes ~
     ~   becomes &nbsp;
