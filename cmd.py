@@ -1703,6 +1703,7 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
   '---': '—',
   '--': '–',
   r'\P': '¶',
+  r'\#': '#',
   r'\*': '*',
   r'\_': '_',
 }
@@ -1722,6 +1723,7 @@ def process_punctuation(placeholder_storage, markup):
     --- becomes — U+2014 EM DASH
     --  becomes – U+2013 EN DASH
     \P  becomes ¶ U+00B6 PILCROW SIGN
+    \#  becomes #
     \*  becomes *
     \_  becomes _
   Most of these are based on LaTeX syntax.
