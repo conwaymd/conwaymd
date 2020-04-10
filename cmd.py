@@ -1992,7 +1992,9 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   (this is handled by the link definition storage class).
   If a link is supplied with an empty [label],
   {content} is used as the label for that link.
-  If [class] is empty,
+  If [class] in a definition is empty,
+  the square brackets surrounding it may be omitted.
+  If [label] in a link is empty,
   the square brackets surrounding it may be omitted.
   
   [{content}][[label]] becomes <a{attributes}>{content}</a>,
@@ -2069,9 +2071,11 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       [ ] ??
-      \[
-        (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-      \]
+      (
+        \[
+          (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+        \]
+      ) ?
     ''',
     functools.partial(process_reference_link_match, link_definition_storage),
     markup,
@@ -2131,8 +2135,7 @@ def process_reference_link_match(link_definition_storage, match_object):
   content = content.strip()
   
   label = match_object.group('label')
-  label = label.strip()
-  if label == '':
+  if label is None or label.strip() == '':
     label = content
   
   attributes = link_definition_storage.get_definition_attributes(label)
