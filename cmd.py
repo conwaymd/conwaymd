@@ -185,7 +185,7 @@ def build_html_attribute(
   If {attribute_value} is empty or None, the empty string is returned.
   """
   
-  if attribute_value == '' or attribute_value is None:
+  if attribute_value is None or attribute_value == '':
     return ''
   
   attribute_value = escape_html_attribute_value(
