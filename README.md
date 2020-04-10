@@ -2,7 +2,7 @@
 
 Conway's fence-style markdown (CMD), implemented in Python (see [cmd.py]).
 
-See also: [GitHub pages documentation][cmd-docs] ([repo][cmd-docs-repo])
+See also: [GitHub pages documentation][cmd-docs] ([repository][cmd-docs-repo])
 
 ## Usage
 
