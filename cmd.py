@@ -201,9 +201,6 @@ def build_html_attribute(
 ################################################################
 
 
-PLACEHOLDER_MARKER = '\uE000'
-
-
 def replace_by_ordinary_dictionary(
   dictionary, string, placeholder_storage=None
 ):
@@ -276,55 +273,52 @@ class PlaceholderStorage:
   There are many instances in which
   a portion of the markup should not be altered
   by any replacements in the processing to follow.
-  To make these portions of markup immune to further alteration,
-  they are temporarily replaced by placeholder strings
-  which ought to have the following properties:
-  (1) Not appearing in the original markup
-  (2) Not appearing as a result of the processing to follow
-  (3) Not changing as a result of the processing to follow
-  (4) Not confusable with adjacent characters
-  (5) Being uniquely identifiable
-  Properties (2) and (3) are impossible to guarantee
-  given that user-defined regex replacements can be supplied,
-  but in most situations it will suffice to use strings of the form
-    XX...X{n}X
+  To protect these portions of markup from further alteration,
+  they are temporarily replaced by placeholder strings of the form
+    X{n}X
   where
   (a) X is U+E000, the first "Private Use Area" code point,
-      and is referred to as the "placeholder marker"
-  (b) XX...X is a run of length one more
-      than the number of occurrences of X in the original markup
-      (which is usually zero), and
-  (c) {n} is an integer counter which is incremented.
-  Assuming that the user does not supply regex replacements
-  which insert or delete occurrences of X,
-  or insert or delete or change integers,
-  such strings will satisfy properties (1) through (5) above.
+      referred to as the "placeholder marker", and
+  (b) {n} is an integer counter which is incremented.
+  Actual occurrences of X in the original markup
+  are themselves to be replaced with a placeholder;
+  this ensures that those actual occurrences
+  are not confounded with the placeholder strings X{n}X.
   
-  The portion of markup which should not be altered
+  Assuming that the user does not supply regex or ordinary replacements
+  which alter strings of the form X{n}X,
+  the placeholder strings will reliably protect portions of markup
+  from any further processing.
+  
+  Each portion of markup which is to be protected
+  from alteration by further processing
   is stored in a dictionary of ordinary replacements, with
-    KEYS: the placeholder strings (XX...X{n}X), and
+    KEYS: the placeholder strings (X{n}X), and
     VALUES: the respective portions of markup.
   """
   
-  def __init__(self, placeholder_marker_occurrences):
+  PLACEHOLDER_MARKER = '\uE000'
+  PLACEHOLDER_STRING_COMPILED_REGEX = re.compile(
+    f'''
+      {PLACEHOLDER_MARKER}
+      [0-9] +
+      {PLACEHOLDER_MARKER}
+    ''',
+    flags=re.VERBOSE
+  )
+  
+  def __init__(self):
     """
     Initialise placeholder storage.
+    A placeholder is created for the placeholder marker X itself.
     """
-    
-    self.PLACEHOLDER_MARKER_RUN = (
-      (1 + placeholder_marker_occurrences) * PLACEHOLDER_MARKER
-    )
-    self.PLACEHOLDER_STRING_COMPILED_REGEX = re.compile(
-      f'''
-        {self.PLACEHOLDER_MARKER_RUN}
-        [0-9] +
-        {PLACEHOLDER_MARKER}
-      ''',
-      flags=re.VERBOSE
-    )
     
     self.dictionary = {}
     self.counter = 0
+    
+    self.PLACEHOLDER_MARKER_PLACEHOLDER_STRING = (
+      self.create_placeholder_store_markup(self.PLACEHOLDER_MARKER)
+    )
   
   def create_placeholder(self):
     """
@@ -332,7 +326,7 @@ class PlaceholderStorage:
     """
     
     placeholder_string = (
-      f'{self.PLACEHOLDER_MARKER_RUN}{self.counter}{PLACEHOLDER_MARKER}'
+      f'{self.PLACEHOLDER_MARKER}{self.counter}{self.PLACEHOLDER_MARKER}'
     )
     
     return placeholder_string
@@ -342,11 +336,11 @@ class PlaceholderStorage:
     Create a placeholder string for, and store, a markup portion.
     Then increment the counter.
     
-    Existing placeholders in the markup portion
+    Existing placeholder strings in the markup portion
     are substituted with their corresponding markup portions
     before being stored in the dictionary.
     This ensures that all markup portions in the dictionary
-    are free of placeholders.
+    are free of placeholder strings.
     """
     
     placeholder_string = self.create_placeholder()
@@ -357,10 +351,25 @@ class PlaceholderStorage:
     
     return placeholder_string
   
+  def replace_marker_with_placeholder(self, string):
+    """
+    Replace the placeholder marker X with its own placeholder string.
+    This ensures that actual occurrences of X in a string
+    are not confounded with the placeholder strings X{n}X.
+    """
+    
+    string = re.sub(
+      self.PLACEHOLDER_MARKER,
+      self.PLACEHOLDER_MARKER_PLACEHOLDER_STRING,
+      string
+    )
+    
+    return string
+  
   def replace_placeholders_with_markup(self, string):
     """
     Replace all placeholder strings with their markup portions.
-    XX...X{n}X becomes its markup portion as stored in the dictionary.
+    X{n}X becomes its markup portion as stored in the dictionary.
     """
     
     string = re.sub(
@@ -1022,6 +1031,8 @@ def process_inclusion_match(placeholder_storage, match_object):
   
   with open(file_name, 'r', encoding='utf-8') as file:
     content = file.read()
+  
+  content = placeholder_storage.replace_marker_with_placeholder(content)
   
   content = process_literals(placeholder_storage, content)
   content = process_display_code(placeholder_storage, content)
@@ -2476,8 +2487,8 @@ def cmd_to_html(cmd, cmd_name):
   ################################################
   
   # Initialise placeholder storage
-  placeholder_marker_occurrences = markup.count(PLACEHOLDER_MARKER)
-  placeholder_storage = PlaceholderStorage(placeholder_marker_occurrences)
+  placeholder_storage = PlaceholderStorage()
+  markup = placeholder_storage.replace_marker_with_placeholder(markup)
   
   # Process placeholder-protected syntax
   # (i.e. syntax where the content is protected by a placeholder)
