@@ -1098,10 +1098,10 @@ def process_regex_replacements(
   which should not be processed using that syntax, use CMD literals.
   
   All regex replacement specifications are read and stored
-  using the regex replacement storage class.
+  using the regex replacement storage class
+  before being applied in order.
   If the same pattern is specified more than once,
   the latest specification shall prevail.
-  They are then applied to the markup in order.
   
   WARNING:
     Malicious user-defined regex replacements
@@ -1169,10 +1169,10 @@ def process_ordinary_replacements(ordinary_replacement_storage, markup):
   use a greater number of colons in the delimiters.
   
   All ordinary replacement specifications are read and stored
-  using the ordinary replacement storage class.
+  using the ordinary replacement storage class
+  before being applied in order.
   If the same pattern is specified more than once,
   the latest specification shall prevail.
-  They are then applied to the markup in order.
   
   WARNING:
     Malicious user-defined ordinary replacements
