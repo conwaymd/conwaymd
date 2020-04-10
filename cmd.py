@@ -1839,12 +1839,14 @@ def process_images(placeholder_storage, image_definition_storage, markup):
           \] ?
         ) ?
       \n
-      [\s] *
-        (?P<src>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          [\s] +
-          (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
-        ) ?
+          [\s] *
+          (?P<src>  {ANY_STRING_MINIMAL_REGEX}  )
+          (
+            [\s] +
+            (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
+          ) ??
+        ) ??
       (?P=indentation)
       (?P=at_signs)
         (?P<width>  [0-9] *  )
@@ -2035,12 +2037,14 @@ def process_links(placeholder_storage, link_definition_storage, markup):
           \] ?
         ) ?
       \n
-      [\s] *
-        (?P<href>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          [\s] +
-          (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
-        ) ?
+          [\s] *
+          (?P<href>  {ANY_STRING_MINIMAL_REGEX}  )
+          (
+            [\s] +
+            (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
+          ) ??
+        ) ??
       (?P=indentation)
       (?P=at_signs)
     ''',
