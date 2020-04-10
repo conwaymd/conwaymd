@@ -727,7 +727,7 @@ def process_display_code(placeholder_storage, markup):
         (
           \[
             (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \] ?
         ) ?
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
@@ -881,7 +881,7 @@ def process_display_maths(placeholder_storage, markup):
         (
           \[
             (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \] ?
         ) ?
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
@@ -1604,7 +1604,7 @@ def process_blocks(placeholder_storage, markup):
         (
           \[
             (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \] ?
         ) ?
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
@@ -1834,7 +1834,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
         (
           \[
             (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \] ?
         ) ?
       \n
       [\s] *
@@ -2030,7 +2030,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         (
           \[
             (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \] ?
         ) ?
       \n
       [\s] *
