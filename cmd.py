@@ -705,7 +705,7 @@ def process_display_code(placeholder_storage, markup):
   """
   Process display code ``[id][[class]]↵ {content} ``.
   The delimiting backticks must be the first
-  non-whitespace characters on lines of equal indentation.
+  non-whitespace characters on their lines.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   
@@ -720,7 +720,7 @@ def process_display_code(placeholder_storage, markup):
   
   markup = re.sub(
     fr'''
-      ^  (?P<indentation>  {HORIZONTAL_WHITESPACE_REGEX} *  )
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<backticks>  [`] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
@@ -730,7 +730,7 @@ def process_display_code(placeholder_storage, markup):
         ) ?
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
-      ^  (?P=indentation)
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P=backticks)
     ''',
     functools.partial(process_display_code_match, placeholder_storage),
@@ -853,7 +853,7 @@ def process_display_maths(placeholder_storage, markup):
   r"""
   Process display maths $$[id][[class]]↵ {content} $$.
   The delimiting dollar signs must be the first
-  non-whitespace characters on lines of equal indentation.
+  non-whitespace characters on their lines.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   
@@ -874,7 +874,7 @@ def process_display_maths(placeholder_storage, markup):
   
   markup = re.sub(
     fr'''
-      ^  (?P<indentation>  {HORIZONTAL_WHITESPACE_REGEX} *  )
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<dollar_signs>  [$] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
@@ -884,7 +884,7 @@ def process_display_maths(placeholder_storage, markup):
         ) ?
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
-      ^  (?P=indentation)
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P=dollar_signs)
     ''',
     functools.partial(process_display_maths_match, placeholder_storage),
@@ -1227,7 +1227,7 @@ def process_preamble(placeholder_storage, property_storage, markup):
   """
   Process the preamble %%↵ {content} %%.
   The delimiting percent signs must be the first
-  non-whitespace characters on lines of equal indentation.
+  non-whitespace characters on their lines.
   
   %%↵ {content} %% becomes the HTML preamble,
   i.e. everything from <!DOCTYPE html> through to <body>.
@@ -1292,11 +1292,11 @@ def process_preamble(placeholder_storage, property_storage, markup):
   
   markup, preamble_count = re.subn(
     fr'''
-      ^  (?P<indentation>  {HORIZONTAL_WHITESPACE_REGEX} *  )
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<percent_signs>  [%] {{2,}}  )
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
-      ^  (?P=indentation)
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P=percent_signs)
     ''',
     functools.partial(process_preamble_match,
@@ -1565,7 +1565,7 @@ def process_blocks(placeholder_storage, markup):
   """
   Process blocks XXXX[id][[class]]↵ {content} XXXX.
   The delimiting characters (X) must be the first
-  non-whitespace characters on lines of equal indentation.
+  non-whitespace characters on their lines.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   
@@ -1594,7 +1594,7 @@ def process_blocks(placeholder_storage, markup):
   
   markup = re.sub(
     fr'''
-      ^  (?P<indentation>  {HORIZONTAL_WHITESPACE_REGEX} *  )
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<delimiters>
         (?P<delimiter>  {BLOCK_DELIMITER_REGEX}  )
         (?P=delimiter) {{3}}
@@ -1607,7 +1607,7 @@ def process_blocks(placeholder_storage, markup):
         ) ?
       \n
         (?P<content>  {ANY_STRING_MINIMAL_REGEX}  )
-      ^  (?P=indentation)
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P=delimiters)
     ''',
     functools.partial(process_block_match, placeholder_storage),
@@ -1783,7 +1783,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     DEFINITION: @@![{label}][[class]]↵ {src} [title] @@[width]
     LINK: ![{alt}][[label]]
   The delimiting at signs must be the first
-  non-whitespace characters on lines of equal indentation.
+  non-whitespace characters on their lines.
   A single space may be included between [{alt}] and [[label]].
   The referencing string {label} is case insensitive
   (this is handled by the image definition storage class).
@@ -1826,7 +1826,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   # Reference-style image definitions
   markup = re.sub(
     fr'''
-      ^  (?P<indentation>  {HORIZONTAL_WHITESPACE_REGEX} *  )
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<at_signs>  [@] {{2,}})
         !
         \[
@@ -1846,7 +1846,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
             (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
           ) ??
         ) ??
-      ^  (?P=indentation)
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P=at_signs)
         (?P<width>  [0-9] *  )
     ''',
@@ -1979,7 +1979,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
     DEFINITION: @@[{label}][[class]]↵ {href} [title] @@
     LINK: [{content}][[label]]
   The delimiting at signs must be the first
-  non-whitespace characters on lines of equal indentation.
+  non-whitespace characters on their lines.
   A single space may be included between [{content}] and [[label]].
   The referencing string {label} is case insensitive
   (this is handled by the link definition storage class).
@@ -2025,7 +2025,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   # Reference-style link definitions
   markup = re.sub(
     fr'''
-      ^  (?P<indentation>  {HORIZONTAL_WHITESPACE_REGEX} *  )
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P<at_signs>  [@] {{2,}})
         \[
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
@@ -2044,7 +2044,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
             (?P<title>  {ANY_STRING_MINIMAL_REGEX}  )
           ) ??
         ) ??
-      ^  (?P=indentation)
+      ^  {HORIZONTAL_WHITESPACE_REGEX} *
       (?P=at_signs)
     ''',
     functools.partial(process_link_definition_match,
