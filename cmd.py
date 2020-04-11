@@ -1259,13 +1259,15 @@ def process_preamble(
   the latest specification shall prevail.
   
   The following properties, called original properties,
-  are accorded special treatment:
-    %lang
-    %title
+  are accorded special treatment.
+  If omitted from a preamble,
+  they take the default values shown beside them:
+    %lang en
+    %title Title
     %title-suffix
     %author
-    %date-created
-    %date-modified
+    %date-created yyyy-mm-dd
+    %date-modified yyyy-mm-dd
     %resources
     %description
     %css
@@ -1293,20 +1295,6 @@ def process_preamble(
   It is assumed that the current directory
   is the root directory of the website being built,
   so that %url is the URL of the resulting page relative to root.
-  
-  The following defaults exist for original properties:
-    %lang en
-    %title Title
-    %title-suffix
-    %author
-    %date-created yyyy-mm-dd
-    %date-modified yyyy-mm-dd
-    %resources
-    %description
-    %css
-    %onload-js
-    %footer-copyright-remark
-    %footer-remark
   
   For {property markup} matching a {property name} pattern,
   use a CMD literal, e.g. (! a literal %propety-name !).
