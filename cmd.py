@@ -1605,7 +1605,7 @@ def process_blocks(placeholder_storage, markup):
       +  <ol>
   XXXX[id][[class]]↵ {content} XXXX becomes
   <{tag_name} id="[id]" class="[class]">↵{content}</{tag_name}>.
-  For {content} containing two or more consecutive Xs
+  For {content} containing four or more consecutive Xs
   which are not already protected by CMD literals,
   use a greater number of Xs in the delimiters.
   
