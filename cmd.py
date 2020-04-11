@@ -1115,12 +1115,12 @@ def process_regex_replacements(
   the latest specification shall prevail.
   
   WARNING:
-    Malicious user-defined regex replacements
-    will break normal CMD syntax.
+    Malicious or careless user-defined regex replacements
+    will break the normal CMD syntax.
     To avoid breaking placeholder storage,
-    do not use replacements to tamper with placeholder strings.
+    do not use replacements to alter placeholder strings.
     To avoid breaking properties,
-    do not use replacements to tamper with property strings.
+    do not use replacements to alter property strings.
   """
   
   markup = re.sub(
@@ -1186,12 +1186,12 @@ def process_ordinary_replacements(ordinary_replacement_storage, markup):
   the latest specification shall prevail.
   
   WARNING:
-    Malicious user-defined ordinary replacements
-    will break normal CMD syntax.
+    Malicious or careless user-defined ordinary replacements
+    will break the normal CMD syntax.
     To avoid breaking placeholder storage,
-    do not use replacements to tamper with placeholder strings.
+    do not use replacements to alter placeholder strings.
     To avoid breaking properties,
-    do not use replacements to tamper with property strings.
+    do not use replacements to alter property strings.
   """
   
   markup = re.sub(
