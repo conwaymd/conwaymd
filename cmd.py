@@ -1258,6 +1258,14 @@ def process_preamble(
   If the same property is specified more than once,
   the latest specification shall prevail.
   
+  For {property markup} matching a {property name} pattern,
+  use a CMD literal, e.g. (! a literal %propety-name !).
+  For {content} containing two or more consecutive percent signs
+  which are not already protected by CMD literals,
+  use a greater number of percent signs in the delimiters.
+  
+  Only the first occurrence in the markup is processed.
+  
   The following properties, called original properties,
   are accorded special treatment.
   If omitted from a preamble,
@@ -1295,14 +1303,6 @@ def process_preamble(
   It is assumed that the current directory
   is the root directory of the website being built,
   so that %url is the URL of the resulting page relative to root.
-  
-  For {property markup} matching a {property name} pattern,
-  use a CMD literal, e.g. (! a literal %propety-name !).
-  For {content} containing two or more consecutive percent signs
-  which are not already protected by CMD literals,
-  use a greater number of percent signs in the delimiters.
-  
-  Only the first occurrence in the markup is processed.
   """
   
   markup, preamble_count = re.subn(
