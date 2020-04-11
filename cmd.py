@@ -449,6 +449,7 @@ class PropertyStorage:
     property_name = match_object.group('property_name')
     
     property_markup = match_object.group('property_markup')
+    property_markup = de_indent(property_markup)
     property_markup = property_markup.strip()
     
     self.store_property_markup(property_name, property_markup)
