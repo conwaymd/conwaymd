@@ -1623,7 +1623,7 @@ def process_blocks(placeholder_storage, markup):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<delimiters>
         (?P<delimiter>  {BLOCK_DELIMITER_REGEX}  )
-        (?P=delimiter) {{3}}
+        (?P=delimiter) {{3,}}
       )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
