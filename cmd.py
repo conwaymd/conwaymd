@@ -2525,6 +2525,7 @@ def cmd_to_html(cmd, cmd_name):
   markup = process_preamble(
     placeholder_storage, property_storage, cmd_name, markup
   )
+  markup = process_protected_elements(placeholder_storage, markup)
   
   # Process headings
   markup = process_headings(placeholder_storage, markup)
