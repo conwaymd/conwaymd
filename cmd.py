@@ -1532,7 +1532,10 @@ def process_headings(placeholder_storage, markup):
   markup = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<hashes>  [#] {{1,6}}  )
+      (?P<hashes>
+        [#] {{1,6}}
+        (?!  [#]  )
+      )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
       [\s] +
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
