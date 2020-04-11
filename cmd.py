@@ -1239,7 +1239,9 @@ def process_ordinary_replacement_match(
 ################################################################
 
 
-def process_preamble(placeholder_storage, property_storage, markup):
+def process_preamble(
+  placeholder_storage, property_storage, cmd_name, markup
+):
   """
   Process the preamble %%↵ {content} %%.
   The delimiting percent signs must be the first
@@ -1255,6 +1257,7 @@ def process_preamble(placeholder_storage, property_storage, markup):
   {property name} may only contain letters, digits, and hyphens.
   If the same property is specified more than once,
   the latest specification shall prevail.
+  
   The following properties, called original properties,
   are accorded special treatment:
     %lang
@@ -1269,6 +1272,7 @@ def process_preamble(placeholder_storage, property_storage, markup):
     %onload-js
     %footer-copyright-remark
     %footer-remark
+  
   The following properties, called derived properties,
   are computed based on the supplied original properties:
     %html-lang-attribute
@@ -1281,9 +1285,15 @@ def process_preamble(placeholder_storage, property_storage, markup):
     %year-modified
     %year-modified-next
     %footer-element
+    %url
   In particular, the year properties are taken
   from the first 4 characters of the appropriate date properties.
   (NOTE: This will break come Y10K.)
+  The property %url is computed from the CMD-name argument.
+  It is assumed that the current directory
+  is the root directory of the website being built,
+  so that %url is the URL of the resulting page relative to root.
+  
   The following defaults exist for original properties:
     %lang en
     %title Title
@@ -1297,6 +1307,7 @@ def process_preamble(placeholder_storage, property_storage, markup):
     %onload-js
     %footer-copyright-remark
     %footer-remark
+  
   For {property markup} matching a {property name} pattern,
   use a CMD literal, e.g. (! a literal %propety-name !).
   For {content} containing two or more consecutive percent signs
@@ -1316,7 +1327,7 @@ def process_preamble(placeholder_storage, property_storage, markup):
       (?P=percent_signs)
     ''',
     functools.partial(process_preamble_match,
-      placeholder_storage, property_storage
+      placeholder_storage, property_storage, cmd_name
     ),
     markup,
     count=1,
@@ -1363,7 +1374,7 @@ DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS = '''
 
 
 def process_preamble_match(
-  placeholder_storage, property_storage, match_object
+  placeholder_storage, property_storage, cmd_name, match_object
 ):
   """
   Process a single preamble match object.
@@ -1499,6 +1510,13 @@ def process_preamble_match(
   '''
   property_storage.store_property_markup(
     'footer-element', footer_element
+  )
+  
+  # Derived property %url
+  url = f'{cmd_name}.html'
+  url = re.sub('(^|(?<=/))index[.]html', '', url)
+  property_storage.store_property_markup(
+    'url', url
   )
   
   return ''
@@ -2474,7 +2492,10 @@ def cmd_to_html(cmd, cmd_name):
   Convert CMD to HTML.
   
   The CMD-name argument determines the URL of the resulting page,
-  which is needed to generate the "Cite this page" section.
+  which is stored in the property %url.
+  It is assumed that the current directory
+  is the root directory of the website being built,
+  so that %url is the URL of the resulting page relative to root.
   
   During the conversion, the string is neither CMD nor HTML,
   and is referred to as "markup".
@@ -2513,7 +2534,9 @@ def cmd_to_html(cmd, cmd_name):
   
   # Process preamble
   property_storage = PropertyStorage()
-  markup = process_preamble(placeholder_storage, property_storage, markup)
+  markup = process_preamble(
+    placeholder_storage, property_storage, cmd_name, markup
+  )
   
   # Process headings
   markup = process_headings(placeholder_storage, markup)
