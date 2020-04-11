@@ -678,7 +678,7 @@ def process_literals(placeholder_storage, markup):
   Whitespace around {content} is stripped.
   For {content} containing one or more consecutive exclamation marks
   followed by a closing round bracket,
-  use a greater number of exclamation marks in the delimiters,
+  use a longer run of exclamation marks in the delimiters,
   e.g. "(!! (! blah !) !!)" for "(! blah !)".
   """
   
@@ -730,7 +730,7 @@ def process_display_code(placeholder_storage, markup):
   and de-indentation for {content}.
   For {content} containing two or more consecutive backticks
   which are not already protected by CMD literals,
-  use a greater number of backticks in the delimiters.
+  use a longer run of backticks in the delimiters.
   """
   
   markup = re.sub(
@@ -790,7 +790,7 @@ def process_inline_code(placeholder_storage, markup):
   Whitespace around {content} is stripped.
   For {content} containing one or more consecutive backticks
   which are not already protected by CMD literals,
-  use a greater number of backticks in the delimiters.
+  use a longer run of backticks in the delimiters.
   """
   
   markup = re.sub(
@@ -879,7 +879,7 @@ def process_display_maths(placeholder_storage, markup):
   For {content} containing two or more consecutive dollar signs
   which are not already protected by CMD literals,
   e.g. \text{\$$d$, i.e.~$d$~dollars},
-  use a greater number of dollar signs in the delimiters.
+  use a longer run of dollar signs in the delimiters.
   
   This is to be used with some sort of JavaScript code
   which renders equations based on the class "js-maths".
@@ -950,7 +950,7 @@ def process_inline_maths(placeholder_storage, markup):
   For {content} containing one or more consecutive dollar signs
   which are not already protected by CMD literals,
   e.g. \text{$x = \infinity$ is very big},
-  use a greater number of dollar signs in the delimiters.
+  use a longer run of dollar signs in the delimiters.
   
   This is to be used with some sort of JavaScript code
   which renders equations based on the class "js-maths".
@@ -998,7 +998,7 @@ def process_inclusions(placeholder_storage, markup):
   (+ {file_name} +) includes the content of the file {file_name}.
   For {file_name} containing one or more consecutive plus signs
   followed by a closing round bracket,
-  use a greater number of plus signs in the delimiters.
+  use a longer run of plus signs in the delimiters.
   
   All of the syntax above (CMD literals through to inline maths)
   is processed.
@@ -1105,7 +1105,7 @@ def process_regex_replacements(
   Whitespace around {pattern} and {replacement} is stripped.
   For {pattern} or {replacement} containing
   one or more consecutive percent signs,
-  use a greater number of percent signs in the delimiters.
+  use a longer run of percent signs in the delimiters.
   For {pattern} matching any of the syntax above,
   which should not be processed using that syntax, use CMD literals.
   
@@ -1178,7 +1178,7 @@ def process_ordinary_replacements(ordinary_replacement_storage, markup):
   Whitespace around {pattern} and {replacement} is stripped.
   For {pattern} or {replacement} containing
   one or more consecutive colons,
-  use a greater number of colons in the delimiters.
+  use a longer run of colons in the delimiters.
   
   All ordinary replacement specifications are read and stored
   using the ordinary replacement storage class
@@ -1263,7 +1263,7 @@ def process_preamble(
   use a CMD literal, e.g. (! a literal %propety-name !).
   For {content} containing two or more consecutive percent signs
   which are not already protected by CMD literals,
-  use a greater number of percent signs in the delimiters.
+  use a longer run of percent signs in the delimiters.
   
   Only the first occurrence in the markup is processed.
   
@@ -1595,7 +1595,7 @@ def process_blocks(placeholder_storage, markup):
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   
-  The following delimiters (X) are used:
+  The following delimiting characters (X) are used:
     Non-lists
       -  <p>
       |  <div>
@@ -1607,13 +1607,13 @@ def process_blocks(placeholder_storage, markup):
   <{tag_name} id="[id]" class="[class]">↵{content}</{tag_name}>.
   For {content} containing four or more consecutive Xs
   which are not already protected by CMD literals,
-  use a greater number of Xs in the delimiters.
+  use a longer run of Xs in the delimiters.
   
   A recursive call is used to process nested blocks.
   
   For list blocks, {content} is split into list items <li>
   according to leading occurrences of the following delimiters
-  (i.e. being preceded only by whitespace on their lines):
+  (i.e. occurrences preceded only by whitespace on their lines):
     *
     1. (or any run of digits followed by a full stop)
   """
@@ -1828,7 +1828,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   For definitions whose {label}, [class], {src}, or [title]
   contains two or more consecutive at signs
   which are not already protected by CMD literals,
-  use a greater number of at signs in the delimiters.
+  use a longer run of at signs in the delimiters.
   
   Inline-style:
     LINK: ![{alt}]({src} [title])
@@ -2028,7 +2028,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   For definitions whose {label}, [class], {href}, or [title]
   contains two or more consecutive at signs
   which are not already protected by CMD literals,
-  use a greater number of at signs in the delimiters.
+  use a longer run of at signs in the delimiters.
   
   Inline-style:
     LINK: [{content}]({href} [title])
