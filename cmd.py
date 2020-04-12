@@ -1919,7 +1919,11 @@ def process_table_cells(placeholder_storage, content):
             ) ?
           \}}
         ) ?
-      [\s] +
+      (
+        {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
+          |
+        \n
+      )
       (?P<table_cell_content>
         (
           (?!
@@ -2006,7 +2010,11 @@ def process_table_rows(placeholder_storage, content):
             (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
-      [\s] +
+      (
+        {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
+          |
+        \n
+      )
       (?P<table_row_content>
         (
           (?!
@@ -2082,7 +2090,11 @@ def process_table_parts(placeholder_storage, content):
             (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
-      [\s] +
+      (
+        {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
+          |
+        \n
+      )
       (?P<table_part_content>
         (
           (?!
