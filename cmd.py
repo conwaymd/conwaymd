@@ -1713,6 +1713,7 @@ def process_list_items(placeholder_storage, content):
   with the following delimiters (Y):
     * (or any run of asterisks)
     1. (or any run of digits followed by a full stop)
+  List items end at the next list item, or at the end of the content.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   """
