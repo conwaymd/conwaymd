@@ -1696,9 +1696,7 @@ def process_block_match(placeholder_storage, match_object):
   return block
 
 
-LIST_ITEM_DELIMITER_REGEX = (
-  fr'{LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}([*]|[0-9]+[.])'
-)
+LIST_ITEM_DELIMITER_REGEX = '([*]|[0-9]+[.])'
 
 
 def process_list_content(placeholder_storage, list_content):
@@ -1717,6 +1715,7 @@ def process_list_content(placeholder_storage, list_content):
   
   list_content = re.sub(
     fr'''
+      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       {LIST_ITEM_DELIMITER_REGEX}
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
@@ -1727,7 +1726,10 @@ def process_list_content(placeholder_storage, list_content):
       [\s] +
       (?P<list_item_content>
         (
-          (?!  {LIST_ITEM_DELIMITER_REGEX}  )
+          (?!
+            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+            {LIST_ITEM_DELIMITER_REGEX}
+          )
           {ANY_CHARACTER_REGEX}
         ) *
       )
