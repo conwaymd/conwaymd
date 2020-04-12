@@ -1700,7 +1700,7 @@ def process_block_match(placeholder_storage, match_object):
   return block
 
 
-LIST_ITEM_DELIMITER_REGEX = '([*]|[0-9]+[.])'
+LIST_ITEM_DELIMITER_REGEX = '([*]+|[0-9]+[.])'
 
 
 def process_list_items(placeholder_storage, content):
@@ -1711,7 +1711,7 @@ def process_list_items(placeholder_storage, content):
   according to leading occurrences of Y[id][[class]]
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Y):
-    *
+    * (or any run of asterisks)
     1. (or any run of digits followed by a full stop)
   If [class] is empty,
   the square brackets surrounding it may be omitted.
