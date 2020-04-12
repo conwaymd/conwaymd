@@ -2168,6 +2168,7 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
 def process_punctuation(placeholder_storage, markup):
   r"""
   Process punctuation.
+    \\  becomes <br>
     \/  becomes the empty string
     \   becomes   U+0020 SPACE
     \~  becomes ~
