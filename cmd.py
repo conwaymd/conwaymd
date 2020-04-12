@@ -1637,7 +1637,7 @@ def process_blocks(placeholder_storage, markup):
   A recursive call is used to process nested blocks.
   
   For list blocks, {content} is split into list items <li>
-  according to list content processing.
+  according to list item processing.
   """
   
   markup = re.sub(
@@ -1673,7 +1673,7 @@ def process_block_match(placeholder_storage, match_object):
   
   delimiter = match_object.group('delimiter')
   tag_name = BLOCK_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
-  is_list = tag_name in LIST_TAG_NAMES
+  block_is_list = tag_name in LIST_TAG_NAMES
   
   id_ = match_object.group('id_')
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
@@ -1686,8 +1686,8 @@ def process_block_match(placeholder_storage, match_object):
   # Process nested blocks
   content = process_blocks(placeholder_storage, content)
   
-  if is_list:
-    content = process_list_content(placeholder_storage, content)
+  if block_is_list:
+    content = process_list_items(placeholder_storage, content)
   
   block = (
     f'<{tag_name}{id_attribute}{class_attribute}>\n{content}</{tag_name}>'
@@ -1699,11 +1699,11 @@ def process_block_match(placeholder_storage, match_object):
 LIST_ITEM_DELIMITER_REGEX = '([*]|[0-9]+[.])'
 
 
-def process_list_content(placeholder_storage, list_content):
+def process_list_items(placeholder_storage, content):
   """
-  Process list content.
+  Process list items.
   
-  List content is split into list items <li>
+  Content is split into list items <li>
   according to leading occurrences of Y[id][[class]]
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Y):
@@ -1713,7 +1713,7 @@ def process_list_content(placeholder_storage, list_content):
   the square brackets surrounding it may be omitted.
   """
   
-  list_content = re.sub(
+  content = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       {LIST_ITEM_DELIMITER_REGEX}
@@ -1735,11 +1735,11 @@ def process_list_content(placeholder_storage, list_content):
       )
     ''',
     functools.partial(process_list_item_match, placeholder_storage),
-    list_content,
+    content,
     flags=re.MULTILINE|re.VERBOSE
   )
   
-  return list_content
+  return content
 
 
 def process_list_item_match(placeholder_storage, match_object):
