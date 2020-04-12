@@ -2242,7 +2242,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   
   Reference-style:
     DEFINITION: @@![{label}][[class]]↵ {src} [title] @@[width]
-    LINK: ![{alt}][[label]]
+    IMAGE: ![{alt}][[label]]
   The delimiting at signs must be the first
   non-whitespace characters on their lines.
   A single space may be included between [{alt}] and [[label]].
@@ -2257,12 +2257,12 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   built from [class], {src}, [title], and [width].
   
   Whitespace around [label] is stripped.
-  For images whose {alt} or [label] contains
-  one or more closing square brackets, use CMD literals.
   For definitions whose {label}, [class], {src}, or [title]
   contains two or more consecutive at signs
   which are not protected by CMD literals,
   use a longer run of at signs in the delimiters.
+  For images whose {alt} or [label] contains
+  one or more closing square brackets, use CMD literals.
   
   Inline-style:
     LINK: ![{alt}]({src} [title])
@@ -2457,12 +2457,12 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   built from [class], {href}, and [title].
   
   Whitespace around {content} and [label] is stripped.
-  For links whose {content} or [label] contains
-  one or more closing square brackets, use CMD literals.
   For definitions whose {label}, [class], {href}, or [title]
   contains two or more consecutive at signs
   which are not protected by CMD literals,
   use a longer run of at signs in the delimiters.
+  For links whose {content} or [label] contains
+  one or more closing square brackets, use CMD literals.
   
   Inline-style:
     LINK: [{content}]({href} [title])
