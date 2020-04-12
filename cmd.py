@@ -1823,7 +1823,7 @@ def process_tables(placeholder_storage, markup):
       according to table cell processing,
   (2) split into table rows <tr>
       according to table row processing, and
-  (3) split into parts <thead>, <tbody>, <tfoot>
+  (3) split into table parts <thead>, <tbody>, <tfoot>
       according to table part processing.
   """
   
