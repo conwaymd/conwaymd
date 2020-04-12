@@ -1713,7 +1713,8 @@ def process_list_items(placeholder_storage, content):
   with the following delimiters (Y):
     * (or any run of asterisks)
     1. (or any run of digits followed by a full stop)
-  List items end at the next list item, or at the end of the content.
+  List items end at the next list item,
+  or at the end of the content being split.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   """
@@ -1886,7 +1887,7 @@ def process_table_cells(placeholder_storage, content):
     ; (or any run of semicolons)  <th>
     , (or any run of commas)      <td>
   Table cells end at the next table cell, table row, or table part,
-  or at the end of the content.
+  or at the end of the content being split.
   Non-empty [rowspan] and [colspan] must consist of digits only.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
@@ -1990,7 +1991,7 @@ def process_table_rows(placeholder_storage, content):
   (i.e. occurrences preceded only by whitespace on their lines).
   The slash may instead be any run of slashes.
   Table rows end at the next table row or table part,
-  or at the end of the content.
+  or at the end of the content being split.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   """
@@ -2063,7 +2064,7 @@ def process_table_parts(placeholder_storage, content):
     ~ (or any run of tildes)      <tbody>
     _ (or any run of underscores) <tfoot>
   Table parts end at the next table part,
-  or at the end of the content.
+  or at the end of the content being split.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   """
