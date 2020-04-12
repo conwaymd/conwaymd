@@ -1637,10 +1637,7 @@ def process_blocks(placeholder_storage, markup):
   A recursive call is used to process nested blocks.
   
   For list blocks, {content} is split into list items <li>
-  according to leading occurrences of the following delimiters
-  (i.e. occurrences preceded only by whitespace on their lines):
-    *
-    1. (or any run of digits followed by a full stop)
+  according to list content processing.
   """
   
   markup = re.sub(
@@ -1690,7 +1687,7 @@ def process_block_match(placeholder_storage, match_object):
   content = process_blocks(placeholder_storage, content)
   
   if is_list:
-    content = process_list_content(content)
+    content = process_list_content(placeholder_storage, content)
   
   block = (
     f'<{tag_name}{id_attribute}{class_attribute}>\n{content}</{tag_name}>'
@@ -1700,24 +1697,34 @@ def process_block_match(placeholder_storage, match_object):
 
 
 LIST_ITEM_DELIMITER_REGEX = (
-  fr'{LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}([*]|[0-9]+[.])[\s]*'
+  fr'{LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}([*]|[0-9]+[.])'
 )
 
 
-def process_list_content(list_content):
+def process_list_content(placeholder_storage, list_content):
   """
   Process list content.
   
   List content is split into list items <li>
-  according to leading occurrences of the following delimiters
-  (i.e. being preceded only by whitespace on their lines):
+  according to leading occurrences of Y[id][[class]]
+  (i.e. occurrences preceded only by whitespace on their lines),
+  with the following delimiters (Y):
     *
     1. (or any run of digits followed by a full stop)
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
   """
   
   list_content = re.sub(
     fr'''
       {LIST_ITEM_DELIMITER_REGEX}
+        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+        (
+          \[
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+          \]
+        ) ?
+      [\s] +
       (?P<list_item_content>
         (
           (?!  {LIST_ITEM_DELIMITER_REGEX}  )
@@ -1725,7 +1732,7 @@ def process_list_content(list_content):
         ) *
       )
     ''',
-    process_list_item_match,
+    functools.partial(process_list_item_match, placeholder_storage),
     list_content,
     flags=re.MULTILINE|re.VERBOSE
   )
@@ -1733,15 +1740,22 @@ def process_list_content(list_content):
   return list_content
 
 
-def process_list_item_match(match_object):
+def process_list_item_match(placeholder_storage, match_object):
   """
   Process a single list-item match object.
   """
   
+  id_ = match_object.group('id_')
+  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
+  
+  class_ = match_object.group('class_')
+  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  
   list_item_content = match_object.group('list_item_content')
+  list_item_content = list_item_content.strip()
   
   list_item = f'''
-    <li>{list_item_content}
+    <li{id_attribute}{class_attribute}>{list_item_content}
     </li>
   '''
   
