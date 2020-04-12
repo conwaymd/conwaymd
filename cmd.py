@@ -1613,13 +1613,13 @@ LIST_TAG_NAMES = ['ul', 'ol']
 
 def process_blocks(placeholder_storage, markup):
   """
-  Process blocks XXXX[id][[class]]↵ {content} XXXX.
-  The delimiting characters (X) must be the first
+  Process blocks cccc[id][[class]]↵ {content} cccc.
+  The delimiting characters (c) must be the first
   non-whitespace characters on their lines.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   
-  The following delimiting characters (X) are used:
+  The following delimiting characters (c) are used:
     Non-lists
       -  <p>
       |  <div>
@@ -1627,11 +1627,12 @@ def process_blocks(placeholder_storage, markup):
     Lists
       =  <ul>
       +  <ol>
-  XXXX[id][[class]]↵ {content} XXXX becomes
+  cccc[id][[class]]↵ {content} cccc becomes
   <{tag_name} id="[id]" class="[class]">↵{content}</{tag_name}>.
-  For {content} containing four or more consecutive Xs
+  For {content} containing four or more
+  consecutive delimiting characters
   which are not already protected by CMD literals,
-  use a longer run of Xs in the delimiters.
+  use a longer run of delimiting characters in the delimiters.
   
   A recursive call is used to process nested blocks.
   
