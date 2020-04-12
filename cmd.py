@@ -1674,6 +1674,11 @@ def process_block_match(placeholder_storage, match_object):
   return markup
 
 
+LIST_ITEM_DELIMITER_REGEX = (
+  fr'{LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}([*]|[0-9]+[.])[\s]*'
+)
+
+
 def process_list_content(content):
   """
   Process list content.
@@ -1685,30 +1690,37 @@ def process_list_content(content):
     1. (or any run of digits followed by a full stop)
   """
   
-  # Replace delimiters with </li>↵<li>
   content = re.sub(
     fr'''
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (
-        [*]
-          |
-        [0-9] +  [.]
+      {LIST_ITEM_DELIMITER_REGEX}
+      (?P<list_item_content>
+        (
+          (?!  {LIST_ITEM_DELIMITER_REGEX}  )
+          {ANY_CHARACTER_REGEX}
+        ) *
       )
-      [\s] *
     ''',
-    '</li>\n<li>',
+    process_list_item_match,
     content,
     flags=re.MULTILINE|re.VERBOSE
   )
   
-  # Delete extra first </li>
-  content, delete_count = re.subn('</li>', '', content, count=1)
-  
-  # Append missing </li> at the end if there is at least one item
-  if delete_count > 0:
-    content = content + '</li>\n'
-  
   return content
+
+
+def process_list_item_match(match_object):
+  """
+  Process a single list-item match object.
+  """
+  
+  list_item_content = match_object.group('list_item_content')
+  
+  list_item = f'''
+    <li>{list_item_content}
+    </li>
+  '''
+  
+  return list_item
 
 
 ################################################################
