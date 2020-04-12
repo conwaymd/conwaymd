@@ -1818,7 +1818,7 @@ def process_tables(placeholder_storage, markup):
   
   A recursive call is used to process nested tables.
   
-  {content} is then:
+  {content} is
   (1) split into table cells <th>, <td>
       according to table cell processing,
   (2) split into table rows <tr>
