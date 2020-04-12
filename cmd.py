@@ -2232,6 +2232,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   A single space may be included between [{alt}] and [[label]].
   The referencing string {label} is case insensitive
   (this is handled by the image definition storage class).
+  Non-empty [width] must consist of digits only.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
   
