@@ -732,7 +732,7 @@ def process_display_code(placeholder_storage, markup):
   with HTML syntax-character escaping
   and de-indentation for {content}.
   For {content} containing two or more consecutive backticks
-  which are not already protected by CMD literals,
+  which are not protected by CMD literals,
   use a longer run of backticks in the delimiters.
   """
   
@@ -797,7 +797,7 @@ def process_inline_code(placeholder_storage, markup):
   with HTML syntax-character escaping for {content}.
   Whitespace around {content} is stripped.
   For {content} containing one or more consecutive backticks
-  which are not already protected by CMD literals,
+  which are not protected by CMD literals,
   use a longer run of backticks in the delimiters.
   """
   
@@ -888,7 +888,7 @@ def process_display_maths(placeholder_storage, markup):
   with HTML syntax-character escaping
   and de-indentation for {content}.
   For {content} containing two or more consecutive dollar signs
-  which are not already protected by CMD literals,
+  which are not protected by CMD literals,
   e.g. \text{\$$d$, i.e.~$d$~dollars},
   use a longer run of dollar signs in the delimiters.
   
@@ -962,7 +962,7 @@ def process_inline_maths(placeholder_storage, markup):
   with HTML syntax-character escaping for {content}.
   Whitespace around {content} is stripped.
   For {content} containing one or more consecutive dollar signs
-  which are not already protected by CMD literals,
+  which are not protected by CMD literals,
   e.g. \text{$x = \infinity$ is very big},
   use a longer run of dollar signs in the delimiters.
   
@@ -1286,7 +1286,7 @@ def process_preamble(
   For {property markup} matching a {property name} pattern,
   use a CMD literal, e.g. (! a literal %propety-name !).
   For {content} containing two or more consecutive percent signs
-  which are not already protected by CMD literals,
+  which are not protected by CMD literals,
   use a longer run of percent signs in the delimiters.
   
   Only the first occurrence in the markup is processed.
@@ -1633,7 +1633,7 @@ def process_blocks(placeholder_storage, markup):
   <{tag_name} id="[id]" class="[class]">↵{content}</{tag_name}>.
   For {content} containing four or more
   consecutive delimiting characters
-  which are not already protected by CMD literals,
+  which are not protected by CMD literals,
   use a longer run of delimiting characters in the delimiters.
   
   A recursive call is used to process nested blocks.
@@ -1813,7 +1813,7 @@ def process_tables(placeholder_storage, markup):
   ''''[id][[class]]↵ {content} '''' becomes
   <table id="[id]" class="[class]">↵{content}</table>.
   For {content} containing four or more consecutive apostrophes
-  which are not already protected by CMD literals,
+  which are not protected by CMD literals,
   use a longer run of apostrophes in the delimiters.
   
   A recursive call is used to process nested tables.
@@ -2244,7 +2244,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   one or more closing square brackets, use CMD literals.
   For definitions whose {label}, [class], {src}, or [title]
   contains two or more consecutive at signs
-  which are not already protected by CMD literals,
+  which are not protected by CMD literals,
   use a longer run of at signs in the delimiters.
   
   Inline-style:
@@ -2444,7 +2444,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   one or more closing square brackets, use CMD literals.
   For definitions whose {label}, [class], {href}, or [title]
   contains two or more consecutive at signs
-  which are not already protected by CMD literals,
+  which are not protected by CMD literals,
   use a longer run of at signs in the delimiters.
   
   Inline-style:
