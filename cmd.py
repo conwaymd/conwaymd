@@ -1774,6 +1774,34 @@ def process_list_item_match(placeholder_storage, match_object):
 ################################################################
 
 
+TABLE_CELL_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY = {
+  ';': 'th',
+  ',': 'td',
+}
+TABLE_CELL_DELIMITER_CHARACTERS_STRING = (
+  ''.join(TABLE_CELL_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY.keys())
+)
+TABLE_CELL_DELIMITER_CHARACTER_REGEX = (
+  f'[{TABLE_CELL_DELIMITER_CHARACTERS_STRING}]'
+)
+
+
+TABLE_ROW_DELIMITER_CHARACTER_REGEX = '/'
+
+
+TABLE_PART_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY = {
+  '^': 'thead',
+  '~': 'tbody',
+  '_': 'tfoot',
+}
+TABLE_PART_DELIMITER_CHARACTERS_STRING = (
+  ''.join(TABLE_PART_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY.keys())
+)
+TABLE_PART_DELIMITER_CHARACTER_REGEX = (
+  f'[{re.escape(TABLE_PART_DELIMITER_CHARACTERS_STRING)}]'
+)
+
+
 def process_tables(placeholder_storage, markup):
   """
   Process tables ''''[id][[class]]↵ {content} ''''.
@@ -1783,14 +1811,20 @@ def process_tables(placeholder_storage, markup):
   the square brackets surrounding it may be omitted.
   
   ''''[id][[class]]↵ {content} '''' becomes
-   <table id="[id]" class="[class]">↵{content}</table>.
+  <table id="[id]" class="[class]">↵{content}</table>.
   For {content} containing four or more consecutive apostrophes
   which are not already protected by CMD literals,
   use a longer run of apostrophes in the delimiters.
   
   A recursive call is used to process nested tables.
   
-  {content} is then processed according to table content processing.
+  {content} is then:
+  (1) split into table cells <th>, <td>
+      according to table cell processing,
+  (2) split into table rows <tr>
+      according to table row processing, and
+  (3) split into parts <thead>, <tbody>, <tfoot>
+      according to table part processing.
   """
   
   markup = re.sub(
@@ -1832,207 +1866,38 @@ def process_table_match(placeholder_storage, match_object):
   # Process nested tables
   content = process_tables(placeholder_storage, content)
   
-  content = process_table_content(placeholder_storage, content)
+  content = process_table_cells(placeholder_storage, content)
+  content = process_table_rows(placeholder_storage, content)
+  content = process_table_parts(placeholder_storage, content)
   
   table = f'<table{id_attribute}{class_attribute}>\n{content}</table>'
   
   return table
 
 
-TABLE_PART_DELIMITER_TAG_NAME_DICTIONARY = {
-  '^': 'thead',
-  '~': 'tbody',
-  '_': 'tfoot',
-}
-TABLE_PART_DELIMITERS_STRING = (
-  ''.join(TABLE_PART_DELIMITER_TAG_NAME_DICTIONARY.keys())
-)
-TABLE_PART_DELIMITER_REGEX = f'[{re.escape(TABLE_PART_DELIMITERS_STRING)}]'
-
-
-def process_table_content(placeholder_storage, table_content):
+def process_table_cells(placeholder_storage, content):
   """
-  Process table content.
+  Process table cells.
   
-  (1) Table content is split into parts, namely
-      head <thead>, body <tbody>, and foot <tfoot> elements,
-      according to leading occurrences of Y[id][[class]]
-      (i.e. occurrences preceded only by whitespace on their lines),
-      with the following delimiters (Y):
-        ^  <thead>
-        ~  <tbody>
-        _  <tfoot>
-      The content of each of these parts is processed
-      according to table-part-content processing.
-  
-  (2) Table content is processed according to
-      table-part-content processing.
-      This allows for "simple tables" which consist only of rows <tr>
-      and not parts <thead>, <tbody>, and <tfoot>.
-  """
-  
-  table_content = re.sub(
-    fr'''
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<delimiter>  {TABLE_PART_DELIMITER_REGEX}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
-        ) ?
-      [\s] +
-      (?P<table_part_content>
-        (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            {TABLE_PART_DELIMITER_REGEX}
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
-      )
-    ''',
-    functools.partial(process_table_part_match, placeholder_storage),
-    table_content,
-    flags=re.MULTILINE|re.VERBOSE
-  )
-  
-  table_content = (
-    process_table_part_content(placeholder_storage, table_content)
-  )
-  
-  return table_content
-
-
-def process_table_part_match(placeholder_storage, match_object):
-  """
-  Process a single table-part match object.
-  """
-  
-  delimiter = match_object.group('delimiter')
-  tag_name = TABLE_PART_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
-  
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
-  
-  table_part_content = match_object.group('table_part_content')
-  table_part_content = table_part_content.strip()
-  
-  table_part_content = (
-    process_table_part_content(placeholder_storage, table_part_content)
-  )
-  
-  table_part = f'''
-    <{tag_name}{id_attribute}{class_attribute}>
-      {table_part_content}
-    </{tag_name}>
-  '''
-  
-  return table_part
-
-
-TABLE_ROW_DELIMITER_REGEX = '/'
-
-
-def process_table_part_content(placeholder_storage, table_part_content):
-  """
-  Process table-part content.
-  
-  Table-part content is split into rows <tr>
-  according to leading occurrences of /[id][[class]]
-  (i.e. occurrences preceded only by whitespace on their lines).
-  The content of each of these rows is processed
-  according to table-row-content processing.
-  """
-  
-  table_part_content = re.sub(
-    fr'''
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      {TABLE_ROW_DELIMITER_REGEX}
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
-        ) ?
-      [\s] +
-      (?P<table_row_content>
-        (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            {TABLE_ROW_DELIMITER_REGEX}
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
-      )
-    ''',
-    functools.partial(process_table_row_match, placeholder_storage),
-    table_part_content,
-    flags=re.MULTILINE|re.VERBOSE
-  )
-  
-  return table_part_content
-
-
-def process_table_row_match(placeholder_storage, match_object):
-  """
-  Process a single table-row match object.
-  """
-  
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
-  
-  table_row_content = match_object.group('table_row_content')
-  table_row_content = table_row_content.strip()
-  
-  table_row_content = (
-    process_table_row_content(placeholder_storage, table_row_content)
-  )
-  
-  table_row = f'''
-    <tr{id_attribute}{class_attribute}>
-      {table_row_content}
-    </tr>
-  '''
-  
-  return table_row
-
-
-TABLE_CELL_DELIMITER_TAG_NAME_DICTIONARY = {
-  ';': 'th',
-  ',': 'td',
-}
-TABLE_CELL_DELIMITERS_STRING = (
-  ''.join(TABLE_CELL_DELIMITER_TAG_NAME_DICTIONARY.keys())
-)
-TABLE_CELL_DELIMITER_REGEX = f'[{TABLE_CELL_DELIMITERS_STRING}]'
-
-
-def process_table_row_content(
-  placeholder_storage, table_row_content
-):
-  """
-  Process table-row content.
-  
-  Table-row content is split into
-  header cells <th> and data cells <td>,
-  according to leading occurrences if Z[id][[class]]
+  Content is split into table cells <th>, <td>
+  according to leading occurrences of Z[id][[class]]
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Z):
-    ;  <th>
-    ,  <td>
+    ; (or any run of semicolons)  <th>
+    , (or any run of commas)      <td>
+  Table cells end at the next table cell, table row, or table part,
+  or at the end of the content.
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
   """
   
-  table_row_content = re.sub(
+  content = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<delimiter>  {TABLE_CELL_DELIMITER_REGEX}  )
+      (?P<delimiter>
+        (?P<delimiter_character>  {TABLE_CELL_DELIMITER_CHARACTER_REGEX}
+        ) +
+      )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
           \[
@@ -2044,18 +1909,24 @@ def process_table_row_content(
         (
           (?!
             {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            {TABLE_CELL_DELIMITER_REGEX}
+            (
+              {TABLE_CELL_DELIMITER_CHARACTER_REGEX}
+                |
+              {TABLE_ROW_DELIMITER_CHARACTER_REGEX}
+                |
+              {TABLE_PART_DELIMITER_CHARACTER_REGEX}
+            ) +
           )
           {ANY_CHARACTER_REGEX}
         ) *
       )
     ''',
     functools.partial(process_table_cell_match, placeholder_storage),
-    table_row_content,
+    content,
     flags=re.MULTILINE|re.VERBOSE
   )
   
-  return table_row_content
+  return content
 
 
 def process_table_cell_match(placeholder_storage, match_object):
@@ -2063,8 +1934,10 @@ def process_table_cell_match(placeholder_storage, match_object):
   Process a single table-cell match object.
   """
   
-  delimiter = match_object.group('delimiter')
-  tag_name = TABLE_CELL_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
+  delimiter_character = match_object.group('delimiter_character')
+  tag_name = (
+    TABLE_CELL_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY[delimiter_character]
+  )
   
   id_ = match_object.group('id_')
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
@@ -2082,6 +1955,153 @@ def process_table_cell_match(placeholder_storage, match_object):
   )
   
   return table_cell
+
+
+def process_table_rows(placeholder_storage, content):
+  """
+  Process table rows.
+  
+  Content is split into table rows <tr>
+  according to leading occurrences of /[id][[class]]
+  (i.e. occurrences preceded only by whitespace on their lines).
+  The slash may instead be any run of slashes.
+  Table rows end at the next table row or table part,
+  or at the end of the content.
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
+  """
+  
+  content = re.sub(
+    fr'''
+      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+      (?P<delimiter>  {TABLE_ROW_DELIMITER_CHARACTER_REGEX} +  )
+        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+        (
+          \[
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+          \]
+        ) ?
+      [\s] +
+      (?P<table_row_content>
+        (
+          (?!
+            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+            (
+              {TABLE_ROW_DELIMITER_CHARACTER_REGEX}
+                |
+              {TABLE_PART_DELIMITER_CHARACTER_REGEX}
+            ) +
+          )
+          {ANY_CHARACTER_REGEX}
+        ) *
+      )
+    ''',
+    functools.partial(process_table_row_match, placeholder_storage),
+    content,
+    flags=re.MULTILINE|re.VERBOSE
+  )
+  
+  return content
+
+
+def process_table_row_match(placeholder_storage, match_object):
+  """
+  Process a single table-row match object.
+  """
+  
+  id_ = match_object.group('id_')
+  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
+  
+  class_ = match_object.group('class_')
+  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  
+  table_row_content = match_object.group('table_row_content')
+  table_row_content = table_row_content.strip()
+  
+  table_row = f'''
+    <tr{id_attribute}{class_attribute}>
+      {table_row_content}
+    </tr>
+  '''
+  
+  return table_row
+
+
+def process_table_parts(placeholder_storage, content):
+  """
+  Process table parts.
+  
+  Content is split into table parts <thead>, <tbody>, <tfoot>
+  according to leading occurrences of Y[id][[class]]
+  (i.e. occurrences preceded only by whitespace on their lines),
+  with the following delimiters (Y):
+    ^ (or any run of carets)      <thead>
+    ~ (or any run of tildes)      <tbody>
+    _ (or any run of underscores) <tfoot>
+  Table parts end at the next table part,
+  or at the end of the content.
+  If [class] is empty,
+  the square brackets surrounding it may be omitted.
+  """
+  
+  content = re.sub(
+    fr'''
+      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+      (?P<delimiter>
+        (?P<delimiter_character>  {TABLE_PART_DELIMITER_CHARACTER_REGEX}
+        ) +
+      )
+        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+        (
+          \[
+            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+          \]
+        ) ?
+      [\s] +
+      (?P<table_part_content>
+        (
+          (?!
+            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+            {TABLE_PART_DELIMITER_CHARACTER_REGEX} +
+          )
+          {ANY_CHARACTER_REGEX}
+        ) *
+      )
+    ''',
+    functools.partial(process_table_part_match, placeholder_storage),
+    content,
+    flags=re.MULTILINE|re.VERBOSE
+  )
+  
+  return content
+
+
+def process_table_part_match(placeholder_storage, match_object):
+  """
+  Process a single table-part match object.
+  """
+  
+  delimiter_character = match_object.group('delimiter_character')
+  tag_name = (
+    TABLE_PART_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY[delimiter_character]
+  )
+  
+  id_ = match_object.group('id_')
+  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
+  
+  class_ = match_object.group('class_')
+  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  
+  table_part_content = match_object.group('table_part_content')
+  table_part_content = table_part_content.strip()
+  
+  table_part = f'''
+    <{tag_name}{id_attribute}{class_attribute}>
+      {table_part_content}
+    </{tag_name}>
+  '''
+  
+  return table_part
 
 
 ################################################################
