@@ -2148,6 +2148,7 @@ def process_table_part_match(placeholder_storage, match_object):
 
 PUNCTUATION_REPLACEMENT_DICTIONARY = {
   r'\/': '',
+  r'\ /': ' ',
   r'\ ': ' ',
   r'\~': '~',
   '~': '&nbsp;',
@@ -2170,6 +2171,7 @@ def process_punctuation(placeholder_storage, markup):
   Process punctuation.
     \\  becomes <br>
     \/  becomes the empty string
+    \ / becomes   U+0020 SPACE
     \   becomes   U+0020 SPACE
     \~  becomes ~
     ~   becomes &nbsp;
