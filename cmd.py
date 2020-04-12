@@ -708,7 +708,10 @@ def process_literal_match(placeholder_storage, match_object):
   content = content.strip()
   content = escape_html_syntax_characters(content)
   
-  return placeholder_storage.create_placeholder_store_markup(content)
+  literal = content
+  literal = placeholder_storage.create_placeholder_store_markup(literal)
+  
+  return literal
 
 
 ################################################################
@@ -771,9 +774,14 @@ def process_display_code_match(placeholder_storage, match_object):
   content = de_indent(content)
   content = escape_html_syntax_characters(content)
   
-  markup = f'<pre{id_attribute}{class_attribute}><code>{content}</code></pre>'
+  display_code = (
+    f'<pre{id_attribute}{class_attribute}><code>{content}</code></pre>'
+  )
+  display_code = (
+    placeholder_storage.create_placeholder_store_markup(display_code)
+  )
   
-  return placeholder_storage.create_placeholder_store_markup(markup)
+  return display_code
 
 
 ################################################################
@@ -816,9 +824,12 @@ def process_inline_code_match(placeholder_storage, match_object):
   content = content.strip()
   content = escape_html_syntax_characters(content)
   
-  markup = f'<code>{content}</code>'
+  inline_code = f'<code>{content}</code>'
+  inline_code = (
+    placeholder_storage.create_placeholder_store_markup(inline_code)
+  )
   
-  return placeholder_storage.create_placeholder_store_markup(markup)
+  return inline_code
 
 
 ################################################################
@@ -930,9 +941,12 @@ def process_display_maths_match(placeholder_storage, match_object):
   content = de_indent(content)
   content = escape_html_syntax_characters(content)
   
-  markup = f'<div{id_attribute}{class_attribute}>{content}</div>'
+  display_maths = f'<div{id_attribute}{class_attribute}>{content}</div>'
+  display_maths = (
+    placeholder_storage.create_placeholder_store_markup(display_maths)
+  )
   
-  return placeholder_storage.create_placeholder_store_markup(markup)
+  return display_maths
 
 
 ################################################################
@@ -981,9 +995,12 @@ def process_inline_maths_match(placeholder_storage, match_object):
   content = content.strip()
   content = escape_html_syntax_characters(content)
   
-  markup = f'<span class="js-maths">{content}</span>'
+  inline_maths = f'<span class="js-maths">{content}</span>'
+  inline_maths = (
+    placeholder_storage.create_placeholder_store_markup(inline_maths)
+  )
   
-  return placeholder_storage.create_placeholder_store_markup(markup)
+  return inline_maths
 
 
 ################################################################
@@ -1042,7 +1059,9 @@ def process_inclusion_match(placeholder_storage, match_object):
   content = process_display_maths(placeholder_storage, content)
   content = process_inline_maths(placeholder_storage, content)
   
-  return content
+  inclusion = content
+  
+  return inclusion
 
 
 ################################################################
@@ -1086,7 +1105,12 @@ def process_protected_element_match(placeholder_storage, match_object):
   
   match_string = match_object.group()
   
-  return placeholder_storage.create_placeholder_store_markup(match_string)
+  protected_element = match_string
+  protected_element = (
+    placeholder_storage.create_placeholder_store_markup(protected_element)
+  )
+  
+  return protected_element
 
 
 ################################################################
@@ -1564,9 +1588,9 @@ def process_heading_match(placeholder_storage, match_object):
   content = match_object.group('content')
   content = content.strip()
   
-  markup = f'<{tag_name}{id_attribute}>{content}</{tag_name}>'
+  heading = f'<{tag_name}{id_attribute}>{content}</{tag_name}>'
   
-  return markup
+  return heading
 
 
 ################################################################
@@ -1667,11 +1691,11 @@ def process_block_match(placeholder_storage, match_object):
   if is_list:
     content = process_list_content(content)
   
-  markup = (
+  block = (
     f'<{tag_name}{id_attribute}{class_attribute}>\n{content}</{tag_name}>'
   )
   
-  return markup
+  return block
 
 
 LIST_ITEM_DELIMITER_REGEX = (
@@ -1679,18 +1703,18 @@ LIST_ITEM_DELIMITER_REGEX = (
 )
 
 
-def process_list_content(content):
+def process_list_content(list_content):
   """
   Process list content.
   
-  {content} is split into list items <li>
+  List content is split into list items <li>
   according to leading occurrences of the following delimiters
   (i.e. being preceded only by whitespace on their lines):
     *
     1. (or any run of digits followed by a full stop)
   """
   
-  content = re.sub(
+  list_content = re.sub(
     fr'''
       {LIST_ITEM_DELIMITER_REGEX}
       (?P<list_item_content>
@@ -1701,11 +1725,11 @@ def process_list_content(content):
       )
     ''',
     process_list_item_match,
-    content,
+    list_content,
     flags=re.MULTILINE|re.VERBOSE
   )
   
-  return content
+  return list_content
 
 
 def process_list_item_match(match_object):
@@ -1982,9 +2006,9 @@ def process_reference_image_match(
     match_string = match_object.group()
     return match_string
   
-  markup = f'<img{alt_attribute}{attributes}>'
+  image = f'<img{alt_attribute}{attributes}>'
   
-  return markup
+  return image
 
 
 def process_inline_image_match(placeholder_storage, match_object):
@@ -2001,9 +2025,9 @@ def process_inline_image_match(placeholder_storage, match_object):
   title = match_object.group('title')
   title_attribute = build_html_attribute(placeholder_storage, 'title', title)
   
-  markup = f'<img{alt_attribute}{src_attribute}{title_attribute}>'
+  image = f'<img{alt_attribute}{src_attribute}{title_attribute}>'
   
-  return markup
+  return image
 
 
 ################################################################
@@ -2176,9 +2200,9 @@ def process_reference_link_match(link_definition_storage, match_object):
     match_string = match_object.group()
     return match_string
   
-  markup = f'<a{attributes}>{content}</a>'
+  link = f'<a{attributes}>{content}</a>'
   
-  return markup
+  return link
 
 
 def process_inline_link_match(placeholder_storage, match_object):
@@ -2195,9 +2219,9 @@ def process_inline_link_match(placeholder_storage, match_object):
   title = match_object.group('title')
   title_attribute = build_html_attribute(placeholder_storage, 'title', title)
   
-  markup = f'<a{href_attribute}{title_attribute}>{content}</a>'
+  link = f'<a{href_attribute}{title_attribute}>{content}</a>'
   
-  return markup
+  return link
 
 
 ################################################################
@@ -2389,9 +2413,9 @@ def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
   # Process nested inline semantics
   content = process_inline_semantics(placeholder_storage, content)
   
-  markup = f'<{tag_name}{class_attribute}>{content}</{tag_name}>'
+  inline_semantic = f'<{tag_name}{class_attribute}>{content}</{tag_name}>'
   
-  return markup
+  return inline_semantic
 
 
 def process_inline_semantic_match_2_layer(placeholder_storage, match_object):
@@ -2426,7 +2450,7 @@ def process_inline_semantic_match_2_layer(placeholder_storage, match_object):
   # Process nested inline semantics (outer)
   outer_content = process_inline_semantics(placeholder_storage, outer_content)
   
-  markup = (
+  inline_semantic = (
     f'<{outer_tag_name}>'
       f'<{inner_tag_name}{inner_class_attribute}>'
         f'{inner_content}'
@@ -2435,7 +2459,7 @@ def process_inline_semantic_match_2_layer(placeholder_storage, match_object):
     f'</{outer_tag_name}>'
   )
   
-  return markup
+  return inline_semantic
 
 
 ################################################################
