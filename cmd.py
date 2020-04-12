@@ -1879,16 +1879,21 @@ def process_table_cells(placeholder_storage, content):
   """
   Process table cells.
   
-  Content is split into table cells <th>, <td>
-  according to leading occurrences of Z[id][[class]]
+  Content is split into table cells <th>, <td> according to
+  leading occurrences of Z[id][[class]]{[rowspan],[colspan]}
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Z):
     ; (or any run of semicolons)  <th>
     , (or any run of commas)      <td>
   Table cells end at the next table cell, table row, or table part,
   or at the end of the content.
+  Non-empty [rowspan] and [colspan] must consist of digits only.
   If [class] is empty,
   the square brackets surrounding it may be omitted.
+  If [colspan] is empty, the comma before it may be omitted.
+  If both [rowspan] and [colspan] are empty,
+  the comma between them and the curly brackets surrounding them
+  may be omitted.
   """
   
   content = re.sub(
@@ -1903,6 +1908,15 @@ def process_table_cells(placeholder_storage, content):
           \[
             (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
+        ) ?
+        (
+          \{{
+            (?P<rowspan>  [0-9] *?  )
+            (
+              [,]
+              (?P<colspan>  [0-9] *?  )
+            ) ?
+          \}}
         ) ?
       [\s] +
       (?P<table_cell_content>
@@ -1945,14 +1959,24 @@ def process_table_cell_match(placeholder_storage, match_object):
   class_ = match_object.group('class_')
   class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
   
+  rowspan = match_object.group('rowspan')
+  rowspan_attribute = (
+    build_html_attribute(placeholder_storage, 'rowspan', rowspan)
+  )
+  
+  colspan = match_object.group('colspan')
+  colspan_attribute = (
+    build_html_attribute(placeholder_storage, 'colspan', colspan)
+  )
+  
   table_cell_content = match_object.group('table_cell_content')
   table_cell_content = table_cell_content.strip()
   
-  table_cell = (
-    f'<{tag_name}{id_attribute}{class_attribute}>'
-      f'{table_cell_content}'
-    f'</{tag_name}>\n'
+  attributes = (
+    id_attribute + class_attribute + rowspan_attribute + colspan_attribute
   )
+  
+  table_cell = f'<{tag_name}{attributes}>{table_cell_content}</{tag_name}>\n'
   
   return table_cell
 
