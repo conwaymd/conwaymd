@@ -1598,15 +1598,17 @@ def process_heading_match(placeholder_storage, match_object):
 ################################################################
 
 
-BLOCK_DELIMITER_TAG_NAME_DICTIONARY = {
+BLOCK_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY = {
   '-': 'p',
   '|': 'div',
   '"': 'blockquote',
   '=': 'ul',
   '+': 'ol',
 }
-BLOCK_DELIMITERS_STRING = ''.join(BLOCK_DELIMITER_TAG_NAME_DICTIONARY.keys())
-BLOCK_DELIMITER_REGEX = f'[{BLOCK_DELIMITERS_STRING}]'
+BLOCK_DELIMITER_CHARACTERS_STRING = (
+  ''.join(BLOCK_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY.keys())
+)
+BLOCK_DELIMITER_CHARACTER_REGEX = f'[{BLOCK_DELIMITER_CHARACTERS_STRING}]'
 
 LIST_TAG_NAMES = ['ul', 'ol']
 
@@ -1643,9 +1645,9 @@ def process_blocks(placeholder_storage, markup):
   markup = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<delimiters>
-        (?P<delimiter>  {BLOCK_DELIMITER_REGEX}  )
-        (?P=delimiter) {{3,}}
+      (?P<delimiter>
+        (?P<delimiter_character>  {BLOCK_DELIMITER_CHARACTER_REGEX}  )
+        (?P=delimiter_character) {{3,}}
       )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
@@ -1656,7 +1658,7 @@ def process_blocks(placeholder_storage, markup):
       \n
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P=delimiters)
+      (?P=delimiter)
     ''',
     functools.partial(process_block_match, placeholder_storage),
     markup,
@@ -1671,8 +1673,10 @@ def process_block_match(placeholder_storage, match_object):
   Process a single block match object.
   """
   
-  delimiter = match_object.group('delimiter')
-  tag_name = BLOCK_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
+  delimiter_character = match_object.group('delimiter_character')
+  tag_name = (
+    BLOCK_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY[delimiter_character]
+  )
   block_is_list = tag_name in LIST_TAG_NAMES
   
   id_ = match_object.group('id_')
