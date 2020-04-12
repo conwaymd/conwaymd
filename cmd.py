@@ -180,9 +180,9 @@ def build_html_attribute(
   placeholder_storage, attribute_name, attribute_value
 ):
   """
-  Builds an HTML attribute  {attribute_name}="{attribute_value}",
-  with a leading space and the necessary escaping for {attribute_value}.
-  If {attribute_value} is empty or None, the empty string is returned.
+  Builds an HTML attribute  {attribute name}="{attribute value}",
+  with a leading space and the necessary escaping for {attribute value}.
+  If {attribute value} is empty or None, the empty string is returned.
   """
   
   if attribute_value is None or attribute_value == '':
@@ -1010,10 +1010,10 @@ def process_inline_maths_match(placeholder_storage, match_object):
 
 def process_inclusions(placeholder_storage, markup):
   r"""
-  Process inclusions (+ {file_name} +).
+  Process inclusions (+ {file name} +).
   
-  (+ {file_name} +) includes the content of the file {file_name}.
-  For {file_name} containing one or more consecutive plus signs
+  (+ {file name} +) includes the content of the file {file name}.
+  For {file name} containing one or more consecutive plus signs
   followed by a closing round bracket,
   use a longer run of plus signs in the delimiters.
   
@@ -1630,7 +1630,7 @@ def process_blocks(placeholder_storage, markup):
       =  <ul>
       +  <ol>
   cccc[id][[class]]↵ {content} cccc becomes
-  <{tag_name} id="[id]" class="[class]">↵{content}</{tag_name}>.
+  <{tag name} id="[id]" class="[class]">↵{content}</{tag name}>.
   For {content} containing four or more
   consecutive delimiting characters
   which are not protected by CMD literals,
@@ -2632,7 +2632,7 @@ def process_inline_semantics(placeholder_storage, markup):
     _   <i>
     __  <b>
   X[[class]] {content} X (c or cc) becomes
-  <{tag_name} class="[class]">{content}</{tag_name}>.
+  <{tag name} class="[class]">{content}</{tag name}>.
   Whitespace around {content} is stripped.
   For {content} containing one or more occurrences of c (* or _),
   use CMD literals or \* and \_.
@@ -2641,8 +2641,8 @@ def process_inline_semantics(placeholder_storage, markup):
   for the following groupings of delimiting characters (c)
   so that the processing is performed in this order:
     33    ccc[[class]] {content} ccc
-    312   ccc[[inner_class]] {inner_content} c {outer_content} cc
-    321   ccc[[inner_class]] {inner_content} cc {outer_content} c
+    312   ccc[[inner class]] {inner content} c {outer content} cc
+    321   ccc[[inner class]] {inner content} cc {outer content} c
     22    cc[[class]] {content} cc
     11    cc[[class]] {content} c
   However, once such a pattern has been matched,
@@ -2650,7 +2650,7 @@ def process_inline_semantics(placeholder_storage, markup):
     1-layer case (for 33, 22, 11):
       X[[class]] {content} X
     2-layer case (for 312, 321):
-      XY[[inner_class]] {inner_content} Y {outer_content} X
+      XY[[inner class]] {inner content} Y {outer content} X
   
   Recursive calls are used to process nested inline semantics.
   """
