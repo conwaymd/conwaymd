@@ -2665,7 +2665,7 @@ def process_inline_semantics(placeholder_storage, markup):
     321   ccc[[inner class]] {inner content} cc {outer content} c
     22    cc[[class]] {content} cc
     11    c[[class]] {content} c
-  33 is effectively 2112.
+  33 is effectively 312 with empty {outer content}.
   However, once such a pattern has been matched,
   only three cases need to be handled for the resulting match object:
     2-layer special (for 33)
