@@ -2664,7 +2664,7 @@ def process_inline_semantics(placeholder_storage, markup):
     312   ccc[[inner class]] {inner content} c {outer content} cc
     321   ccc[[inner class]] {inner content} cc {outer content} c
     22    cc[[class]] {content} cc
-    11    cc[[class]] {content} c
+    11    c[[class]] {content} c
   However, once such a pattern has been matched,
   only two cases need to be handled for the resulting match object:
     1-layer case (for 33, 22, 11):
