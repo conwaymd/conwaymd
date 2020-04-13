@@ -2272,14 +2272,14 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   the latest specification shall prevail.
   
   Inline-style:
-    LINK: ![{alt}]({src} [title])
+    LINK: ![{alt}]( {src} [title] )
   (NOTE:
     Unlike John Gruber's markdown, [title] is not surrounded by quotes.
     If quotes are supplied to [title],
     they are automatically escaped as &quot;.
   )
   
-  ![{alt}]({src} [title]) becomes
+  ![{alt}]( {src} [title] ) becomes
   <img alt="{alt}" src="{src}" title="[title]">.
   
   For {alt}, {src}, or [title] containing
@@ -2349,6 +2349,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
         (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       \(
+        [\s] *
         (?P<src>  {ANYTHING_MINIMAL_REGEX}  )
         (
           [\s] +?
@@ -2472,14 +2473,14 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   the latest specification shall prevail.
   
   Inline-style:
-    LINK: [{content}]({href} [title])
+    LINK: [{content}]( {href} [title] )
   (NOTE:
     Unlike John Gruber's markdown, [title] is not surrounded by quotes.
     If quotes are supplied to [title],
     they are automatically escaped as &quot;.
   )
   
-  [{content}]({href} [title]) becomes
+  [{content}]( {href} [title] ) becomes
   <a href="{href}" title="[title]">{content}</a>.
   
   Whitespace around {content} is stripped.
@@ -2545,6 +2546,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       \(
+        [\s] *
         (?P<href>  {ANYTHING_MINIMAL_REGEX}  )
         (
           [\s] +?
