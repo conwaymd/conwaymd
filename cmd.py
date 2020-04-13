@@ -2449,7 +2449,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   (this is handled by the link definition storage class).
   If [class] in a definition is empty,
   the square brackets surrounding it may be omitted.
-  If [label] in a link is empty ,
+  If [label] in a link is empty,
   the square brackets surrounding it may be omitted,
   and {content} is used as the label for that link.
   
