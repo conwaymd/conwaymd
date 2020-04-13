@@ -2450,8 +2450,8 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   If [class] in a definition is empty,
   the square brackets surrounding it may be omitted.
   If [label] in a link is empty ,
-  {content} is used as the label for that link,
-  and the square brackets surrounding it may be omitted.
+  the square brackets surrounding it may be omitted,
+  and {content} is used as the label for that link.
   
   [{content}][[label]] becomes <a{attributes}>{content}</a>,
   where {attributes} is the sequence of attributes
