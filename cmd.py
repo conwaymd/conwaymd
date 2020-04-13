@@ -180,12 +180,16 @@ def build_html_attribute(
   placeholder_storage, attribute_name, attribute_value
 ):
   """
-  Builds an HTML attribute  {attribute name}="{attribute value}",
+  Builds an HTML attribute {attribute name}="{attribute value}",
   with a leading space and the necessary escaping for {attribute value}.
   If {attribute value} is empty or None, the empty string is returned.
   """
   
-  if attribute_value is None or attribute_value == '':
+  if (
+    attribute_value is None
+      or
+    placeholder_storage.replace_placeholders_with_markup(attribute_value) == ''
+  ):
     return ''
   
   attribute_value = escape_html_attribute_value(
