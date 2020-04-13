@@ -388,15 +388,20 @@ class PropertyStorage:
   """
   Property storage class.
   
-  Properties are specified in the preamble
-  in the form %{property name} {property markup},
+  Properties are specified in the content of the preamble,
+  which is split according to leading occurrences of %{property name}
+  (i.e. occurrences preceded only by whitespace on their lines),
   where {property name} may only contain letters, digits, and hyphens.
-  %{property name} is called a property string.
+  Property specifications end at the next property specification,
+  or at the end of the (preamble) content being split.
   
   Properties are stored in a dictionary of ordinary replacements,
   with
     KEYS: %{property name}
     VALUES: {property markup}
+  
+  These may be referenced by writing %{property name},
+  called a property string, anywhere else in the document.
   """
   
   def __init__(self):
@@ -431,14 +436,23 @@ class PropertyStorage:
     
     re.sub(
       f'''
+        {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
         %
         (?P<property_name>  {PROPERTY_NAME_REGEX}  )
-          (?P<property_markup>  {ANYTHING_MINIMAL_REGEX}  )
-        (?=  %  |  $  )
+          (?P<property_markup>
+            (
+              (?!
+                {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+                %
+                {PROPERTY_NAME_REGEX}
+              )
+              {ANY_CHARACTER_REGEX}
+            ) *
+          )
       ''',
       self.process_specification_match,
       preamble_content,
-      flags=re.VERBOSE
+      flags=re.MULTILINE|re.VERBOSE
     )
   
   def process_specification_match(self, match_object):
@@ -1274,17 +1288,20 @@ def process_preamble(
   
   %%↵ {content} %% becomes the HTML preamble,
   i.e. everything from <!DOCTYPE html> through to <body>.
-  {content} is to consist of property specifications
-  of the form %{property name} {property markup},
-  which are stored using the property storage class
+  {content} is split into property specifications
+  according to leading occurrences of %{property name}
+  (i.e. occurrences preceded only by whitespace on their lines),
+  where {property name} may only contain letters, digits, and hyphens.
+  Property specifications end at the next property specification,
+  or at the end of the (preamble) content being split.
+  
+  Each property is then stored using the property storage class
   and may be referenced by writing %{property name},
   called a property string, anywhere else in the document.
-  {property name} may only contain letters, digits, and hyphens.
+  
   If the same property is specified more than once,
   the latest specification shall prevail.
   
-  For {property markup} matching a {property name} pattern,
-  use a CMD literal, e.g. (! a literal %propety-name !).
   For {content} containing two or more consecutive percent signs
   which are not protected by CMD literals,
   use a longer run of percent signs in the delimiters.
