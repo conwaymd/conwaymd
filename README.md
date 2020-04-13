@@ -9,7 +9,7 @@ See also: [GitHub pages documentation][cmd-docs] ([repository][cmd-docs-repo])
 Convert a CMD file to HTML:
 
 ````
-$ python cmd.py [cmd_name[.[cmd]]]
+$ cmd.py [cmd_name[.[cmd]]]
 ````
 
 Omit `[cmd_name[.[cmd]]]` to convert all CMD files,
