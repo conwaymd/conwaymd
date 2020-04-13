@@ -2692,7 +2692,12 @@ def process_inline_semantics(placeholder_storage, markup):
             (?P<inner_class>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
-        (?P<inner_content>  {NON_EMPTY_MINIMAL_REGEX}  )
+        (?P<inner_content>
+          (
+            (?!  (?P=delimiter_character)  )
+            {ANY_CHARACTER_REGEX}
+          ) +?
+        )
       (?P=delimiter)
     ''',
     functools.partial(process_inline_semantic_match_2_layer_special,
@@ -2716,9 +2721,19 @@ def process_inline_semantics(placeholder_storage, markup):
             (?P<inner_class>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
-        (?P<inner_content>  {NON_EMPTY_MINIMAL_REGEX}  )
+        (?P<inner_content>
+          (
+            (?!  (?P=delimiter_character)  )
+            {ANY_CHARACTER_REGEX}
+          ) +?
+        )
       (?P<inner_delimiter>  (?P=delimiter_character) {{1}}  )
-        (?P<outer_content>  {NON_EMPTY_MINIMAL_REGEX}  )
+        (?P<outer_content>
+          (
+            (?!  (?P=delimiter_character)  )
+            {ANY_CHARACTER_REGEX}
+          ) +?
+        )
       (?P<outer_delimiter>  (?P=delimiter_character) {{2}}  )
     ''',
     functools.partial(process_inline_semantic_match_2_layer_general,
@@ -2742,9 +2757,19 @@ def process_inline_semantics(placeholder_storage, markup):
             (?P<inner_class>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
-        (?P<inner_content>  {NON_EMPTY_MINIMAL_REGEX}  )
+        (?P<inner_content>
+          (
+            (?!  (?P=delimiter_character)  )
+            {ANY_CHARACTER_REGEX}
+          ) +?
+        )
       (?P<inner_delimiter>  (?P=delimiter_character) {{2}}  )
-        (?P<outer_content>  {NON_EMPTY_MINIMAL_REGEX}  )
+        (?P<outer_content>
+          (
+            (?!  (?P=delimiter_character)  )
+            {ANY_CHARACTER_REGEX}
+          ) +?
+        )
       (?P<outer_delimiter>  (?P=delimiter_character) {{1}}  )
     ''',
     functools.partial(process_inline_semantic_match_2_layer_general,
@@ -2768,7 +2793,12 @@ def process_inline_semantics(placeholder_storage, markup):
             (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
           \]
         ) ?
-        (?P<content>  {NON_EMPTY_MINIMAL_REGEX}  )
+        (?P<content>
+          (
+            (?!  (?P=delimiter_character)  )
+            {ANY_CHARACTER_REGEX}
+          ) +?
+        )
       (?P=delimiter)
     ''',
     functools.partial(process_inline_semantic_match_1_layer,
