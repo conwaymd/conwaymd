@@ -2265,6 +2265,12 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   For images whose {alt} or [label] contains
   one or more closing square brackets, use CMD literals.
   
+  All (reference-style) image definitions are read and stored
+  using the image definition storage class.
+  If the same label (which is case insensitive)
+  is specified more than once,
+  the latest specification shall prevail.
+  
   Inline-style:
     LINK: ![{alt}]({src} [title])
   (NOTE:
@@ -2278,12 +2284,6 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   
   For {alt}, {src}, or [title] containing
   one or more closing square or round brackets, use CMD literals.
-  
-  All (reference-style) image definitions are read and stored
-  using the image definition storage class.
-  If the same label (which is case insensitive)
-  is specified more than once,
-  the latest specification shall prevail.
   """
   
   # Reference-style image definitions
@@ -2465,6 +2465,12 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   For links whose {content} or [label] contains
   one or more closing square brackets, use CMD literals.
   
+  All (reference-style) link definitions are read and stored
+  using the link definition storage class.
+  If the same label (which is case insensitive)
+  is specified more than once,
+  the latest specification shall prevail.
+  
   Inline-style:
     LINK: [{content}]({href} [title])
   (NOTE:
@@ -2479,12 +2485,6 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   Whitespace around {content} is stripped.
   For {content}, {href}, or [title] containing
   one or more closing square or round brackets, use CMD literals.
-  
-  All (reference-style) link definitions are read and stored
-  using the link definition storage class.
-  If the same label (which is case insensitive)
-  is specified more than once,
-  the latest specification shall prevail.
   """
   
   # Reference-style link definitions
