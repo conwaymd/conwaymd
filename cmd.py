@@ -2243,13 +2243,14 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   Reference-style:
     DEFINITION: @@![{label}][[class]]↵ {src} [title] @@[width]
     IMAGE: ![{alt}][[label]]
-  The delimiting at signs must be the first
+  The delimiting at signs in a definition must be the first
   non-whitespace characters on their lines.
-  A single space may be included between [{alt}] and [[label]].
-  The referencing string {label} is case insensitive
+  A single space may be included
+  between [{alt}] and [[label]] in an image.
+  The referencing strings {label} and [label] are case insensitive
   (this is handled by the image definition storage class).
-  Non-empty [width] must consist of digits only.
-  If [class] is empty,
+  Non-empty [width] in a definition must consist of digits only.
+  If [class] in a definition is empty,
   the square brackets surrounding it may be omitted.
   
   ![{alt}][[label]] becomes <img alt="alt"{attributes}>,
@@ -2440,17 +2441,17 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   Reference-style:
     DEFINITION: @@[{label}][[class]]↵ {href} [title] @@
     LINK: [{content}][[label]]
-  The delimiting at signs must be the first
+  The delimiting at signs in a definition must be the first
   non-whitespace characters on their lines.
-  A single space may be included between [{content}] and [[label]].
-  The referencing string {label} is case insensitive
+  A single space may be included
+  between [{content}] and [[label]] in a link.
+  The referencing strings {label} and [label] are case insensitive
   (this is handled by the link definition storage class).
-  If a link is supplied with an empty [label],
-  {content} is used as the label for that link.
   If [class] in a definition is empty,
   the square brackets surrounding it may be omitted.
-  If [label] in a link is empty,
-  the square brackets surrounding it may be omitted.
+  If [label] in a link is empty ,
+  {content} is used as the label for that link,
+  and the square brackets surrounding it may be omitted.
   
   [{content}][[label]] becomes <a{attributes}>{content}</a>,
   where {attributes} is the sequence of attributes
