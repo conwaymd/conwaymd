@@ -426,6 +426,9 @@ class PropertyStorage:
     
     property_string = f'%{property_name}'
     property_markup = self.dictionary[property_string]
+    property_markup = (
+      self.replace_property_strings_with_markup(property_markup)
+    )
     
     return property_markup
   
