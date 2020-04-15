@@ -1543,7 +1543,6 @@ def process_preamble_match(
     '''
   footer_element = f'''
     <footer>
-      <hr>
       ©~{year_range}{author_markup}{footer_copyright_remark_markup}.
       {footer_remark_markup}
     </footer>
