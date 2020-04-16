@@ -2170,7 +2170,7 @@ def process_table_part_match(placeholder_storage, match_object):
 
 
 ################################################################
-# Punctuation
+# Punctuation (or, escapes)
 ################################################################
 
 
@@ -2189,6 +2189,10 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
   '--': '–',
   r'\P': '¶',
   r'\#': '#',
+  r'\[': '[',
+  r'\]': ']',
+  r'\(': '(',
+  r'\)': ')',
   r'\*': '*',
   r'\_': '_',
 }
@@ -2212,6 +2216,10 @@ def process_punctuation(placeholder_storage, markup):
     --  becomes – U+2013 EN DASH
     \P  becomes ¶ U+00B6 PILCROW SIGN
     \#  becomes #
+    \[  becomes [
+    \]  becomes ]
+    \(  becomes (
+    \)  becomes )
     \*  becomes *
     \_  becomes _
   Most of these are based on LaTeX syntax.
