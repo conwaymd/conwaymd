@@ -46,6 +46,7 @@ ANYTHING_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}*?'
 NON_EMPTY_MINIMAL_REGEX = f'{ANY_CHARACTER_REGEX}+?'
 
 NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX = r'[^]]*?'
+NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX = r'[^}]*?'
 
 NOT_QUOTE_MINIMAL_REGEX = r'[^"]*?'
 
@@ -569,7 +570,7 @@ class ImageDefinitionStorage:
   Image definition storage class.
   
   Definitions for reference-style images are specified in the form
-  @@![{label}] [class]↵ {src} [title] @@[width],
+  @@![{label}]{[class]}↵ {src} [title] @@[width],
   and are stored in a dictionary with
     KEYS: {label}
     VALUES: {attributes}
@@ -633,7 +634,7 @@ class LinkDefinitionStorage:
   Link definition storage class.
   
   Definitions for reference-style links are specified in the form
-  @@[{label}] [class]↵ {href} [title] @@,
+  @@[{label}]{[class]}↵ {href} [title] @@,
   and are stored in a dictionary with
     KEYS: {label}
     VALUES: {attributes}
@@ -745,13 +746,13 @@ def process_literal_match(placeholder_storage, match_object):
 
 def process_display_code(placeholder_storage, markup):
   """
-  Process display code ``[id][[class]]↵ {content} ``.
+  Process display code ``[id]{[class]}↵ {content} ``.
   The delimiting backticks must be the first
   non-whitespace characters on their lines.
   If [class] is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   
-  ``[id][[class]]↵ {content} `` becomes
+  ``[id]{[class]}↵ {content} `` becomes
   <pre id="[id]" class="[class]"><code>{content}</code></pre>,
   with HTML syntax-character escaping
   and de-indentation for {content}.
@@ -766,9 +767,9 @@ def process_display_code(placeholder_storage, markup):
       (?P<backticks>  [`] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \] ?
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}} ?
         ) ?
       \n
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
@@ -901,13 +902,13 @@ def process_comments(markup):
 
 def process_display_maths(placeholder_storage, markup):
   r"""
-  Process display maths $$[id][[class]]↵ {content} $$.
+  Process display maths $$[id]{[class]}↵ {content} $$.
   The delimiting dollar signs must be the first
   non-whitespace characters on their lines.
   If [class] is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   
-  $$[id][[class]]↵ {content} $$ becomes
+  $$[id]{[class]}↵ {content} $$ becomes
   <div id="[id]" class="js-maths [class]">{content}</div>,
   with HTML syntax-character escaping
   and de-indentation for {content}.
@@ -928,9 +929,9 @@ def process_display_maths(placeholder_storage, markup):
       (?P<dollar_signs>  [$] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \] ?
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}} ?
         ) ?
       \n
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
@@ -1641,11 +1642,11 @@ LIST_TAG_NAMES = ['ul', 'ol']
 
 def process_blocks(placeholder_storage, markup):
   """
-  Process blocks cccc[id][[class]]↵ {content} cccc.
+  Process blocks cccc[id]{[class]}↵ {content} cccc.
   The delimiting characters (c) must be the first
   non-whitespace characters on their lines.
   If [class] is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   
   The following delimiting characters (c) are used:
     Non-lists
@@ -1655,7 +1656,7 @@ def process_blocks(placeholder_storage, markup):
     Lists
       =  <ul>
       +  <ol>
-  cccc[id][[class]]↵ {content} cccc becomes
+  cccc[id]{[class]}↵ {content} cccc becomes
   <{tag name} id="[id]" class="[class]">↵{content}</{tag name}>.
   For {content} containing four or more
   consecutive delimiting characters
@@ -1677,9 +1678,9 @@ def process_blocks(placeholder_storage, markup):
       )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \] ?
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}} ?
         ) ?
       \n
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
@@ -1734,7 +1735,7 @@ def process_list_items(placeholder_storage, content):
   Process list items.
   
   Content is split into list items <li>
-  according to leading occurrences of Y[id][[class]]
+  according to leading occurrences of Y[id]{[class]}
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Y):
     *
@@ -1744,7 +1745,7 @@ def process_list_items(placeholder_storage, content):
   List items end at the next list item,
   or at the end of the content being split.
   If [class] is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   """
   
   content = re.sub(
@@ -1753,9 +1754,9 @@ def process_list_items(placeholder_storage, content):
       {LIST_ITEM_DELIMITER_REGEX}
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}}
         ) ?
       [\s] +
       (?P<list_item_content>
@@ -1833,13 +1834,13 @@ TABLE_PART_DELIMITER_CHARACTER_REGEX = (
 
 def process_tables(placeholder_storage, markup):
   """
-  Process tables ''''[id][[class]]↵ {content} ''''.
+  Process tables ''''[id]{[class]}↵ {content} ''''.
   The delimiting apostrophes must be the first
   non-whitespace characters on their lines.
   If [class] is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   
-  ''''[id][[class]]↵ {content} '''' becomes
+  ''''[id]{[class]}↵ {content} '''' becomes
   <table id="[id]" class="[class]">↵{content}</table>.
   For {content} containing four or more consecutive apostrophes
   which are not protected by CMD literals,
@@ -1862,9 +1863,9 @@ def process_tables(placeholder_storage, markup):
       (?P<apostrophes>  ['] {{4,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \] ?
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}} ?
         ) ?
       \n
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
@@ -1909,7 +1910,7 @@ def process_table_cells(placeholder_storage, content):
   Process table cells.
   
   Content is split into table cells <th>, <td> according to
-  leading occurrences of Z[id][[class]]{[rowspan],[colspan]}
+  leading occurrences of Z[id]{[class]}[[rowspan],[colspan]]
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Z):
     ; (or any run of semicolons)  <th>
@@ -1918,10 +1919,10 @@ def process_table_cells(placeholder_storage, content):
   or at the end of the content being split.
   Non-empty [rowspan] and [colspan] must consist of digits only.
   If [class] is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   If [colspan] is empty, the comma before it may be omitted.
   If both [rowspan] and [colspan] are empty,
-  the comma between them and the curly brackets surrounding them
+  the comma between them and the square brackets surrounding them
   may be omitted.
   """
   
@@ -1934,18 +1935,18 @@ def process_table_cells(placeholder_storage, content):
       )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}}
         ) ?
         (
-          \{{
+          \[
             (?P<rowspan>  [0-9] *?  )
             (
               [,]
               (?P<colspan>  [0-9] *?  )
             ) ?
-          \}}
+          \]
         ) ?
       (
         {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
@@ -2019,13 +2020,13 @@ def process_table_rows(placeholder_storage, content):
   Process table rows.
   
   Content is split into table rows <tr>
-  according to leading occurrences of /[id][[class]]
+  according to leading occurrences of /[id]{[class]}
   (i.e. occurrences preceded only by whitespace on their lines).
   The slash may instead be any run of slashes.
   Table rows end at the next table row or table part,
   or at the end of the content being split.
   If [class] is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   """
   
   content = re.sub(
@@ -2034,9 +2035,9 @@ def process_table_rows(placeholder_storage, content):
       (?P<delimiter>  {TABLE_ROW_DELIMITER_CHARACTER_REGEX} +  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}}
         ) ?
       (
         {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
@@ -2093,7 +2094,7 @@ def process_table_parts(placeholder_storage, content):
   Process table parts.
   
   Content is split into table parts <thead>, <tbody>, <tfoot>
-  according to leading occurrences of Y[id][[class]]
+  according to leading occurrences of Y[id]{[class]}
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Y):
     ^ (or any run of carets)      <thead>
@@ -2102,7 +2103,7 @@ def process_table_parts(placeholder_storage, content):
   Table parts end at the next table part,
   or at the end of the content being split.
   If [class] is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   """
   
   content = re.sub(
@@ -2114,9 +2115,9 @@ def process_table_parts(placeholder_storage, content):
       )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}}
         ) ?
       (
         {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
@@ -2277,7 +2278,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   Process images.
   
   Reference-style:
-    DEFINITION: @@![{label}][[class]]↵ {src} [title] @@[width]
+    DEFINITION: @@![{label}]{[class]}↵ {src} [title] @@[width]
     IMAGE: ![{alt}][[label]]
   The delimiting at signs in a definition must be the first
   non-whitespace characters on their lines.
@@ -2287,7 +2288,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   (this is handled by the image definition storage class).
   Non-empty [width] in a definition must consist of digits only.
   If [class] in a definition is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   
   ![{alt}][[label]] becomes <img alt="alt"{attributes}>,
   where {attributes} is the sequence of attributes
@@ -2332,9 +2333,9 @@ def process_images(placeholder_storage, image_definition_storage, markup):
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
         \]
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \] ?
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}} ?
         ) ?
       \n
         (
@@ -2476,7 +2477,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   Process links.
   
   Reference-style:
-    DEFINITION: @@[{label}][[class]]↵ {href} [title] @@
+    DEFINITION: @@[{label}]{[class]}↵ {href} [title] @@
     LINK: [{content}][[label]]
   The delimiting at signs in a definition must be the first
   non-whitespace characters on their lines.
@@ -2485,7 +2486,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   The referencing strings {label} and [label] are case insensitive
   (this is handled by the link definition storage class).
   If [class] in a definition is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   If [label] in a link is empty,
   the square brackets surrounding it may be omitted,
   and {content} is used as the label for that link.
@@ -2533,9 +2534,9 @@ def process_links(placeholder_storage, link_definition_storage, markup):
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
         \]
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \] ?
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}} ?
         ) ?
       \n
         (
@@ -2677,17 +2678,17 @@ INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX = '[*_]'
 
 def process_inline_semantics(placeholder_storage, markup):
   r"""
-  Process inline semantics X[[class]] {content} X.
+  Process inline semantics X{[class]} {content} X.
   {content} must be non-empty.
   If [class] is empty,
-  the square brackets surrounding it may be omitted.
+  the curly brackets surrounding it may be omitted.
   
   The following delimiters (X) are used:
     *   <em>
     **  <strong>
     _   <i>
     __  <b>
-  X[[class]] {content} X (c or cc) becomes
+  X{[class]} {content} X (c or cc) becomes
   <{tag name} class="[class]">{content}</{tag name}>.
   Whitespace around {content} is stripped.
   For {content} containing one or more occurrences of c (* or _),
@@ -2696,20 +2697,20 @@ def process_inline_semantics(placeholder_storage, markup):
   Separate patterns are required
   for the following groupings of delimiting characters (c)
   so that the processing is performed in this order:
-    33    ccc[[inner class]] {inner content} ccc
-    312   ccc[[inner class]] {inner content} c {outer content} cc
-    321   ccc[[inner class]] {inner content} cc {outer content} c
-    22    cc[[class]] {content} cc
-    11    c[[class]] {content} c
+    33    ccc{[inner class]} {inner content} ccc
+    312   ccc{[inner class]} {inner content} c {outer content} cc
+    321   ccc{[inner class]} {inner content} cc {outer content} c
+    22    cc{[class]} {content} cc
+    11    c{[class]} {content} c
   33 is effectively 312 with empty {outer content}.
   However, once such a pattern has been matched,
   only three cases need to be handled for the resulting match object:
     2-layer special (for 33)
-      XY[[inner class]] {inner content} YX
+      XY{[inner class]} {inner content} YX
     2-layer general (for 312, 321):
-      XY[[inner class]] {inner content} Y {outer content} X
+      XY{[inner class]} {inner content} Y {outer content} X
     1-layer (for 22, 11):
-      X[[class]] {content} X
+      X{[class]} {content} X
   
   Recursive calls are used to process nested inline semantics.
   """
@@ -2724,9 +2725,9 @@ def process_inline_semantics(placeholder_storage, markup):
         (?P=delimiter_character) {{2}}
       )
         (
-          \[
-            (?P<inner_class>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \{{
+            (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}}
         ) ?
         (?P<inner_content>
           (
@@ -2753,9 +2754,9 @@ def process_inline_semantics(placeholder_storage, markup):
         (?P=delimiter_character) {{2}}
       )
         (
-          \[
-            (?P<inner_class>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \{{
+            (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}}
         ) ?
         (?P<inner_content>
           (
@@ -2789,9 +2790,9 @@ def process_inline_semantics(placeholder_storage, markup):
         (?P=delimiter_character) {{2}}
       )
         (
-          \[
-            (?P<inner_class>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \{{
+            (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}}
         ) ?
         (?P<inner_content>
           (
@@ -2825,9 +2826,9 @@ def process_inline_semantics(placeholder_storage, markup):
         (?P=delimiter_character)
       )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}}
         ) ?
         (?P<content>
           (
@@ -2849,9 +2850,9 @@ def process_inline_semantics(placeholder_storage, markup):
     f'''
       (?P<delimiter>  {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}  )
         (
-          \[
-            (?P<class_>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-          \]
+          \{{
+            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+          \}}
         ) ?
         (?P<content>  {NON_EMPTY_MINIMAL_REGEX}  )
       (?P=delimiter)
