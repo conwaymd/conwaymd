@@ -156,11 +156,12 @@ def escape_html_attribute_value(placeholder_storage, string):
   in which the three HTML syntax characters &, <, >
   are already escaped, but the quote " is not:
   (1) Leading and trailing whitespace is stripped.
-  (2) The three HTML syntax characters &, <, > are escaped.
-  (3) The placeholder strings are replaced with their markup.
-  (4) If the string is empty, an empty string is returned.
-  (5) The quote " is escaped.
-  (6) The string is stored into a new placeholder.
+  (2) Line continuations are processed.
+  (3) The three HTML syntax characters &, <, > are escaped.
+  (4) The placeholder strings are replaced with their markup.
+  (5) If the string is empty, an empty string is returned.
+  (6) The quote " is escaped.
+  (7) The string is stored into a new placeholder.
   
   CMD shall always delimit attribute values by double quotes " ",
   never single quotes ' '.
@@ -168,6 +169,7 @@ def escape_html_attribute_value(placeholder_storage, string):
   """
   
   string = string.strip()
+  string = process_line_continuations(string)
   string = escape_html_syntax_characters(string)
   string = placeholder_storage.replace_placeholders_with_markup(string)
   if string == '':
