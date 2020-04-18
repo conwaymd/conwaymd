@@ -2830,12 +2830,7 @@ def process_inline_semantics(placeholder_storage, markup):
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
         ) ?
-        (?P<content>
-          (
-            (?!  (?P=delimiter_character)  )
-            {ANY_CHARACTER_REGEX}
-          ) +?
-        )
+        (?P<content>  {NON_EMPTY_MINIMAL_REGEX}  )
       (?P=delimiter)
     ''',
     functools.partial(process_inline_semantic_match_1_layer,
