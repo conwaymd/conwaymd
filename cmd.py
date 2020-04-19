@@ -2291,6 +2291,9 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   Non-empty [width] in a definition must consist of digits only.
   If [class] in a definition is empty,
   the curly brackets surrounding it may be omitted.
+  If [label] in an image is empty,
+  the square brackets surrounding it may be omitted,
+  and {alt} is used as the label for that image.
   
   ![{alt}][[label]] becomes <img alt="alt"{attributes}>,
   where {attributes} is the sequence of attributes
@@ -2311,7 +2314,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   the latest specification shall prevail.
   
   Inline-style:
-    LINK: ![{alt}]( {src} [title] )
+    IMAGE: ![{alt}]( {src} [title] )
   (NOTE:
     Unlike John Gruber's markdown, [title] is not surrounded by quotes.
     If quotes are supplied to [title],
@@ -2368,9 +2371,11 @@ def process_images(placeholder_storage, image_definition_storage, markup):
         (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
       [ ] ??
-      \[
-        (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-      \]
+      (
+        \[
+          (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+        \]
+      ) ?
     ''',
     functools.partial(process_reference_image_match,
       placeholder_storage,
@@ -2438,7 +2443,8 @@ def process_reference_image_match(
   alt_attribute = build_html_attribute(placeholder_storage, 'alt', alt)
   
   label = match_object.group('label')
-  label = label.strip()
+  if label is None or label.strip() == '':
+    label = alt
   
   attributes = image_definition_storage.get_definition_attributes(label)
   if attributes is None:
