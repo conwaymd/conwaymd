@@ -2188,6 +2188,7 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
   r'\&': escape_html_syntax_characters('&'),
   r'\<': escape_html_syntax_characters('<'),
   r'\>': escape_html_syntax_characters('>'),
+  '...': '…',
   '---': '—',
   '--': '–',
   r'\P': '¶',
@@ -2215,6 +2216,7 @@ def process_punctuation(placeholder_storage, markup):
     \&  becomes &amp;
     \<  becomes &lt;
     \>  becomes &gt;
+    ... becomes … U+2026 HORIZONTAL ELLIPSIS
     --- becomes — U+2014 EM DASH
     --  becomes – U+2013 EN DASH
     \P  becomes ¶ U+00B6 PILCROW SIGN
