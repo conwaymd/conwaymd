@@ -1516,55 +1516,6 @@ def process_preamble_match(
 
 
 ################################################################
-# Protected elements
-################################################################
-
-
-PROTECTED_ELEMENT_TAG_NAME_REGEX = '(script|style)'
-
-
-def process_protected_elements(placeholder_storage, markup):
-  """
-  Process protected elements <script> and <style>.
-  
-  These elements are protected from any further processing
-  (i.e. kept as is) using the placeholder storage class.
-  """
-  
-  markup = re.sub(
-    f'''
-      <
-        (?P<tag_name>  {PROTECTED_ELEMENT_TAG_NAME_REGEX}  )
-      >
-        {ANYTHING_MINIMAL_REGEX}
-      </
-        (?P=tag_name)
-      >
-    ''',
-    functools.partial(process_protected_element_match, placeholder_storage),
-    markup,
-    flags=re.VERBOSE
-  )
-  
-  return markup
-
-
-def process_protected_element_match(placeholder_storage, match_object):
-  """
-  Process a single protected-element match object.
-  """
-  
-  match_string = match_object.group()
-  
-  protected_element = match_string
-  protected_element = (
-    placeholder_storage.create_placeholder_store_markup(protected_element)
-  )
-  
-  return protected_element
-
-
-################################################################
 # Headings
 ################################################################
 
@@ -3083,9 +3034,6 @@ def cmd_to_html(cmd, cmd_name):
   markup = process_preamble(
     placeholder_storage, property_storage, cmd_name, markup
   )
-  
-  # Process protected elements
-  markup = process_protected_elements(placeholder_storage, markup)
   
   # Process headings
   markup = process_headings(placeholder_storage, markup)
