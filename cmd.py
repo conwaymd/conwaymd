@@ -221,7 +221,6 @@ def replace_by_ordinary_dictionary(
   for pattern in dictionary:
     
     replacement = dictionary[pattern]
-    replacement = escape_python_backslash(replacement)
     if placeholder_storage is not None:
       replacement = (
         placeholder_storage.create_placeholder_store_markup(replacement)
