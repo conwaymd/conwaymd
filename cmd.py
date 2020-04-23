@@ -2183,7 +2183,6 @@ def process_punctuation(placeholder_storage, markup):
     \_  becomes _
     \=  becomes <hr>
     \+  becomes <br>
-  Most of these are based on LaTeX syntax.
   
   Some of the resulting strings (*, _) must be protected
   from further replacements using placeholder storage,
