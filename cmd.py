@@ -1491,7 +1491,7 @@ def process_preamble_match(
     footer_remark_markup = ''
   else:
     footer_remark_markup = fr'''
-      \\
+      \+
       {footer_remark}
     '''
   footer_element = f'''
