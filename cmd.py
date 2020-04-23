@@ -2156,7 +2156,6 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
 def process_punctuation(placeholder_storage, markup):
   r"""
   Process punctuation.
-    \\  becomes <br>
     \/  becomes the empty string
     \ / becomes   U+0020 SPACE
     \   becomes   U+0020 SPACE
@@ -2178,11 +2177,12 @@ def process_punctuation(placeholder_storage, markup):
     \)  becomes )
     \*  becomes *
     \_  becomes _
+    \+  becomes <br>
   Most of these are based on LaTeX syntax.
   
   Some of the resulting strings (*, _) must be protected
   from further replacements using placeholder storage,
-  but <br> resulting from \\ must not be protected so
+  but <br> resulting from \+ must not be protected so
   since whitespace before it will be removed later;
   for the remaining strings it does not matter.
   For simplicity in the implementation,
@@ -2190,11 +2190,11 @@ def process_punctuation(placeholder_storage, markup):
   whilst everything else is protected.
   """
   
-  markup = re.sub(r'\\\\', '<br>', markup)
-  
   markup = replace_by_ordinary_dictionary(
     PUNCTUATION_REPLACEMENT_DICTIONARY, markup, placeholder_storage
   )
+  
+  markup = re.sub(r'\\\+', '<br>', markup)
   
   return markup
 
