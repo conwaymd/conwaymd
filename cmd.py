@@ -2151,6 +2151,7 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
   r'\)': ')',
   r'\*': '*',
   r'\_': '_',
+  r'\=': '<hr>',
 }
 
 
@@ -2180,6 +2181,7 @@ def process_punctuation(placeholder_storage, markup):
     \)  becomes )
     \*  becomes *
     \_  becomes _
+    \=  becomes <hr>
     \+  becomes <br>
   Most of these are based on LaTeX syntax.
   
