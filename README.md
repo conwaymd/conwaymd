@@ -19,7 +19,7 @@ except those listed in `.cmdignore`.
 
 * `-c`, `--clean-urls`
   
-  Remove the `.html` extension from the property `%url`
+  Remove the `.html` extension from the property `%url`.
 
 [cmd-docs]: https://conway-markdown.github.io/
 [cmd-docs-repo]: https://github.com/conway-markdown/conway-markdown.github.io
