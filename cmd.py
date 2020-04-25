@@ -1506,7 +1506,7 @@ def process_preamble_match(
   
   # Derived property %url
   url = f'{cmd_name}.html'
-  url = re.sub('(^|(?<=/))index[.]html', '', url)
+  url = re.sub('(^|(?<=/))index[.]html$', '', url)
   property_storage.store_property_markup(
     'url', url
   )
