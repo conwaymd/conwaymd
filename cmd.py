@@ -155,6 +155,7 @@ def escape_html_attribute_value(placeholder_storage, string):
   (for instance from CMD literals),
   in which the three HTML syntax characters &, <, >
   are already escaped, but the quote " is not:
+  (0) The string is de-indented.
   (1) Leading and trailing whitespace is stripped.
   (2) Line continuations are processed.
   (3) The three HTML syntax characters &, <, > are escaped.
@@ -168,6 +169,7 @@ def escape_html_attribute_value(placeholder_storage, string):
   Therefore single quotes are not escaped as &apos;
   """
   
+  string = de_indent(string)
   string = string.strip()
   string = process_line_continuations(string)
   string = escape_html_syntax_characters(string)
