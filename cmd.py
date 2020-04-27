@@ -598,6 +598,7 @@ class ImageDefinitionStorage:
     """
     
     label = label.lower()
+    label = label.strip()
     
     class_attribute = build_html_attribute(
       placeholder_storage, 'class', class_
@@ -626,6 +627,7 @@ class ImageDefinitionStorage:
     """
     
     label = label.lower()
+    label = label.strip()
     
     attributes = self.dictionary.get(label, None)
     
@@ -662,6 +664,7 @@ class LinkDefinitionStorage:
     """
     
     label = label.lower()
+    label = label.strip()
     
     class_attribute = build_html_attribute(
       placeholder_storage, 'class', class_
@@ -685,6 +688,7 @@ class LinkDefinitionStorage:
     """
     
     label = label.lower()
+    label = label.strip()
     
     attributes = self.dictionary.get(label, None)
     
