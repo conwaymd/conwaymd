@@ -11,6 +11,11 @@ Since this is just a crappy, single-file regex converter,
 there is no plan on turning it into a proper Python package any time soon.
 In the meantime:
 
+````
+$ cd some-directory/
+$ git clone https://github.com/conway-markdown/conway-markdown.git
+````
+
 * If you are using Linux or Mac,
   make an alias for `some-directory/conway-markdown/cmd.py` and invoke that.
 * If you are using Windows,
