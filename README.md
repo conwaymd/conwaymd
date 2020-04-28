@@ -1,8 +1,9 @@
 # conway-markdown
 
-Conway's fence-style markdown (CMD), implemented in Python 3.6+ (see [cmd.py]).
+Conway's fence-style markdown (CMD), implemented in Python 3.6+.
 
-See also: [GitHub pages documentation][cmd-docs] ([repository][cmd-docs-repo])
+For a detailed description of the syntax,
+see the [GitHub pages documentation][cmd-docs] ([repository][cmd-docs-repo]).
 
 ## Usage
 
@@ -23,4 +24,3 @@ except those listed in `.cmdignore`.
 
 [cmd-docs]: https://conway-markdown.github.io/
 [cmd-docs-repo]: https://github.com/conway-markdown/conway-markdown.github.io
-[cmd.py]: cmd.py
