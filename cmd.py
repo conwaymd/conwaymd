@@ -863,11 +863,16 @@ def process_display_code_match(placeholder_storage, match_object):
 
 def process_inline_code(placeholder_storage, markup):
   """
-  Process inline code ` {content} `.
+  Process inline code [flags]` {content} `.
   
-  ` {content} ` becomes <code>{content}</code>,
+  [flags]` {content} ` becomes <code>{content}</code>,
   with HTML syntax-character escaping for {content}.
   Whitespace around {content} is stripped.
+  [flags] may consist of zero or more of the following characters:
+    u to leave HTML syntax characters unescaped
+    c to process line continuations
+    w to process whitespace completely
+    a to enable all flags above
   For {content} containing one or more consecutive backticks
   which are not protected by CMD literals,
   use a longer run of backticks in the delimiters.
@@ -875,6 +880,7 @@ def process_inline_code(placeholder_storage, markup):
   
   markup = re.sub(
     f'''
+      (?P<flags>  [ucwa] *  )
       (?P<backticks>  [`] +  )
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
       (?P=backticks)
@@ -892,9 +898,23 @@ def process_inline_code_match(placeholder_storage, match_object):
   Process a single inline-code match object.
   """
   
+  flags = match_object.group('flags')
+  enable_all_flags = 'a' in flags
+  enable_unescaped_flag = enable_all_flags or 'u' in flags
+  enable_continuations_flag = enable_all_flags or 'c' in flags
+  enable_whitespace_flag = enable_all_flags or 'w' in flags
+  
   content = match_object.group('content')
   content = content.strip()
-  content = escape_html_syntax_characters(content)
+  
+  if not enable_unescaped_flag:
+    content = escape_html_syntax_characters(content)
+  
+  if enable_continuations_flag:
+    content = process_line_continuations(content)
+  
+  if enable_whitespace_flag:
+    content = process_whitespace(content)
   
   inline_code = f'<code>{content}</code>'
   inline_code = (
