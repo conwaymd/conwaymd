@@ -742,22 +742,22 @@ def process_literal_match(placeholder_storage, match_object):
   """
   
   flags = match_object.group('flags')
-  enable_all_flags = 'a' in flags
-  enable_unescaped_flag = enable_all_flags or 'u' in flags
-  enable_continuations_flag = enable_all_flags or 'c' in flags
-  enable_whitespace_flag = enable_all_flags or 'w' in flags
+  enabled_all_flags = 'a' in flags
+  enabled_unescaped_flag = enabled_all_flags or 'u' in flags
+  enabled_continuations_flag = enabled_all_flags or 'c' in flags
+  enabled_whitespace_flag = enabled_all_flags or 'w' in flags
   
   content = match_object.group('content')
   content = de_indent(content)
   content = content.strip()
   
-  if not enable_unescaped_flag:
+  if not enabled_unescaped_flag:
     content = escape_html_syntax_characters(content)
   
-  if enable_continuations_flag:
+  if enabled_continuations_flag:
     content = process_line_continuations(content)
   
-  if enable_whitespace_flag:
+  if enabled_whitespace_flag:
     content = process_whitespace(content)
   
   literal = content
@@ -823,10 +823,10 @@ def process_display_code_match(placeholder_storage, match_object):
   """
   
   flags = match_object.group('flags')
-  enable_all_flags = 'a' in flags
-  enable_unescaped_flag = enable_all_flags or 'u' in flags
-  enable_continuations_flag = enable_all_flags or 'c' in flags
-  enable_whitespace_flag = enable_all_flags or 'w' in flags
+  enabled_all_flags = 'a' in flags
+  enabled_unescaped_flag = enabled_all_flags or 'u' in flags
+  enabled_continuations_flag = enabled_all_flags or 'c' in flags
+  enabled_whitespace_flag = enabled_all_flags or 'w' in flags
   
   id_ = match_object.group('id_')
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
@@ -837,13 +837,13 @@ def process_display_code_match(placeholder_storage, match_object):
   content = match_object.group('content')
   content = de_indent(content)
   
-  if not enable_unescaped_flag:
+  if not enabled_unescaped_flag:
     content = escape_html_syntax_characters(content)
   
-  if enable_continuations_flag:
+  if enabled_continuations_flag:
     content = process_line_continuations(content)
   
-  if enable_whitespace_flag:
+  if enabled_whitespace_flag:
     content = process_whitespace(content)
   
   display_code = (
@@ -899,21 +899,21 @@ def process_inline_code_match(placeholder_storage, match_object):
   """
   
   flags = match_object.group('flags')
-  enable_all_flags = 'a' in flags
-  enable_unescaped_flag = enable_all_flags or 'u' in flags
-  enable_continuations_flag = enable_all_flags or 'c' in flags
-  enable_whitespace_flag = enable_all_flags or 'w' in flags
+  enabled_all_flags = 'a' in flags
+  enabled_unescaped_flag = enabled_all_flags or 'u' in flags
+  enabled_continuations_flag = enabled_all_flags or 'c' in flags
+  enabled_whitespace_flag = enabled_all_flags or 'w' in flags
   
   content = match_object.group('content')
   content = content.strip()
   
-  if not enable_unescaped_flag:
+  if not enabled_unescaped_flag:
     content = escape_html_syntax_characters(content)
   
-  if enable_continuations_flag:
+  if enabled_continuations_flag:
     content = process_line_continuations(content)
   
-  if enable_whitespace_flag:
+  if enabled_whitespace_flag:
     content = process_whitespace(content)
   
   inline_code = f'<code>{content}</code>'
@@ -1022,7 +1022,7 @@ def process_display_maths_match(placeholder_storage, match_object):
   """
   
   flags = match_object.group('flags')
-  enable_whitespace_flag = 'w' in flags
+  enabled_whitespace_flag = 'w' in flags
   
   id_ = match_object.group('id_')
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
@@ -1039,7 +1039,7 @@ def process_display_maths_match(placeholder_storage, match_object):
   content = de_indent(content)
   content = escape_html_syntax_characters(content)
   
-  if enable_whitespace_flag:
+  if enabled_whitespace_flag:
     content = process_whitespace(content)
   
   display_maths = f'<div{id_attribute}{class_attribute}>{content}</div>'
@@ -1097,13 +1097,13 @@ def process_inline_maths_match(placeholder_storage, match_object):
   """
   
   flags = match_object.group('flags')
-  enable_whitespace_flag = 'w' in flags
+  enabled_whitespace_flag = 'w' in flags
   
   content = match_object.group('content')
   content = content.strip()
   content = escape_html_syntax_characters(content)
   
-  if enable_whitespace_flag:
+  if enabled_whitespace_flag:
     content = process_whitespace(content)
   
   inline_maths = f'<span class="js-maths">{content}</span>'
@@ -1327,7 +1327,7 @@ def process_ordinary_replacement_match(
 
 
 def process_preamble(
-  placeholder_storage, property_storage, cmd_name, enable_clean_url_flag,
+  placeholder_storage, property_storage, cmd_name, enabled_clean_url_flag,
   markup
 ):
   """
@@ -1406,7 +1406,7 @@ def process_preamble(
       (?P=percent_signs)
     ''',
     functools.partial(process_preamble_match,
-      placeholder_storage, property_storage, cmd_name, enable_clean_url_flag
+      placeholder_storage, property_storage, cmd_name, enabled_clean_url_flag
     ),
     markup,
     count=1,
@@ -1453,7 +1453,7 @@ DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS = '''
 
 
 def process_preamble_match(
-  placeholder_storage, property_storage, cmd_name, enable_clean_url_flag,
+  placeholder_storage, property_storage, cmd_name, enabled_clean_url_flag,
   match_object
 ):
   """
@@ -1594,7 +1594,7 @@ def process_preamble_match(
   # Derived property %url
   url = f'{cmd_name}.html'
   url = re.sub('(^|(?<=/))index[.]html$', '', url)
-  if enable_clean_url_flag:
+  if enabled_clean_url_flag:
     url = re.sub('[.]html$', '', url)
   property_storage.store_property_markup(
     'url', url
@@ -3078,7 +3078,7 @@ def process_whitespace(markup):
 ################################################################
 
 
-def cmd_to_html(cmd, cmd_name, enable_clean_url_flag):
+def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
   """
   Convert CMD to HTML.
   
@@ -3127,7 +3127,7 @@ def cmd_to_html(cmd, cmd_name, enable_clean_url_flag):
   # Process preamble
   property_storage = PropertyStorage()
   markup = process_preamble(
-    placeholder_storage, property_storage, cmd_name, enable_clean_url_flag,
+    placeholder_storage, property_storage, cmd_name, enabled_clean_url_flag,
     markup
   )
   
@@ -3179,7 +3179,7 @@ def cmd_to_html(cmd, cmd_name, enable_clean_url_flag):
 ################################################################
 
 
-def cmd_file_to_html_file(cmd_name, enable_clean_url_flag):
+def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
   """
   Run converter on CMD file and generate HTML file.
   """
@@ -3197,14 +3197,14 @@ def cmd_file_to_html_file(cmd_name, enable_clean_url_flag):
     cmd = cmd_file.read()
   
   # Convert CMD to HTML
-  html = cmd_to_html(cmd, cmd_name, enable_clean_url_flag)
+  html = cmd_to_html(cmd, cmd_name, enabled_clean_url_flag)
   
   # Write HTML to HTML file
   with open(f'{cmd_name}.html', 'w', encoding='utf-8') as html_file:
     html_file.write(html)
 
 
-def main(cmd_name, enable_clean_url_flag):
+def main(cmd_name, enabled_clean_url_flag):
   
   # Read CMD ignore patterns from .cmdignore
   try:
@@ -3243,7 +3243,7 @@ def main(cmd_name, enable_clean_url_flag):
   
   # Convert CMD files
   for cmd_name in cmd_name_list:
-    cmd_file_to_html_file(cmd_name, enable_clean_url_flag)
+    cmd_file_to_html_file(cmd_name, enabled_clean_url_flag)
 
 
 if __name__ == '__main__':
@@ -3273,7 +3273,7 @@ if __name__ == '__main__':
   parser.add_argument(
     '-c',
     '--clean-url',
-    dest='enable_clean_url_flag',
+    dest='enabled_clean_url_flag',
     action='store_true',
     help=CLEAN_URL_HELP_TEXT
   )
@@ -3281,6 +3281,6 @@ if __name__ == '__main__':
   arguments = parser.parse_args()
   
   cmd_name = arguments.cmd_name
-  enable_clean_url_flag = arguments.enable_clean_url_flag
+  enabled_clean_url_flag = arguments.enabled_clean_url_flag
   
-  main(cmd_name, enable_clean_url_flag)
+  main(cmd_name, enabled_clean_url_flag)
