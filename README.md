@@ -34,7 +34,7 @@ except those listed in `.cmdignore`.
 
 ### Optional arguments
 
-* `-c`, `--clean-urls`
+* `-c`, `--clean-url`
   
   Remove the `.html` extension from the property `%url`.
 
