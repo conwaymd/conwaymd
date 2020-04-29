@@ -702,12 +702,17 @@ class LinkDefinitionStorage:
 
 def process_literals(placeholder_storage, markup):
   """
-  Process CMD literals (! {content} !).
+  Process CMD literals [flags](! {content} !).
   
-  (! {content} !) becomes {content}, literally,
+  [flags](! {content} !) becomes {content}, literally,
   with HTML syntax-character escaping
   and de-indentation for {content}.
   Whitespace around {content} is stripped.
+  [flags] may consist of zero or more of the following characters:
+    u to leave HTML syntax characters unescaped
+    c to process line continuations
+    w to process whitespace completely
+    a to enable all flags above
   For {content} containing one or more consecutive exclamation marks
   followed by a closing round bracket,
   use a longer run of exclamation marks in the delimiters,
@@ -716,6 +721,7 @@ def process_literals(placeholder_storage, markup):
   
   markup = re.sub(
     fr'''
+      (?P<flags>  [ucwa] *  )
       \(
         (?P<exclamation_marks>  [!] +  )
           (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
@@ -735,10 +741,24 @@ def process_literal_match(placeholder_storage, match_object):
   Process a single CMD-literal match object.
   """
   
+  flags = match_object.group('flags')
+  enable_all_flags = 'a' in flags
+  enable_unescaped_flag = enable_all_flags or 'u' in flags
+  enable_continuations_flag = enable_all_flags or 'c' in flags
+  enable_whitespace_flag = enable_all_flags or 'w' in flags
+  
   content = match_object.group('content')
   content = de_indent(content)
   content = content.strip()
-  content = escape_html_syntax_characters(content)
+  
+  if not enable_unescaped_flag:
+    content = escape_html_syntax_characters(content)
+  
+  if enable_continuations_flag:
+    content = process_line_continuations(content)
+  
+  if enable_whitespace_flag:
+    content = process_whitespace(content)
   
   literal = content
   literal = placeholder_storage.create_placeholder_store_markup(literal)
