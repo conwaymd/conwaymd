@@ -969,16 +969,18 @@ def process_comments(markup):
 
 def process_display_maths(placeholder_storage, markup):
   r"""
-  Process display maths $$[id]{[class]}↵ {content} $$.
+  Process display maths [flags]$$[id]{[class]}↵ {content} $$.
   The delimiting dollar signs must be the first
   non-whitespace characters on their lines.
   If [class] is empty,
   the curly brackets surrounding it may be omitted.
   
-  $$[id]{[class]}↵ {content} $$ becomes
+  [flags]$$[id]{[class]}↵ {content} $$ becomes
   <div id="[id]" class="js-maths [class]">{content}</div>,
   with HTML syntax-character escaping
   and de-indentation for {content}.
+  [flags] may consist of zero or more of the following characters:
+    w to process whitespace completely
   For {content} containing two or more consecutive dollar signs
   which are not protected by CMD literals,
   e.g. \text{\$$d$, i.e.~$d$~dollars},
@@ -993,6 +995,7 @@ def process_display_maths(placeholder_storage, markup):
   markup = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+      (?P<flags>  [w] *  )
       (?P<dollar_signs>  [$] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
@@ -1018,6 +1021,9 @@ def process_display_maths_match(placeholder_storage, match_object):
   Process a single display-maths match object.
   """
   
+  flags = match_object.group('flags')
+  enable_whitespace_flag = 'w' in flags
+  
   id_ = match_object.group('id_')
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
   
@@ -1032,6 +1038,9 @@ def process_display_maths_match(placeholder_storage, match_object):
   content = match_object.group('content')
   content = de_indent(content)
   content = escape_html_syntax_characters(content)
+  
+  if enable_whitespace_flag:
+    content = process_whitespace(content)
   
   display_maths = f'<div{id_attribute}{class_attribute}>{content}</div>'
   display_maths = (
