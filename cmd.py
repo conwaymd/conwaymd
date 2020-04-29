@@ -1248,7 +1248,8 @@ def process_ordinary_replacement_match(
 
 
 def process_preamble(
-  placeholder_storage, property_storage, cmd_name, clean_url_enabled, markup
+  placeholder_storage, property_storage, cmd_name, enable_clean_url_flag,
+  markup
 ):
   """
   Process the preamble %%↵ {content} %%.
@@ -1326,7 +1327,7 @@ def process_preamble(
       (?P=percent_signs)
     ''',
     functools.partial(process_preamble_match,
-      placeholder_storage, property_storage, cmd_name, clean_url_enabled
+      placeholder_storage, property_storage, cmd_name, enable_clean_url_flag
     ),
     markup,
     count=1,
@@ -1373,7 +1374,7 @@ DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS = '''
 
 
 def process_preamble_match(
-  placeholder_storage, property_storage, cmd_name, clean_url_enabled,
+  placeholder_storage, property_storage, cmd_name, enable_clean_url_flag,
   match_object
 ):
   """
@@ -1514,7 +1515,7 @@ def process_preamble_match(
   # Derived property %url
   url = f'{cmd_name}.html'
   url = re.sub('(^|(?<=/))index[.]html$', '', url)
-  if clean_url_enabled:
+  if enable_clean_url_flag:
     url = re.sub('[.]html$', '', url)
   property_storage.store_property_markup(
     'url', url
@@ -2998,7 +2999,7 @@ def process_whitespace(markup):
 ################################################################
 
 
-def cmd_to_html(cmd, cmd_name, clean_url_enabled):
+def cmd_to_html(cmd, cmd_name, enable_clean_url_flag):
   """
   Convert CMD to HTML.
   
@@ -3047,7 +3048,8 @@ def cmd_to_html(cmd, cmd_name, clean_url_enabled):
   # Process preamble
   property_storage = PropertyStorage()
   markup = process_preamble(
-    placeholder_storage, property_storage, cmd_name, clean_url_enabled, markup
+    placeholder_storage, property_storage, cmd_name, enable_clean_url_flag,
+    markup
   )
   
   # Process headings
@@ -3098,7 +3100,7 @@ def cmd_to_html(cmd, cmd_name, clean_url_enabled):
 ################################################################
 
 
-def cmd_file_to_html_file(cmd_name, clean_url_enabled):
+def cmd_file_to_html_file(cmd_name, enable_clean_url_flag):
   """
   Run converter on CMD file and generate HTML file.
   """
@@ -3116,14 +3118,14 @@ def cmd_file_to_html_file(cmd_name, clean_url_enabled):
     cmd = cmd_file.read()
   
   # Convert CMD to HTML
-  html = cmd_to_html(cmd, cmd_name, clean_url_enabled)
+  html = cmd_to_html(cmd, cmd_name, enable_clean_url_flag)
   
   # Write HTML to HTML file
   with open(f'{cmd_name}.html', 'w', encoding='utf-8') as html_file:
     html_file.write(html)
 
 
-def main(cmd_name, clean_url_enabled):
+def main(cmd_name, enable_clean_url_flag):
   
   # Read CMD ignore patterns from .cmdignore
   try:
@@ -3162,7 +3164,7 @@ def main(cmd_name, clean_url_enabled):
   
   # Convert CMD files
   for cmd_name in cmd_name_list:
-    cmd_file_to_html_file(cmd_name, clean_url_enabled)
+    cmd_file_to_html_file(cmd_name, enable_clean_url_flag)
 
 
 if __name__ == '__main__':
@@ -3192,7 +3194,7 @@ if __name__ == '__main__':
   parser.add_argument(
     '-c',
     '--clean-url',
-    dest='clean_url_enabled',
+    dest='enable_clean_url_flag',
     action='store_true',
     help=CLEAN_URL_HELP_TEXT
   )
@@ -3200,6 +3202,6 @@ if __name__ == '__main__':
   arguments = parser.parse_args()
   
   cmd_name = arguments.cmd_name
-  clean_url_enabled = arguments.clean_url_enabled
+  enable_clean_url_flag = arguments.enable_clean_url_flag
   
-  main(cmd_name, clean_url_enabled)
+  main(cmd_name, enable_clean_url_flag)
