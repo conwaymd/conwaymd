@@ -1057,11 +1057,14 @@ def process_display_maths_match(placeholder_storage, match_object):
 
 def process_inline_maths(placeholder_storage, markup):
   r"""
-  Process inline maths $ {content} $.
+  Process inline maths [flags]$ {content} $.
   
-  ` {content} ` becomes <span class="js-maths">{content}</span>,
+  [flags]$ {content} $ becomes
+  <span class="js-maths">{content}</span>,
   with HTML syntax-character escaping for {content}.
   Whitespace around {content} is stripped.
+  [flags] may consist of zero or more of the following characters:
+    w to process whitespace completely
   For {content} containing one or more consecutive dollar signs
   which are not protected by CMD literals,
   e.g. \text{$x = \infinity$ is very big},
@@ -1075,6 +1078,7 @@ def process_inline_maths(placeholder_storage, markup):
   
   markup = re.sub(
     f'''
+      (?P<flags>  [w] *  )
       (?P<dollar_signs> [$] +  )
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
       (?P=dollar_signs)
@@ -1092,9 +1096,15 @@ def process_inline_maths_match(placeholder_storage, match_object):
   Process a single inline-maths match object.
   """
   
+  flags = match_object.group('flags')
+  enable_whitespace_flag = 'w' in flags
+  
   content = match_object.group('content')
   content = content.strip()
   content = escape_html_syntax_characters(content)
+  
+  if enable_whitespace_flag:
+    content = process_whitespace(content)
   
   inline_maths = f'<span class="js-maths">{content}</span>'
   inline_maths = (
