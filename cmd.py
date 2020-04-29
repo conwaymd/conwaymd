@@ -773,16 +773,21 @@ def process_literal_match(placeholder_storage, match_object):
 
 def process_display_code(placeholder_storage, markup):
   """
-  Process display code ``[id]{[class]}↵ {content} ``.
+  Process display code [flags]``[id]{[class]}↵ {content} ``.
   The delimiting backticks must be the first
   non-whitespace characters on their lines.
   If [class] is empty,
   the curly brackets surrounding it may be omitted.
   
-  ``[id]{[class]}↵ {content} `` becomes
+  [flags]``[id]{[class]}↵ {content} `` becomes
   <pre id="[id]" class="[class]"><code>{content}</code></pre>,
   with HTML syntax-character escaping
   and de-indentation for {content}.
+  [flags] may consist of zero or more of the following characters:
+    u to leave HTML syntax characters unescaped
+    c to process line continuations
+    w to process whitespace completely
+    a to enable all flags above
   For {content} containing two or more consecutive backticks
   which are not protected by CMD literals,
   use a longer run of backticks in the delimiters.
@@ -791,6 +796,7 @@ def process_display_code(placeholder_storage, markup):
   markup = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+      (?P<flags>  [ucwa] *  )
       (?P<backticks>  [`] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
@@ -816,6 +822,12 @@ def process_display_code_match(placeholder_storage, match_object):
   Process a single display-code match object.
   """
   
+  flags = match_object.group('flags')
+  enable_all_flags = 'a' in flags
+  enable_unescaped_flag = enable_all_flags or 'u' in flags
+  enable_continuations_flag = enable_all_flags or 'c' in flags
+  enable_whitespace_flag = enable_all_flags or 'w' in flags
+  
   id_ = match_object.group('id_')
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
   
@@ -824,7 +836,15 @@ def process_display_code_match(placeholder_storage, match_object):
   
   content = match_object.group('content')
   content = de_indent(content)
-  content = escape_html_syntax_characters(content)
+  
+  if not enable_unescaped_flag:
+    content = escape_html_syntax_characters(content)
+  
+  if enable_continuations_flag:
+    content = process_line_continuations(content)
+  
+  if enable_whitespace_flag:
+    content = process_whitespace(content)
   
   display_code = (
     f'<pre{id_attribute}{class_attribute}><code>{content}</code></pre>'
