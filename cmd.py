@@ -2325,6 +2325,20 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   """
   Process images.
   
+  Inline-style:
+    IMAGE: ![{alt}]( {src} [title] )
+  (NOTE:
+    Unlike John Gruber's markdown, [title] is not surrounded by quotes.
+    If quotes are supplied to [title],
+    they are automatically escaped as &quot;.
+  )
+  
+  ![{alt}]( {src} [title] ) becomes
+  <img alt="{alt}" src="{src}" title="[title]">.
+  
+  For {alt}, {src}, or [title] containing
+  one or more closing square or round brackets, use CMD literals.
+  
   Reference-style:
     DEFINITION: @@![{label}]{[class]}↵ {src} [title] @@[width]
     IMAGE: ![{alt}][[label]]
@@ -2358,21 +2372,28 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   If the same label (which is case insensitive)
   is specified more than once,
   the latest specification shall prevail.
-  
-  Inline-style:
-    IMAGE: ![{alt}]( {src} [title] )
-  (NOTE:
-    Unlike John Gruber's markdown, [title] is not surrounded by quotes.
-    If quotes are supplied to [title],
-    they are automatically escaped as &quot;.
-  )
-  
-  ![{alt}]( {src} [title] ) becomes
-  <img alt="{alt}" src="{src}" title="[title]">.
-  
-  For {alt}, {src}, or [title] containing
-  one or more closing square or round brackets, use CMD literals.
   """
+  
+  # Inline-style images
+  markup = re.sub(
+    fr'''
+      !
+      \[
+        (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+      \]
+      \(
+        [\s] *
+        (?P<src>  {ANYTHING_MINIMAL_REGEX}  )
+        (
+          [\s] +?
+          (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
+        ) ??
+      \)
+    ''',
+    functools.partial(process_inline_image_match, placeholder_storage),
+    markup,
+    flags=re.VERBOSE
+  )
   
   # Reference-style image definitions
   markup = re.sub(
@@ -2431,28 +2452,26 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     flags=re.VERBOSE
   )
   
-  # Inline-style images
-  markup = re.sub(
-    fr'''
-      !
-      \[
-        (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-      \]
-      \(
-        [\s] *
-        (?P<src>  {ANYTHING_MINIMAL_REGEX}  )
-        (
-          [\s] +?
-          (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
-        ) ??
-      \)
-    ''',
-    functools.partial(process_inline_image_match, placeholder_storage),
-    markup,
-    flags=re.VERBOSE
-  )
-  
   return markup
+
+
+def process_inline_image_match(placeholder_storage, match_object):
+  """
+  Process a single inline-style-image match object.
+  """
+  
+  alt = match_object.group('alt')
+  alt_attribute = build_html_attribute(placeholder_storage, 'alt', alt)
+  
+  src = match_object.group('src')
+  src_attribute = build_html_attribute(placeholder_storage, 'src', src)
+  
+  title = match_object.group('title')
+  title_attribute = build_html_attribute(placeholder_storage, 'title', title)
+  
+  image = f'<img{alt_attribute}{src_attribute}{title_attribute}>'
+  
+  return image
 
 
 def process_image_definition_match(
@@ -2498,25 +2517,6 @@ def process_reference_image_match(
     return match_string
   
   image = f'<img{alt_attribute}{attributes}>'
-  
-  return image
-
-
-def process_inline_image_match(placeholder_storage, match_object):
-  """
-  Process a single inline-style-image match object.
-  """
-  
-  alt = match_object.group('alt')
-  alt_attribute = build_html_attribute(placeholder_storage, 'alt', alt)
-  
-  src = match_object.group('src')
-  src_attribute = build_html_attribute(placeholder_storage, 'src', src)
-  
-  title = match_object.group('title')
-  title_attribute = build_html_attribute(placeholder_storage, 'title', title)
-  
-  image = f'<img{alt_attribute}{src_attribute}{title_attribute}>'
   
   return image
 
