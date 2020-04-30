@@ -2530,6 +2530,21 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   """
   Process links.
   
+  Inline-style:
+    LINK: [{content}]( {href} [title] )
+  (NOTE:
+    Unlike John Gruber's markdown, [title] is not surrounded by quotes.
+    If quotes are supplied to [title],
+    they are automatically escaped as &quot;.
+  )
+  
+  [{content}]( {href} [title] ) becomes
+  <a href="{href}" title="[title]">{content}</a>.
+  
+  Whitespace around {content} is stripped.
+  For {content}, {href}, or [title] containing
+  one or more closing square or round brackets, use CMD literals.
+  
   Reference-style:
     DEFINITION: @@[{label}]{[class]}↵ {href} [title] @@
     LINK: [{content}][[label]]
@@ -2562,22 +2577,27 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   If the same label (which is case insensitive)
   is specified more than once,
   the latest specification shall prevail.
-  
-  Inline-style:
-    LINK: [{content}]( {href} [title] )
-  (NOTE:
-    Unlike John Gruber's markdown, [title] is not surrounded by quotes.
-    If quotes are supplied to [title],
-    they are automatically escaped as &quot;.
-  )
-  
-  [{content}]( {href} [title] ) becomes
-  <a href="{href}" title="[title]">{content}</a>.
-  
-  Whitespace around {content} is stripped.
-  For {content}, {href}, or [title] containing
-  one or more closing square or round brackets, use CMD literals.
   """
+  
+  # Inline-style links
+  markup = re.sub(
+    fr'''
+      \[
+        (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+      \]
+      \(
+        [\s] *
+        (?P<href>  {ANYTHING_MINIMAL_REGEX}  )
+        (
+          [\s] +?
+          (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
+        ) ??
+      \)
+    ''',
+    functools.partial(process_inline_link_match, placeholder_storage),
+    markup,
+    flags=re.VERBOSE
+  )
   
   # Reference-style link definitions
   markup = re.sub(
@@ -2630,27 +2650,26 @@ def process_links(placeholder_storage, link_definition_storage, markup):
     flags=re.VERBOSE
   )
   
-  # Inline-style links
-  markup = re.sub(
-    fr'''
-      \[
-        (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-      \]
-      \(
-        [\s] *
-        (?P<href>  {ANYTHING_MINIMAL_REGEX}  )
-        (
-          [\s] +?
-          (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
-        ) ??
-      \)
-    ''',
-    functools.partial(process_inline_link_match, placeholder_storage),
-    markup,
-    flags=re.VERBOSE
-  )
-  
   return markup
+
+
+def process_inline_link_match(placeholder_storage, match_object):
+  """
+  Process a single inline-style-link match object.
+  """
+  
+  content = match_object.group('content')
+  content = content.strip()
+  
+  href = match_object.group('href')
+  href_attribute = build_html_attribute(placeholder_storage, 'href', href)
+  
+  title = match_object.group('title')
+  title_attribute = build_html_attribute(placeholder_storage, 'title', title)
+  
+  link = f'<a{href_attribute}{title_attribute}>{content}</a>'
+  
+  return link
 
 
 def process_link_definition_match(
@@ -2693,25 +2712,6 @@ def process_reference_link_match(link_definition_storage, match_object):
     return match_string
   
   link = f'<a{attributes}>{content}</a>'
-  
-  return link
-
-
-def process_inline_link_match(placeholder_storage, match_object):
-  """
-  Process a single inline-style-link match object.
-  """
-  
-  content = match_object.group('content')
-  content = content.strip()
-  
-  href = match_object.group('href')
-  href_attribute = build_html_attribute(placeholder_storage, 'href', href)
-  
-  title = match_object.group('title')
-  title_attribute = build_html_attribute(placeholder_storage, 'title', title)
-  
-  link = f'<a{href_attribute}{title_attribute}>{content}</a>'
   
   return link
 
