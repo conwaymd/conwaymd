@@ -2233,6 +2233,7 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
   '---': '—',
   '--': '–',
   r'\P': '¶',
+  r'\d': '$',
   r'\#': '#',
   r'\[': '[',
   r'\]': ']',
@@ -2263,6 +2264,7 @@ def process_punctuation(placeholder_storage, markup):
     --- becomes — U+2014 EM DASH
     --  becomes – U+2013 EN DASH
     \P  becomes ¶ U+00B6 PILCROW SIGN
+    \d  becomes $
     \#  becomes #
     \[  becomes [
     \]  becomes ]
