@@ -1790,14 +1790,12 @@ def process_list_items(placeholder_storage, content):
           \}}
         ) ?
       [\s] +
-      (?P<list_item_content>
-        (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            {LIST_ITEM_DELIMITER_REGEX}
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
+      (?P<list_item_content>  {ANYTHING_MINIMAL_REGEX}  )
+      (?=
+        {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+        {LIST_ITEM_DELIMITER_REGEX}
+          |
+        \Z
       )
     ''',
     functools.partial(process_list_item_match, placeholder_storage),
