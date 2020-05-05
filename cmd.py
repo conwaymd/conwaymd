@@ -72,8 +72,8 @@ def de_indent(string):
   
   # Remove trailing horizontal whitespace on the last line
   string = re.sub(
-    f'''
-      {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} *  $
+    fr'''
+      {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} *  \Z
     ''',
     '',
     string,
@@ -1588,9 +1588,9 @@ def process_preamble_match(
   
   # Derived property %url
   url = f'{cmd_name}.html'
-  url = re.sub('(^|(?<=/))index[.]html$', '', url)
+  url = re.sub(r'(\A|(?<=/))index[.]html\Z', '', url)
   if enabled_clean_url_flag:
-    url = re.sub('[.]html$', '', url)
+    url = re.sub(r'[.]html\Z', '', url)
   property_storage.store_property_markup(
     'url', url
   )
@@ -3162,8 +3162,8 @@ def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
   # (2) Remove leading dot-slash for current directory
   # (3) Remove trailing "." or ".cmd" extension if given
   cmd_name = re.sub(r'\\', '/', cmd_name)
-  cmd_name = re.sub(r'^[.]/', '', cmd_name)
-  cmd_name = re.sub(r'[.](cmd)?$', '', cmd_name)
+  cmd_name = re.sub(r'\A[.]/', '', cmd_name)
+  cmd_name = re.sub(r'[.](cmd)?\Z', '', cmd_name)
   
   # Read CMD from CMD file
   with open(f'{cmd_name}.cmd', 'r', encoding='utf-8') as cmd_file:
@@ -3189,7 +3189,7 @@ def main(cmd_name, enabled_clean_url_flag):
   # Convert to a list and ensure leading ./
   cmd_ignore_pattern_list = cmd_ignore_content.split()
   cmd_ignore_pattern_list = [
-    re.sub('^(?![.]/)', './', cmd_ignore_pattern)
+    re.sub('\A(?![.]/)', './', cmd_ignore_pattern)
       for cmd_ignore_pattern in cmd_ignore_pattern_list
   ]
   
