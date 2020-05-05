@@ -1840,22 +1840,22 @@ def process_list_item_match(placeholder_storage, match_object):
 ################################################################
 
 
-TABLE_CELL_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY = {
+TABLE_CELL_DELIMITER_TAG_NAME_DICTIONARY = {
   ';': 'th',
   ',': 'td',
 }
-TABLE_CELL_DELIMITER_CHARACTER_REGEX = '[;,]'
+TABLE_CELL_DELIMITER_REGEX = '[;,]'
 
 
-TABLE_ROW_DELIMITER_CHARACTER_REGEX = '/'
+TABLE_ROW_DELIMITER_REGEX = '=='
 
 
-TABLE_PART_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY = {
-  '^': 'thead',
-  '~': 'tbody',
-  '_': 'tfoot',
+TABLE_PART_DELIMITER_TAG_NAME_DICTIONARY = {
+  '|^': 'thead',
+  '|:': 'tbody',
+  '|_': 'tfoot',
 }
-TABLE_PART_DELIMITER_CHARACTER_REGEX = '[\^~_]'
+TABLE_PART_DELIMITER_REGEX = '[|][\^:_]'
 
 
 def process_tables(placeholder_storage, markup):
@@ -1939,8 +1939,8 @@ def process_table_cells(placeholder_storage, content):
   leading occurrences of Z[id]{[class]}[[rowspan],[colspan]]
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Z):
-    ; (or any run of semicolons)  <th>
-    , (or any run of commas)      <td>
+    ;  <th>
+    ,  <td>
   Table cells end at the next table cell, table row, or table part,
   or at the end of the content being split.
   Non-empty [rowspan] and [colspan] must consist of digits only.
@@ -1955,10 +1955,7 @@ def process_table_cells(placeholder_storage, content):
   content = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<delimiter>
-        (?P<delimiter_character>  {TABLE_CELL_DELIMITER_CHARACTER_REGEX}
-        ) +
-      )
+      (?P<delimiter>  {TABLE_CELL_DELIMITER_REGEX}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
           \{{
@@ -1984,12 +1981,12 @@ def process_table_cells(placeholder_storage, content):
           (?!
             {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
             (
-              {TABLE_CELL_DELIMITER_CHARACTER_REGEX}
+              {TABLE_CELL_DELIMITER_REGEX}
                 |
-              {TABLE_ROW_DELIMITER_CHARACTER_REGEX}
+              {TABLE_ROW_DELIMITER_REGEX}
                 |
-              {TABLE_PART_DELIMITER_CHARACTER_REGEX}
-            ) +
+              {TABLE_PART_DELIMITER_REGEX}
+            )
           )
           {ANY_CHARACTER_REGEX}
         ) *
@@ -2008,10 +2005,8 @@ def process_table_cell_match(placeholder_storage, match_object):
   Process a single table-cell match object.
   """
   
-  delimiter_character = match_object.group('delimiter_character')
-  tag_name = (
-    TABLE_CELL_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY[delimiter_character]
-  )
+  delimiter = match_object.group('delimiter')
+  tag_name = TABLE_CELL_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
   id_ = match_object.group('id_')
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
@@ -2046,9 +2041,8 @@ def process_table_rows(placeholder_storage, content):
   Process table rows.
   
   Content is split into table rows <tr>
-  according to leading occurrences of /[id]{[class]}
+  according to leading occurrences of ==[id]{[class]}
   (i.e. occurrences preceded only by whitespace on their lines).
-  The slash may instead be any run of slashes.
   Table rows end at the next table row or table part,
   or at the end of the content being split.
   If [class] is empty,
@@ -2058,7 +2052,7 @@ def process_table_rows(placeholder_storage, content):
   content = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<delimiter>  {TABLE_ROW_DELIMITER_CHARACTER_REGEX} +  )
+      {TABLE_ROW_DELIMITER_REGEX}
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
           \{{
@@ -2075,10 +2069,10 @@ def process_table_rows(placeholder_storage, content):
           (?!
             {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
             (
-              {TABLE_ROW_DELIMITER_CHARACTER_REGEX}
+              {TABLE_ROW_DELIMITER_REGEX}
                 |
-              {TABLE_PART_DELIMITER_CHARACTER_REGEX}
-            ) +
+              {TABLE_PART_DELIMITER_REGEX}
+            )
           )
           {ANY_CHARACTER_REGEX}
         ) *
@@ -2123,9 +2117,9 @@ def process_table_parts(placeholder_storage, content):
   according to leading occurrences of Y[id]{[class]}
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Y):
-    ^ (or any run of carets)      <thead>
-    ~ (or any run of tildes)      <tbody>
-    _ (or any run of underscores) <tfoot>
+    |^  <thead>
+    |~  <tbody>
+    |_  <tfoot>
   Table parts end at the next table part,
   or at the end of the content being split.
   If [class] is empty,
@@ -2135,10 +2129,7 @@ def process_table_parts(placeholder_storage, content):
   content = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<delimiter>
-        (?P<delimiter_character>  {TABLE_PART_DELIMITER_CHARACTER_REGEX}
-        ) +
-      )
+      (?P<delimiter>  {TABLE_PART_DELIMITER_REGEX}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (
           \{{
@@ -2154,7 +2145,7 @@ def process_table_parts(placeholder_storage, content):
         (
           (?!
             {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            {TABLE_PART_DELIMITER_CHARACTER_REGEX} +
+            {TABLE_PART_DELIMITER_REGEX}
           )
           {ANY_CHARACTER_REGEX}
         ) *
@@ -2173,10 +2164,8 @@ def process_table_part_match(placeholder_storage, match_object):
   Process a single table-part match object.
   """
   
-  delimiter_character = match_object.group('delimiter_character')
-  tag_name = (
-    TABLE_PART_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY[delimiter_character]
-  )
+  delimiter = match_object.group('delimiter')
+  tag_name = TABLE_PART_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
   id_ = match_object.group('id_')
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
