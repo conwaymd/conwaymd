@@ -700,9 +700,9 @@ class LinkDefinitionStorage:
 
 def process_literals(placeholder_storage, markup):
   """
-  Process CMD literals [flags](! {content} !).
+  Process CMD literals [flags]~~ {content} ~~.
   
-  [flags](! {content} !) becomes {content}, literally,
+  [flags]~~ {content} ~~ becomes {content}, literally,
   with HTML syntax-character escaping
   and de-indentation for {content}.
   Whitespace around {content} is stripped.
@@ -711,20 +711,17 @@ def process_literals(placeholder_storage, markup):
     c to process line continuations
     w to process whitespace completely
     a to enable all flags above
-  For {content} containing one or more consecutive exclamation marks
-  followed by a closing round bracket,
-  use a longer run of exclamation marks in the delimiters,
-  e.g. "(!! (! blah !) !!)" for "(! blah !)".
+  For {content} containing two or more consecutive tildes,
+  use a longer run of tildes in the delimiters,
+  e.g. "~~~ ~~ blah ~~ ~~~" for "~~ blah ~~".
   """
   
   markup = re.sub(
     fr'''
       (?P<flags>  [ucwa] *  )
-      \(
-        (?P<exclamation_marks>  [!] +  )
+      (?P<tildes>  [~] {{2,}}  )
           (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
-        (?P=exclamation_marks)
-      \)
+      (?P=tildes)
     ''',
     functools.partial(process_literal_match, placeholder_storage),
     markup,
@@ -935,9 +932,9 @@ def process_comments(markup):
   along with any preceding horizontal whitespace.
   Although comments are weaker than literals and code
   they may still be used to remove them, e.g.
-    (! A <!-- B --> !) becomes A <!-- B --> with HTML escaping,
+    ~~ A <!-- B --> ~~ becomes A <!-- B --> with HTML escaping,
   but
-    <!-- A (! B !) --> is removed entirely.
+    <!-- A ~~ B ~~ --> is removed entirely.
   In this sense they are stronger than literals and code.
   Therefore, while the comment syntax is not placeholder-protected,
   it is nevertheless accorded this status.
