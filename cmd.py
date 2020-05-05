@@ -1969,20 +1969,18 @@ def process_table_cells(placeholder_storage, content):
           |
         \n
       )
-      (?P<table_cell_content>
+      (?P<table_cell_content>  {ANYTHING_MINIMAL_REGEX}  )
+      (?=
+        {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
         (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            (
-              {TABLE_CELL_DELIMITER_REGEX}
-                |
-              {TABLE_ROW_DELIMITER_REGEX}
-                |
-              {TABLE_PART_DELIMITER_REGEX}
-            )
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
+          {TABLE_CELL_DELIMITER_REGEX}
+            |
+          {TABLE_ROW_DELIMITER_REGEX}
+            |
+          {TABLE_PART_DELIMITER_REGEX}
+        )
+          |
+        \Z
       )
     ''',
     functools.partial(process_table_cell_match, placeholder_storage),
