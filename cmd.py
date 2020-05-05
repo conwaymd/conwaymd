@@ -2055,18 +2055,16 @@ def process_table_rows(placeholder_storage, content):
           |
         \n
       )
-      (?P<table_row_content>
+      (?P<table_row_content>  {ANYTHING_MINIMAL_REGEX}  )
+      (?=
+        {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
         (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            (
-              {TABLE_ROW_DELIMITER_REGEX}
-                |
-              {TABLE_PART_DELIMITER_REGEX}
-            )
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
+          {TABLE_ROW_DELIMITER_REGEX}
+            |
+          {TABLE_PART_DELIMITER_REGEX}
+        )
+          |
+        \Z
       )
     ''',
     functools.partial(process_table_row_match, placeholder_storage),
