@@ -447,20 +447,18 @@ class PropertyStorage:
     """
     
     re.sub(
-      f'''
+      fr'''
         {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
         %
         (?P<property_name>  {PROPERTY_NAME_REGEX}  )
-          (?P<property_markup>
-            (
-              (?!
-                {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-                %
-                {PROPERTY_NAME_REGEX}
-              )
-              {ANY_CHARACTER_REGEX}
-            ) *
-          )
+          (?P<property_markup>  {ANYTHING_MINIMAL_REGEX}  )
+        (?=
+          {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+          %
+          {PROPERTY_NAME_REGEX}
+            |
+          \Z
+        )
       ''',
       self.process_specification_match,
       preamble_content,
