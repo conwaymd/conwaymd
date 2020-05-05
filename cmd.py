@@ -72,8 +72,8 @@ def de_indent(string):
   
   # Remove trailing horizontal whitespace on the last line
   string = re.sub(
-    f'''
-      {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} *  $
+    fr'''
+      {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} *  \Z
     ''',
     '',
     string,
@@ -447,20 +447,18 @@ class PropertyStorage:
     """
     
     re.sub(
-      f'''
+      fr'''
         {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
         %
         (?P<property_name>  {PROPERTY_NAME_REGEX}  )
-          (?P<property_markup>
-            (
-              (?!
-                {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-                %
-                {PROPERTY_NAME_REGEX}
-              )
-              {ANY_CHARACTER_REGEX}
-            ) *
-          )
+          (?P<property_markup>  {ANYTHING_MINIMAL_REGEX}  )
+        (?=
+          {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+          %
+          {PROPERTY_NAME_REGEX}
+            |
+          \Z
+        )
       ''',
       self.process_specification_match,
       preamble_content,
@@ -794,7 +792,7 @@ def process_display_code(placeholder_storage, markup):
       (?P<flags>  [ucwa] *  )
       (?P<backticks>  [`] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}} ?
@@ -993,7 +991,7 @@ def process_display_maths(placeholder_storage, markup):
       (?P<flags>  [w] *  )
       (?P<dollar_signs>  [$] {{2,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}} ?
@@ -1588,9 +1586,9 @@ def process_preamble_match(
   
   # Derived property %url
   url = f'{cmd_name}.html'
-  url = re.sub('(^|(?<=/))index[.]html$', '', url)
+  url = re.sub(r'(?:\A|(?<=/))index[.]html\Z', '', url)
   if enabled_clean_url_flag:
-    url = re.sub('[.]html$', '', url)
+    url = re.sub(r'[.]html\Z', '', url)
   property_storage.store_property_markup(
     'url', url
   )
@@ -1710,7 +1708,7 @@ def process_blocks(placeholder_storage, markup):
         (?P=delimiter_character) {{3,}}
       )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}} ?
@@ -1786,20 +1784,18 @@ def process_list_items(placeholder_storage, content):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       {LIST_ITEM_DELIMITER_REGEX}
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
         ) ?
       [\s] +
-      (?P<list_item_content>
-        (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            {LIST_ITEM_DELIMITER_REGEX}
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
+      (?P<list_item_content>  {ANYTHING_MINIMAL_REGEX}  )
+      (?=
+        {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+        {LIST_ITEM_DELIMITER_REGEX}
+          |
+        \Z
       )
     ''',
     functools.partial(process_list_item_match, placeholder_storage),
@@ -1885,7 +1881,7 @@ def process_tables(placeholder_storage, markup):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<apostrophes>  ['] {{4,}}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}} ?
@@ -1954,39 +1950,37 @@ def process_table_cells(placeholder_storage, content):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<delimiter>  {TABLE_CELL_DELIMITER_REGEX}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
         ) ?
-        (
+        (?:
           \[
             (?P<rowspan>  [0-9] *?  )
-            (
+            (?:
               [,]
               (?P<colspan>  [0-9] *?  )
             ) ?
           \]
         ) ?
-      (
+      (?:
         {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
           |
         \n
       )
-      (?P<table_cell_content>
-        (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            (
-              {TABLE_CELL_DELIMITER_REGEX}
-                |
-              {TABLE_ROW_DELIMITER_REGEX}
-                |
-              {TABLE_PART_DELIMITER_REGEX}
-            )
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
+      (?P<table_cell_content>  {ANYTHING_MINIMAL_REGEX}  )
+      (?=
+        {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+        (?:
+          {TABLE_CELL_DELIMITER_REGEX}
+            |
+          {TABLE_ROW_DELIMITER_REGEX}
+            |
+          {TABLE_PART_DELIMITER_REGEX}
+        )
+          |
+        \Z
       )
     ''',
     functools.partial(process_table_cell_match, placeholder_storage),
@@ -2051,28 +2045,26 @@ def process_table_rows(placeholder_storage, content):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       {TABLE_ROW_DELIMITER_REGEX}
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
         ) ?
-      (
+      (?:
         {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
           |
         \n
       )
-      (?P<table_row_content>
-        (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            (
-              {TABLE_ROW_DELIMITER_REGEX}
-                |
-              {TABLE_PART_DELIMITER_REGEX}
-            )
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
+      (?P<table_row_content>  {ANYTHING_MINIMAL_REGEX}  )
+      (?=
+        {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+        (?:
+          {TABLE_ROW_DELIMITER_REGEX}
+            |
+          {TABLE_PART_DELIMITER_REGEX}
+        )
+          |
+        \Z
       )
     ''',
     functools.partial(process_table_row_match, placeholder_storage),
@@ -2128,24 +2120,22 @@ def process_table_parts(placeholder_storage, content):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<delimiter>  {TABLE_PART_DELIMITER_REGEX}  )
         (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
         ) ?
-      (
+      (?:
         {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
           |
         \n
       )
-      (?P<table_part_content>
-        (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            {TABLE_PART_DELIMITER_REGEX}
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
+      (?P<table_part_content>  {ANYTHING_MINIMAL_REGEX}  )
+      (?=
+        {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+        {TABLE_PART_DELIMITER_REGEX}
+          |
+        \Z
       )
     ''',
     functools.partial(process_table_part_match, placeholder_storage),
@@ -2357,7 +2347,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
       \(
         [\s] *
         (?P<src>  {ANYTHING_MINIMAL_REGEX}  )
-        (
+        (?:
           [\s] +?
           (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
         ) ??
@@ -2377,16 +2367,16 @@ def process_images(placeholder_storage, image_definition_storage, markup):
         \[
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
         \]
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}} ?
         ) ?
       \n
-        (
+        (?:
           [\s] *
           (?P<src>  {ANYTHING_MINIMAL_REGEX}  )
-          (
+          (?:
             [\s] +?
             (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
           ) ??
@@ -2410,7 +2400,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
       \[
         (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
-      (
+      (?:
         [ ] ?
         \[
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
@@ -2561,7 +2551,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
       \(
         [\s] *
         (?P<href>  {ANYTHING_MINIMAL_REGEX}  )
-        (
+        (?:
           [\s] +?
           (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
         ) ??
@@ -2580,16 +2570,16 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         \[
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
         \]
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}} ?
         ) ?
       \n
-        (
+        (?:
           [\s] *
           (?P<href>  {ANYTHING_MINIMAL_REGEX}  )
-          (
+          (?:
             [\s] +?
             (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
           ) ??
@@ -2611,7 +2601,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
       \[
         (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
-      (
+      (?:
         [ ] ?
         \[
           (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
@@ -2751,13 +2741,13 @@ def process_inline_semantics(placeholder_storage, markup):
         )
         (?P=delimiter_character) {{2}}
       )
-        (
+        (?:
           \{{
             (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
         ) ?
         (?P<inner_content>
-          (
+          (?:
             (?!  (?P=delimiter_character)  )
             {ANY_CHARACTER_REGEX}
           ) +?
@@ -2774,26 +2764,26 @@ def process_inline_semantics(placeholder_storage, markup):
   # 312
   markup = re.sub(
     fr'''
-      (
+      (?:
         (?P<delimiter_character>
           {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
         )
         (?P=delimiter_character) {{2}}
       )
-        (
+        (?:
           \{{
             (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
         ) ?
         (?P<inner_content>
-          (
+          (?:
             (?!  (?P=delimiter_character)  )
             {ANY_CHARACTER_REGEX}
           ) +?
         )
       (?P<inner_delimiter>  (?P=delimiter_character) {{1}}  )
         (?P<outer_content>
-          (
+          (?:
             (?!  (?P=delimiter_character)  )
             {ANY_CHARACTER_REGEX}
           ) +?
@@ -2810,26 +2800,26 @@ def process_inline_semantics(placeholder_storage, markup):
   # 321
   markup = re.sub(
     fr'''
-      (
+      (?:
         (?P<delimiter_character>
           {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
         )
         (?P=delimiter_character) {{2}}
       )
-        (
+        (?:
           \{{
             (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
         ) ?
         (?P<inner_content>
-          (
+          (?:
             (?!  (?P=delimiter_character)  )
             {ANY_CHARACTER_REGEX}
           ) +?
         )
       (?P<inner_delimiter>  (?P=delimiter_character) {{2}}  )
         (?P<outer_content>
-          (
+          (?:
             (?!  (?P=delimiter_character)  )
             {ANY_CHARACTER_REGEX}
           ) +?
@@ -2852,7 +2842,7 @@ def process_inline_semantics(placeholder_storage, markup):
         )
         (?P=delimiter_character)
       )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
@@ -2871,7 +2861,7 @@ def process_inline_semantics(placeholder_storage, markup):
   markup = re.sub(
     f'''
       (?P<delimiter>  {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}  )
-        (
+        (?:
           \{{
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}}
@@ -3162,8 +3152,8 @@ def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
   # (2) Remove leading dot-slash for current directory
   # (3) Remove trailing "." or ".cmd" extension if given
   cmd_name = re.sub(r'\\', '/', cmd_name)
-  cmd_name = re.sub(r'^[.]/', '', cmd_name)
-  cmd_name = re.sub(r'[.](cmd)?$', '', cmd_name)
+  cmd_name = re.sub(r'\A[.]/', '', cmd_name)
+  cmd_name = re.sub(r'[.](cmd)?\Z', '', cmd_name)
   
   # Read CMD from CMD file
   with open(f'{cmd_name}.cmd', 'r', encoding='utf-8') as cmd_file:
@@ -3189,7 +3179,7 @@ def main(cmd_name, enabled_clean_url_flag):
   # Convert to a list and ensure leading ./
   cmd_ignore_pattern_list = cmd_ignore_content.split()
   cmd_ignore_pattern_list = [
-    re.sub('^(?![.]/)', './', cmd_ignore_pattern)
+    re.sub('\A(?![.]/)', './', cmd_ignore_pattern)
       for cmd_ignore_pattern in cmd_ignore_pattern_list
   ]
   
