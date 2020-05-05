@@ -2130,14 +2130,12 @@ def process_table_parts(placeholder_storage, content):
           |
         \n
       )
-      (?P<table_part_content>
-        (
-          (?!
-            {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-            {TABLE_PART_DELIMITER_REGEX}
-          )
-          {ANY_CHARACTER_REGEX}
-        ) *
+      (?P<table_part_content>  {ANYTHING_MINIMAL_REGEX}  )
+      (?=
+        {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+        {TABLE_PART_DELIMITER_REGEX}
+          |
+        \Z
       )
     ''',
     functools.partial(process_table_part_match, placeholder_storage),
