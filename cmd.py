@@ -1212,7 +1212,7 @@ def process_inclusion_match(placeholder_storage, cmd_name, match_object):
 
 
 def process_regex_replacements(
-  placeholder_storage, regex_replacement_storage, markup
+  placeholder_storage, regex_replacement_storage, cmd_name, markup
 ):
   """
   Process regex replacements {% {pattern} % {replacement} %}.
@@ -1253,7 +1253,8 @@ def process_regex_replacements(
     ''',
     functools.partial(process_regex_replacement_match,
       placeholder_storage,
-      regex_replacement_storage
+      regex_replacement_storage,
+      cmd_name
     ),
     markup,
     flags=re.VERBOSE
@@ -1265,7 +1266,7 @@ def process_regex_replacements(
 
 
 def process_regex_replacement_match(
-  placeholder_storage, regex_replacement_storage, match_object
+  placeholder_storage, regex_replacement_storage, cmd_name, match_object
 ):
   """
   Process a single regex-replacement match object.
@@ -1277,6 +1278,25 @@ def process_regex_replacement_match(
   
   replacement = match_object.group('replacement')
   replacement = replacement.strip()
+  
+  try:
+    re.sub(pattern, '', '')
+  except re.error as pattern_error:
+    match_string = match_object.group()
+    error_message = (
+      re_indent(2,
+        f'''
+          Regex replacement pattern `{pattern}` invalid:
+            {pattern_error}
+          CMD file:
+            {cmd_name}.cmd
+          Offending match:
+        '''
+      )
+        +
+      re_indent(4, match_string)
+    )
+    raise re.error(error_message) from pattern_error
   
   regex_replacement_storage.store_replacement(pattern, replacement)
   
@@ -3139,7 +3159,8 @@ def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
   # Process regex replacements
   regex_replacement_storage = RegexReplacementStorage()
   markup = process_regex_replacements(
-    placeholder_storage, regex_replacement_storage, markup
+    placeholder_storage, regex_replacement_storage, cmd_name,
+    markup
   )
   
   # Process ordinary replacements
