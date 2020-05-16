@@ -107,6 +107,29 @@ def de_indent(string):
   return string
 
 
+def re_indent(string, number_of_spaces):
+  """
+  Re-indent string.
+  
+  The string is first de-indented,
+  before being indented by the specified number of spaces.
+  Lines which are empty after the de-indentation are not re-indented.
+  """
+  
+  string = de_indent(string)
+  
+  string = re.sub(
+    f'''
+      ^  (?=  {NOT_NEWLINE_CHARACTER_REGEX}  )
+    ''',
+    number_of_spaces * ' ',
+    string,
+    flags=re.MULTILINE|re.VERBOSE
+  )
+  
+  return string
+
+
 def escape_python_backslash(string):
   r"""
   Escape a Python backslash into a double backslash.
