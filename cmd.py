@@ -1288,7 +1288,9 @@ def process_regex_replacement_match(
 ################################################################
 
 
-def process_ordinary_replacements(ordinary_replacement_storage, markup):
+def process_ordinary_replacements(
+  ordinary_replacement_storage, cmd_name, markup
+):
   """
   Process ordinary replacements {: {pattern} : {replacement} :}.
   
@@ -1323,7 +1325,7 @@ def process_ordinary_replacements(ordinary_replacement_storage, markup):
       \}}
     ''',
     functools.partial(process_ordinary_replacement_match,
-      ordinary_replacement_storage
+      ordinary_replacement_storage, cmd_name
     ),
     markup,
     flags=re.VERBOSE
@@ -1335,7 +1337,7 @@ def process_ordinary_replacements(ordinary_replacement_storage, markup):
 
 
 def process_ordinary_replacement_match(
-  ordinary_replacement_storage, match_object
+  ordinary_replacement_storage, cmd_name, match_object
 ):
   """
   Process a single ordinary-replacement match object.
@@ -1346,6 +1348,23 @@ def process_ordinary_replacement_match(
   
   replacement = match_object.group('replacement')
   replacement = replacement.strip()
+  
+  try:
+    re.sub('', replacement, '')
+  except re.error as replacement_error:
+    match_string = match_object.group()
+    error_message = (
+      re_indent(2,
+        f'''
+          Ordinary replacement replacement `{replacement}` invalid.
+          CMD file: {cmd_name}.cmd
+          Offending match:
+        '''
+      )
+        +
+      re_indent(4, match_string)
+    )
+    raise re.error(error_message) from replacement_error
   
   ordinary_replacement_storage.store_replacement(pattern, replacement)
   
@@ -3125,7 +3144,10 @@ def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
   
   # Process ordinary replacements
   ordinary_replacement_storage = OrdinaryReplacementStorage()
-  markup = process_ordinary_replacements(ordinary_replacement_storage, markup)
+  markup = process_ordinary_replacements(
+    ordinary_replacement_storage, cmd_name,
+    markup
+  )
   
   # Process preamble
   property_storage = PropertyStorage()
