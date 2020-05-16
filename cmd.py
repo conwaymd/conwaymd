@@ -107,6 +107,29 @@ def de_indent(string):
   return string
 
 
+def re_indent(number_of_spaces, string):
+  """
+  Re-indent string.
+  
+  The string is first de-indented,
+  before being indented by the specified number of spaces.
+  Lines which are empty after the de-indentation are not re-indented.
+  """
+  
+  string = de_indent(string)
+  
+  string = re.sub(
+    f'''
+      ^  (?=  {NOT_NEWLINE_CHARACTER_REGEX}  )
+    ''',
+    number_of_spaces * ' ',
+    string,
+    flags=re.MULTILINE|re.VERBOSE
+  )
+  
+  return string
+
+
 def escape_python_backslash(string):
   r"""
   Escape a Python backslash into a double backslash.
@@ -1112,7 +1135,7 @@ def process_inline_maths_match(placeholder_storage, match_object):
 ################################################################
 
 
-def process_inclusions(placeholder_storage, markup):
+def process_inclusions(placeholder_storage, cmd_name, markup):
   r"""
   Process inclusions (+ {file name} +).
   
@@ -1135,7 +1158,7 @@ def process_inclusions(placeholder_storage, markup):
         (?P=plus_signs)
       \)
     ''',
-    functools.partial(process_inclusion_match, placeholder_storage),
+    functools.partial(process_inclusion_match, placeholder_storage, cmd_name),
     markup,
     flags=re.VERBOSE
   )
@@ -1143,7 +1166,7 @@ def process_inclusions(placeholder_storage, markup):
   return markup
 
 
-def process_inclusion_match(placeholder_storage, match_object):
+def process_inclusion_match(placeholder_storage, cmd_name, match_object):
   """
   Process a single inclusion match object.
   """
@@ -1151,8 +1174,25 @@ def process_inclusion_match(placeholder_storage, match_object):
   file_name = match_object.group('file_name')
   file_name = file_name.strip()
   
-  with open(file_name, 'r', encoding='utf-8') as file:
-    content = file.read()
+  try:
+    with open(file_name, 'r', encoding='utf-8') as file:
+      content = file.read()
+  except FileNotFoundError as file_not_found_error:
+    match_string = match_object.group()
+    error_message = (
+      re_indent(2,
+        f'''
+          Inclusion file `{file_name}` not found:
+            {file_not_found_error}
+          CMD file:
+            {cmd_name}.cmd
+          Offending match:
+        '''
+      )
+        +
+      re_indent(4, match_string)
+    )
+    raise FileNotFoundError(error_message) from file_not_found_error
   
   content = placeholder_storage.replace_marker_with_placeholder(content)
   
@@ -1174,7 +1214,7 @@ def process_inclusion_match(placeholder_storage, match_object):
 
 
 def process_regex_replacements(
-  placeholder_storage, regex_replacement_storage, markup
+  placeholder_storage, regex_replacement_storage, cmd_name, markup
 ):
   """
   Process regex replacements {% {pattern} % {replacement} %}.
@@ -1215,7 +1255,8 @@ def process_regex_replacements(
     ''',
     functools.partial(process_regex_replacement_match,
       placeholder_storage,
-      regex_replacement_storage
+      regex_replacement_storage,
+      cmd_name
     ),
     markup,
     flags=re.VERBOSE
@@ -1227,7 +1268,7 @@ def process_regex_replacements(
 
 
 def process_regex_replacement_match(
-  placeholder_storage, regex_replacement_storage, match_object
+  placeholder_storage, regex_replacement_storage, cmd_name, match_object
 ):
   """
   Process a single regex-replacement match object.
@@ -1240,6 +1281,44 @@ def process_regex_replacement_match(
   replacement = match_object.group('replacement')
   replacement = replacement.strip()
   
+  try:
+    re.sub(pattern, '', '')
+  except re.error as pattern_error:
+    match_string = match_object.group()
+    error_message = (
+      re_indent(2,
+        f'''
+          Regex replacement pattern `{pattern}` invalid:
+            {pattern_error}
+          CMD file:
+            {cmd_name}.cmd
+          Offending match:
+        '''
+      )
+        +
+      re_indent(4, match_string)
+    )
+    raise re.error(error_message) from pattern_error
+  
+  try:
+    re.sub(pattern, replacement, '')
+  except re.error as replacement_error:
+    match_string = match_object.group()
+    error_message = (
+      re_indent(2,
+        f'''
+          Regex replacement replacement `{replacement}` invalid:
+            {replacement_error}
+          CMD file:
+            {cmd_name}.cmd
+          Offending match:
+        '''
+      )
+        +
+      re_indent(4, match_string)
+    )
+    raise re.error(error_message) from replacement_error
+  
   regex_replacement_storage.store_replacement(pattern, replacement)
   
   return ''
@@ -1250,7 +1329,9 @@ def process_regex_replacement_match(
 ################################################################
 
 
-def process_ordinary_replacements(ordinary_replacement_storage, markup):
+def process_ordinary_replacements(
+  ordinary_replacement_storage, cmd_name, markup
+):
   """
   Process ordinary replacements {: {pattern} : {replacement} :}.
   
@@ -1285,7 +1366,7 @@ def process_ordinary_replacements(ordinary_replacement_storage, markup):
       \}}
     ''',
     functools.partial(process_ordinary_replacement_match,
-      ordinary_replacement_storage
+      ordinary_replacement_storage, cmd_name
     ),
     markup,
     flags=re.VERBOSE
@@ -1297,7 +1378,7 @@ def process_ordinary_replacements(ordinary_replacement_storage, markup):
 
 
 def process_ordinary_replacement_match(
-  ordinary_replacement_storage, match_object
+  ordinary_replacement_storage, cmd_name, match_object
 ):
   """
   Process a single ordinary-replacement match object.
@@ -1308,6 +1389,25 @@ def process_ordinary_replacement_match(
   
   replacement = match_object.group('replacement')
   replacement = replacement.strip()
+  
+  try:
+    re.sub('', replacement, '')
+  except re.error as replacement_error:
+    match_string = match_object.group()
+    error_message = (
+      re_indent(2,
+        f'''
+          Ordinary replacement replacement `{replacement}` invalid:
+            {replacement_error}
+          CMD file:
+            {cmd_name}.cmd
+          Offending match:
+        '''
+      )
+        +
+      re_indent(4, match_string)
+    )
+    raise re.error(error_message) from replacement_error
   
   ordinary_replacement_storage.store_replacement(pattern, replacement)
   
@@ -3045,9 +3145,11 @@ def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
   """
   Convert CMD to HTML.
   
-  The CMD-name argument determines the URL of the resulting page,
-  which is stored in the property %url.
-  The clean-URL-enabled argument determines whether or not
+  The CMD-name argument
+  (1) determines the URL of the resulting page,
+      which is stored in the property %url, and
+  (2) is used for the name of the CMD file in error messages.
+  The enabled-clean-URL argument determines whether or not
   the .html extension is removed from the property %url.
   It is assumed that the current directory
   is the root directory of the website being built,
@@ -3075,17 +3177,21 @@ def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
   markup = process_comments(markup)
   markup = process_display_maths(placeholder_storage, markup)
   markup = process_inline_maths(placeholder_storage, markup)
-  markup = process_inclusions(placeholder_storage, markup)
+  markup = process_inclusions(placeholder_storage, cmd_name, markup)
   
   # Process regex replacements
   regex_replacement_storage = RegexReplacementStorage()
   markup = process_regex_replacements(
-    placeholder_storage, regex_replacement_storage, markup
+    placeholder_storage, regex_replacement_storage, cmd_name,
+    markup
   )
   
   # Process ordinary replacements
   ordinary_replacement_storage = OrdinaryReplacementStorage()
-  markup = process_ordinary_replacements(ordinary_replacement_storage, markup)
+  markup = process_ordinary_replacements(
+    ordinary_replacement_storage, cmd_name,
+    markup
+  )
   
   # Process preamble
   property_storage = PropertyStorage()
@@ -3156,8 +3262,17 @@ def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
   cmd_name = re.sub(r'[.](cmd)?\Z', '', cmd_name)
   
   # Read CMD from CMD file
-  with open(f'{cmd_name}.cmd', 'r', encoding='utf-8') as cmd_file:
-    cmd = cmd_file.read()
+  try:
+    with open(f'{cmd_name}.cmd', 'r', encoding='utf-8') as cmd_file:
+      cmd = cmd_file.read()
+  except FileNotFoundError as file_not_found_error:
+    error_message = re_indent(2,
+      f'''
+        CMD file '{cmd_name}.cmd' not found:
+          {file_not_found_error}\
+      '''
+    )
+    raise FileNotFoundError(error_message) from file_not_found_error
   
   # Convert CMD to HTML
   html = cmd_to_html(cmd, cmd_name, enabled_clean_url_flag)
