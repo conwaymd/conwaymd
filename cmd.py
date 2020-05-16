@@ -1182,8 +1182,10 @@ def process_inclusion_match(placeholder_storage, cmd_name, match_object):
     error_message = (
       re_indent(2,
         f'''
-          Inclusion file "{file_name}" not found.
-          CMD file: {cmd_name}.cmd
+          Inclusion file `{file_name}` not found:
+            {file_not_found_error}
+          CMD file:
+            {cmd_name}.cmd
           Offending match:
         '''
       )
@@ -1376,8 +1378,10 @@ def process_ordinary_replacement_match(
     error_message = (
       re_indent(2,
         f'''
-          Ordinary replacement replacement `{replacement}` invalid.
-          CMD file: {cmd_name}.cmd
+          Ordinary replacement replacement `{replacement}` invalid:
+            {replacement_error}
+          CMD file:
+            {cmd_name}.cmd
           Offending match:
         '''
       )
@@ -3243,7 +3247,12 @@ def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
     with open(f'{cmd_name}.cmd', 'r', encoding='utf-8') as cmd_file:
       cmd = cmd_file.read()
   except FileNotFoundError as file_not_found_error:
-    error_message = re_indent(2, f'\n CMD file "{cmd_name}.cmd" not found.')
+    error_message = re_indent(2,
+      f'''
+        CMD file '{cmd_name}.cmd' not found:
+          {file_not_found_error}\
+      '''
+    )
     raise FileNotFoundError(error_message) from file_not_found_error
   
   # Convert CMD to HTML
