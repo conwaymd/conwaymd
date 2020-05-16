@@ -1135,7 +1135,7 @@ def process_inline_maths_match(placeholder_storage, match_object):
 ################################################################
 
 
-def process_inclusions(placeholder_storage, markup):
+def process_inclusions(placeholder_storage, cmd_name, markup):
   r"""
   Process inclusions (+ {file name} +).
   
@@ -1158,7 +1158,7 @@ def process_inclusions(placeholder_storage, markup):
         (?P=plus_signs)
       \)
     ''',
-    functools.partial(process_inclusion_match, placeholder_storage),
+    functools.partial(process_inclusion_match, placeholder_storage, cmd_name),
     markup,
     flags=re.VERBOSE
   )
@@ -1166,7 +1166,7 @@ def process_inclusions(placeholder_storage, markup):
   return markup
 
 
-def process_inclusion_match(placeholder_storage, match_object):
+def process_inclusion_match(placeholder_storage, cmd_name, match_object):
   """
   Process a single inclusion match object.
   """
@@ -1174,8 +1174,23 @@ def process_inclusion_match(placeholder_storage, match_object):
   file_name = match_object.group('file_name')
   file_name = file_name.strip()
   
-  with open(file_name, 'r', encoding='utf-8') as file:
-    content = file.read()
+  try:
+    with open(file_name, 'r', encoding='utf-8') as file:
+      content = file.read()
+  except FileNotFoundError as file_not_found_error:
+    match_string = match_object.group()
+    error_message = (
+      re_indent(2,
+        f'''
+          Inclusion file "{file_name}" not found.
+          CMD file: {cmd_name}.cmd
+          Offending match:
+        '''
+      )
+        +
+      re_indent(4, match_string)
+    )
+    raise FileNotFoundError(error_message) from file_not_found_error
   
   content = placeholder_storage.replace_marker_with_placeholder(content)
   
@@ -3068,9 +3083,11 @@ def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
   """
   Convert CMD to HTML.
   
-  The CMD-name argument determines the URL of the resulting page,
-  which is stored in the property %url.
-  The clean-URL-enabled argument determines whether or not
+  The CMD-name argument
+  (1) determines the URL of the resulting page,
+      which is stored in the property %url, and
+  (2) is used for the name of the CMD file in error messages.
+  The enabled-clean-URL argument determines whether or not
   the .html extension is removed from the property %url.
   It is assumed that the current directory
   is the root directory of the website being built,
@@ -3098,7 +3115,7 @@ def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
   markup = process_comments(markup)
   markup = process_display_maths(placeholder_storage, markup)
   markup = process_inline_maths(placeholder_storage, markup)
-  markup = process_inclusions(placeholder_storage, markup)
+  markup = process_inclusions(placeholder_storage, cmd_name, markup)
   
   # Process regex replacements
   regex_replacement_storage = RegexReplacementStorage()
