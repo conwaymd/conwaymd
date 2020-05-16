@@ -3184,7 +3184,7 @@ def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
       cmd = cmd_file.read()
   except FileNotFoundError as file_not_found_error:
     raise FileNotFoundError(
-      f"CMD file '{cmd_name}.cmd' not found"
+      re_indent(2, f'\n CMD file "{cmd_name}.cmd" not found.')
     ) from file_not_found_error
   
   # Convert CMD to HTML
