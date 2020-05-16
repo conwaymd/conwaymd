@@ -107,7 +107,7 @@ def de_indent(string):
   return string
 
 
-def re_indent(string, number_of_spaces):
+def re_indent(number_of_spaces, string):
   """
   Re-indent string.
   
