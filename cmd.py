@@ -3156,8 +3156,13 @@ def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
   cmd_name = re.sub(r'[.](cmd)?\Z', '', cmd_name)
   
   # Read CMD from CMD file
-  with open(f'{cmd_name}.cmd', 'r', encoding='utf-8') as cmd_file:
-    cmd = cmd_file.read()
+  try:
+    with open(f'{cmd_name}.cmd', 'r', encoding='utf-8') as cmd_file:
+      cmd = cmd_file.read()
+  except FileNotFoundError as file_not_found_error:
+    raise FileNotFoundError(
+      f"CMD file '{cmd_name}.cmd' not found"
+    ) from file_not_found_error
   
   # Convert CMD to HTML
   html = cmd_to_html(cmd, cmd_name, enabled_clean_url_flag)
