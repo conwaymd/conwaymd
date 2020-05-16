@@ -1300,6 +1300,25 @@ def process_regex_replacement_match(
     )
     raise re.error(error_message) from pattern_error
   
+  try:
+    re.sub(pattern, replacement, '')
+  except re.error as replacement_error:
+    match_string = match_object.group()
+    error_message = (
+      re_indent(2,
+        f'''
+          Regex replacement replacement `{replacement}` invalid:
+            {replacement_error}
+          CMD file:
+            {cmd_name}.cmd
+          Offending match:
+        '''
+      )
+        +
+      re_indent(4, match_string)
+    )
+    raise re.error(error_message) from replacement_error
+  
   regex_replacement_storage.store_replacement(pattern, replacement)
   
   return ''
