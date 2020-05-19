@@ -130,6 +130,29 @@ def re_indent(number_of_spaces, string):
   return string
 
 
+def join_staggered(number_of_spaces, *strings):
+  """
+  Join strings with staggered indentation.
+  
+  The strings are
+  (1) re-indented with N and N + 2 spaces alternatively,
+      where N is the specified number of spaces, and
+  (2) joined with a preceding newline.
+  """
+  
+  staggering_number_of_spaces = 2
+  joined_string = ''
+  
+  for index_, string in enumerate(strings):
+    joined_string += '\n'
+    joined_string += re_indent(
+      number_of_spaces + staggering_number_of_spaces * (index_ % 2),
+      string
+    )
+  
+  return joined_string
+
+
 def escape_python_backslash(string):
   r"""
   Escape a Python backslash into a double backslash.
