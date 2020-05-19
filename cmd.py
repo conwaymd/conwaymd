@@ -130,6 +130,29 @@ def re_indent(number_of_spaces, string):
   return string
 
 
+def join_staggered(number_of_spaces, *strings):
+  """
+  Join strings with staggered indentation.
+  
+  The strings are
+  (1) re-indented with N and N + 2 spaces alternatively,
+      where N is the specified number of spaces, and
+  (2) joined with a preceding newline.
+  """
+  
+  staggering_number_of_spaces = 2
+  joined_string = ''
+  
+  for index_, string in enumerate(strings):
+    joined_string += '\n'
+    joined_string += re_indent(
+      number_of_spaces + staggering_number_of_spaces * (index_ % 2),
+      string
+    )
+  
+  return joined_string
+
+
 def escape_python_backslash(string):
   r"""
   Escape a Python backslash into a double backslash.
@@ -1179,18 +1202,13 @@ def process_inclusion_match(placeholder_storage, cmd_name, match_object):
       content = file.read()
   except FileNotFoundError as file_not_found_error:
     match_string = match_object.group()
-    error_message = (
-      re_indent(2,
-        f'''
-          Inclusion file `{file_name}` not found:
-            {file_not_found_error}
-          CMD file:
-            {cmd_name}.cmd
-          Offending match:
-        '''
-      )
-        +
-      re_indent(4, match_string)
+    error_message = join_staggered(2,
+      f'Inclusion file `{file_name}` not found:',
+        str(file_not_found_error),
+      'CMD file:',
+        f'{cmd_name}.cmd',
+      'Offending match:',
+        match_string
     )
     raise FileNotFoundError(error_message) from file_not_found_error
   
@@ -1285,18 +1303,13 @@ def process_regex_replacement_match(
     re.sub(pattern, '', '')
   except re.error as pattern_error:
     match_string = match_object.group()
-    error_message = (
-      re_indent(2,
-        f'''
-          Regex replacement pattern `{pattern}` invalid:
-            {pattern_error}
-          CMD file:
-            {cmd_name}.cmd
-          Offending match:
-        '''
-      )
-        +
-      re_indent(4, match_string)
+    error_message = join_staggered(2,
+      f'Regex replacement pattern `{pattern}` invalid:',
+        str(pattern_error),
+      'CMD file:',
+        f'{cmd_name}.cmd',
+      'Offending match:',
+        match_string
     )
     raise re.error(error_message) from pattern_error
   
@@ -1304,18 +1317,13 @@ def process_regex_replacement_match(
     re.sub(pattern, replacement, '')
   except re.error as replacement_error:
     match_string = match_object.group()
-    error_message = (
-      re_indent(2,
-        f'''
-          Regex replacement replacement `{replacement}` invalid:
-            {replacement_error}
-          CMD file:
-            {cmd_name}.cmd
-          Offending match:
-        '''
-      )
-        +
-      re_indent(4, match_string)
+    error_message = join_staggered(2,
+      f'Regex replacement replacement `{replacement}` invalid:',
+        str(replacement_error),
+      'CMD file:',
+        f'{cmd_name}.cmd',
+      'Offending match:',
+        match_string
     )
     raise re.error(error_message) from replacement_error
   
@@ -1394,18 +1402,13 @@ def process_ordinary_replacement_match(
     re.sub('', replacement, '')
   except re.error as replacement_error:
     match_string = match_object.group()
-    error_message = (
-      re_indent(2,
-        f'''
-          Ordinary replacement replacement `{replacement}` invalid:
-            {replacement_error}
-          CMD file:
-            {cmd_name}.cmd
-          Offending match:
-        '''
-      )
-        +
-      re_indent(4, match_string)
+    error_message = join_staggered(2,
+      f'Ordinary replacement replacement `{replacement}` invalid:',
+        str(replacement_error),
+      'CMD file:',
+        f'{cmd_name}.cmd',
+      'Offending match:',
+        match_string
     )
     raise re.error(error_message) from replacement_error
   
@@ -3266,11 +3269,9 @@ def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
     with open(f'{cmd_name}.cmd', 'r', encoding='utf-8') as cmd_file:
       cmd = cmd_file.read()
   except FileNotFoundError as file_not_found_error:
-    error_message = re_indent(2,
-      f'''
-        CMD file '{cmd_name}.cmd' not found:
-          {file_not_found_error}\
-      '''
+    error_message = join_staggered(2,
+      f"CMD file '{cmd_name}.cmd' not found:",
+        str(file_not_found_error)
     )
     raise FileNotFoundError(error_message) from file_not_found_error
   
