@@ -1458,6 +1458,7 @@ def process_preamble(
   If omitted from a preamble,
   they take the default values shown beside them:
     %lang en
+    %viewport width=device-width, initial-scale=1
     %title Title
     %title-suffix
     %author
@@ -1475,6 +1476,7 @@ def process_preamble(
     %html-lang-attribute
     %meta-element-author
     %meta-element-description
+    %meta-element-viewport
     %title-element
     %style-element
     %body-onload-attribute
@@ -1518,6 +1520,7 @@ def process_preamble(
           <meta charset="utf-8">
           %meta-element-author
           %meta-element-description
+          %meta-element-viewport
           %resources
           %title-element
           %style-element
@@ -1534,6 +1537,7 @@ def process_preamble(
 
 DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS = '''
   %lang en
+  %viewport width=device-width, initial-scale=1
   %title Title
   %title-suffix
   %author
@@ -1599,6 +1603,17 @@ def process_preamble_match(
     )
   property_storage.store_property_markup(
     'meta-element-description', meta_element_description
+  )
+  
+  # Derived property %meta-element-viewport
+  viewport = property_storage.get_property_markup('viewport')
+  viewport = escape_html_attribute_value(placeholder_storage, viewport)
+  if viewport == '':
+    meta_element_viewport = ''
+  else:
+    meta_element_viewport = f'<meta name="viewport" content="{viewport}">'
+  property_storage.store_property_markup(
+    'meta-element-viewport', meta_element_viewport
   )
   
   # Derived property %title-element
