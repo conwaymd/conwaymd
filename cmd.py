@@ -1422,10 +1422,7 @@ def process_ordinary_replacement_match(
 ################################################################
 
 
-def process_preamble(
-  placeholder_storage, property_storage, cmd_name, enabled_clean_url_flag,
-  markup
-):
+def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
   """
   Process the preamble %%↵ {content} %%.
   The delimiting percent signs must be the first
@@ -1485,6 +1482,7 @@ def process_preamble(
     %year-modified-next
     %footer-element
     %url
+    %clean-url
   In particular, the year properties are taken
   from the first 4 characters of the appropriate date properties.
   (NOTE: This will break come Y10K.)
@@ -1504,7 +1502,7 @@ def process_preamble(
       (?P=percent_signs)
     ''',
     functools.partial(process_preamble_match,
-      placeholder_storage, property_storage, cmd_name, enabled_clean_url_flag
+      placeholder_storage, property_storage, cmd_name,
     ),
     markup,
     count=1,
@@ -1553,8 +1551,7 @@ DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS = '''
 
 
 def process_preamble_match(
-  placeholder_storage, property_storage, cmd_name, enabled_clean_url_flag,
-  match_object
+  placeholder_storage, property_storage, cmd_name, match_object
 ):
   """
   Process a single preamble match object.
@@ -1705,10 +1702,14 @@ def process_preamble_match(
   # Derived property %url
   url = f'{cmd_name}.html'
   url = re.sub(r'(?:\A|(?<=/))index[.]html\Z', '', url)
-  if enabled_clean_url_flag:
-    url = re.sub(r'[.]html\Z', '', url)
   property_storage.store_property_markup(
     'url', url
+  )
+  
+  # Derived property %clean-url
+  clean_url = re.sub(r'[.]html\Z', '', url)
+  property_storage.store_property_markup(
+    'clean-url', clean_url
   )
   
   return ''
@@ -3159,7 +3160,7 @@ def process_whitespace(markup):
 ################################################################
 
 
-def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
+def cmd_to_html(cmd, cmd_name):
   """
   Convert CMD to HTML.
   
@@ -3167,8 +3168,6 @@ def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
   (1) determines the URL of the resulting page,
       which is stored in the property %url, and
   (2) is used for the name of the CMD file in error messages.
-  The enabled-clean-URL argument determines whether or not
-  the .html extension is removed from the property %url.
   It is assumed that the current directory
   is the root directory of the website being built,
   so that %url is the URL of the resulting page relative to root.
@@ -3214,7 +3213,7 @@ def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
   # Process preamble
   property_storage = PropertyStorage()
   markup = process_preamble(
-    placeholder_storage, property_storage, cmd_name, enabled_clean_url_flag,
+    placeholder_storage, property_storage, cmd_name,
     markup
   )
   
@@ -3266,7 +3265,7 @@ def cmd_to_html(cmd, cmd_name, enabled_clean_url_flag):
 ################################################################
 
 
-def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
+def cmd_file_to_html_file(cmd_name):
   """
   Run converter on CMD file and generate HTML file.
   """
@@ -3291,14 +3290,14 @@ def cmd_file_to_html_file(cmd_name, enabled_clean_url_flag):
     raise FileNotFoundError(error_message) from file_not_found_error
   
   # Convert CMD to HTML
-  html = cmd_to_html(cmd, cmd_name, enabled_clean_url_flag)
+  html = cmd_to_html(cmd, cmd_name)
   
   # Write HTML to HTML file
   with open(f'{cmd_name}.html', 'w', encoding='utf-8') as html_file:
     html_file.write(html)
 
 
-def main(cmd_name, enabled_clean_url_flag):
+def main(cmd_name):
   
   # Read CMD ignore patterns from .cmdignore
   try:
@@ -3337,7 +3336,7 @@ def main(cmd_name, enabled_clean_url_flag):
   
   # Convert CMD files
   for cmd_name in cmd_name_list:
-    cmd_file_to_html_file(cmd_name, enabled_clean_url_flag)
+    cmd_file_to_html_file(cmd_name)
 
 
 if __name__ == '__main__':
@@ -3361,20 +3360,8 @@ if __name__ == '__main__':
     default=''
   )
   
-  CLEAN_URL_HELP_TEXT = '''
-    remove the .html extension from the property %%url
-  '''
-  parser.add_argument(
-    '-c',
-    '--clean-url',
-    dest='enabled_clean_url_flag',
-    action='store_true',
-    help=CLEAN_URL_HELP_TEXT
-  )
-  
   arguments = parser.parse_args()
   
   cmd_name = arguments.cmd_name
-  enabled_clean_url_flag = arguments.enabled_clean_url_flag
   
-  main(cmd_name, enabled_clean_url_flag)
+  main(cmd_name)
