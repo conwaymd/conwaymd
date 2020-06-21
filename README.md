@@ -11,7 +11,7 @@ Since this is just a crappy, single-file regex converter,
 there is no plan on turning it into a proper Python package any time soon.
 In the meantime:
 
-````
+````bash
 $ cd some-directory/
 $ git clone https://github.com/conway-markdown/conway-markdown.git
 ````
@@ -25,7 +25,7 @@ $ git clone https://github.com/conway-markdown/conway-markdown.git
 
 Convert a CMD file to HTML:
 
-````
+````bash
 $ cmd.py [cmd_name[.[cmd]]]
 ````
 
