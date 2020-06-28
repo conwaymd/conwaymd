@@ -2422,7 +2422,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   one or more closing square or round brackets, use CMD literals.
   
   Reference-style:
-    DEFINITION: @@![{label}]{[class]}↵ {src} [title] @@[width]
+    DEFINITION: @@![{label}]{[class]}[[width]]↵ {src} [title] @@
     IMAGE: ![{alt}][[label]]
   The delimiting at signs in a definition must be the first
   non-whitespace characters on their lines.
@@ -2433,6 +2433,8 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   Non-empty [width] in a definition must consist of digits only.
   If [class] in a definition is empty,
   the curly brackets surrounding it may be omitted.
+  If [width] in a definition is empty,
+  the square brackets surrounding it may be omitted.
   If [label] in an image is empty,
   the square brackets surrounding it may be omitted,
   and {alt} is used as the label for that image.
@@ -2491,6 +2493,11 @@ def process_images(placeholder_storage, image_definition_storage, markup):
             (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
           \}} ?
         ) ?
+        (?:
+          \[
+            (?P<width>  [0-9] *  )
+          \] ?
+        ) ?
       \n
         (?:
           [\s] *
@@ -2502,7 +2509,6 @@ def process_images(placeholder_storage, image_definition_storage, markup):
         ) ??
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P=at_signs)
-        (?P<width>  [0-9] *  )
     ''',
     functools.partial(process_image_definition_match,
       placeholder_storage,
