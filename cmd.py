@@ -3223,9 +3223,6 @@ def cmd_to_html(cmd, cmd_name):
     markup
   )
   
-  # Process headings
-  markup = process_headings(placeholder_storage, markup)
-  
   # Process blocks
   markup = process_blocks(placeholder_storage, markup)
   
@@ -3247,6 +3244,9 @@ def cmd_to_html(cmd, cmd_name):
   # Process links
   link_definition_storage = LinkDefinitionStorage()
   markup = process_links(placeholder_storage, link_definition_storage, markup)
+  
+  # Process headings
+  markup = process_headings(placeholder_storage, markup)
   
   # Process inline semantics
   markup = process_inline_semantics(placeholder_storage, markup)
