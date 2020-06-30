@@ -1275,7 +1275,7 @@ def process_regex_replacements(
     s for just before processing inline semantics
     w for just before processing whitespace
     Z for just before replacing placeholder strings
-  If [flag] is omitted, it defaults to A.
+  If [flag] is empty, it defaults to A.
   
   All regex replacement specifications are read and stored
   using the regex replacement storage class.
@@ -1395,7 +1395,7 @@ def process_ordinary_replacements(
     s for just before processing inline semantics
     w for just before processing whitespace
     Z for just before replacing placeholder strings
-  If [flag] is omitted, it defaults to A.
+  If [flag] is empty, it defaults to A.
   
   All ordinary replacement specifications are read and stored
   using the ordinary replacement storage class.
