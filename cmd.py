@@ -3210,7 +3210,7 @@ def process_whitespace(markup):
     flags=REGEX_FLAGS
   )
   markup = re.sub(r'[\n]+', r'\n', markup)
-  markup = re.sub(r'[\s]+(?=<br>)', '', markup, re.ASCII)
+  markup = re.sub(r'[\s]+(?=<br>)', '', markup, flags=REGEX_FLAGS)
   markup = re.sub(
     fr'''
       [\s] +?
