@@ -30,6 +30,7 @@ ABSOLUTELY NO WARRANTY, i.e. "GOD SAVE YOU"
 
 
 import argparse
+import copy
 import fnmatch
 import functools
 import os
@@ -540,13 +541,24 @@ class PropertyStorage:
     return string
 
 
+REPLACEMENT_FLAGS = 'ApbtecilhswZ'
+REPLACEMENT_FLAG_REGEX = f'[{REPLACEMENT_FLAGS}]'
+REPLACEMENT_STORAGE_DICTIONARY_INITIAL = {
+  flag: {}
+    for flag in REPLACEMENT_FLAGS
+}
+
+
 class RegexReplacementStorage:
   """
   Regex replacement storage class.
   
   Regex replacements are specified in the form
-  {% {pattern} % {replacement} %},
-  and are stored in a dictionary with
+  [flag]{% {pattern} % {replacement} %},
+  and are stored in a dictionary of dictionaries, with
+    KEYS: [flag]
+    VALUES: {regex replacement dictionary}
+  and each regex replacement dictionary with
     KEYS: {pattern}
     VALUES: {replacement}
   """
@@ -556,21 +568,21 @@ class RegexReplacementStorage:
     Initialise regex replacement storage.
     """
     
-    self.dictionary = {}
+    self.dictionary = copy.deepcopy(REPLACEMENT_STORAGE_DICTIONARY_INITIAL)
   
-  def store_replacement(self, pattern, replacement):
+  def store_replacement(self, flag, pattern, replacement):
     """
     Store a replacement.
     """
     
-    self.dictionary[pattern] = replacement
+    self.dictionary[flag][pattern] = replacement
   
-  def replace_patterns(self, string):
+  def replace_patterns(self, flag, string):
     """
-    Replace all patterns with their replacements.
+    Replace all patterns for a flag with their replacements.
     """
     
-    string = replace_by_regex_dictionary(self.dictionary, string)
+    string = replace_by_regex_dictionary(self.dictionary[flag], string)
     
     return string
 
@@ -580,8 +592,11 @@ class OrdinaryReplacementStorage:
   Ordinary replacement storage class.
   
   Ordinary replacements are specified in the form
-  {: {pattern} : {replacement} :},
-  and are stored in a dictionary with
+  [flag]{: {pattern} : {replacement} :},
+  and are stored in a dictionary of dictionaries, with
+    KEYS: [flag]
+    VALUES: {ordinary replacement dictionary}
+  and each ordinary replacement dictionary with
     KEYS: {pattern}
     VALUES: {replacement}
   """
@@ -591,21 +606,21 @@ class OrdinaryReplacementStorage:
     Initialise ordinary replacement storage.
     """
     
-    self.dictionary = {}
+    self.dictionary = copy.deepcopy(REPLACEMENT_STORAGE_DICTIONARY_INITIAL)
   
-  def store_replacement(self, pattern, replacement):
+  def store_replacement(self, flag, pattern, replacement):
     """
     Store a replacement.
     """
     
-    self.dictionary[pattern] = replacement
+    self.dictionary[flag][pattern] = replacement
   
-  def replace_patterns(self, string):
+  def replace_patterns(self, flag, string):
     """
-    Replace all patterns with their replacements.
+    Replace all patterns for a flag with their replacements.
     """
     
-    string = replace_by_ordinary_dictionary(self.dictionary, string)
+    string = replace_by_ordinary_dictionary(self.dictionary[flag], string)
     
     return string
 
@@ -1235,7 +1250,7 @@ def process_regex_replacements(
   placeholder_storage, regex_replacement_storage, cmd_name, markup
 ):
   """
-  Process regex replacements {% {pattern} % {replacement} %}.
+  Process regex replacements [flag]{% {pattern} % {replacement} %}.
   Python regex syntax is used,
   and the flags re.MULTILINE and re.VERBOSE are enabled.
   
@@ -1246,10 +1261,25 @@ def process_regex_replacements(
   For {pattern} matching any of the syntax above,
   which should not be processed using that syntax, use CMD literals.
   
+  [flag] may consist of zero or one of the following characters,
+  and specifies when the regex replacement is to be applied:
+    A for immediately after processing regex replacements
+    p for just before processing preamble
+    b for just before processing blocks
+    t for just before processing tables
+    e for just before processing punctuation/escapes
+    c for just before processing line continuations
+    i for just before processing images
+    l for just before processing links
+    h for just before processing headings
+    s for just before processing inline semantics
+    w for just before processing whitespace
+    Z for just before replacing placeholder strings
+  If [flag] is omitted, it defaults to A.
+  
   All regex replacement specifications are read and stored
-  using the regex replacement storage class
-  before being applied in order.
-  If the same pattern is specified more than once,
+  using the regex replacement storage class.
+  If the same pattern is specified more than once for a given flag,
   the latest specification shall prevail.
   
   WARNING:
@@ -1263,6 +1293,7 @@ def process_regex_replacements(
   
   markup = re.sub(
     fr'''
+      (?P<flag>  {REPLACEMENT_FLAG_REGEX}  ) ?
       \{{
         (?P<percent_signs>  [%] +  )
           (?P<pattern>  {ANYTHING_MINIMAL_REGEX}  )
@@ -1280,8 +1311,6 @@ def process_regex_replacements(
     flags=re.VERBOSE
   )
   
-  markup = regex_replacement_storage.replace_patterns(markup)
-  
   return markup
 
 
@@ -1291,6 +1320,10 @@ def process_regex_replacement_match(
   """
   Process a single regex-replacement match object.
   """
+  
+  flag = match_object.group('flag')
+  if flag is None:
+    flag = 'A'
   
   pattern = match_object.group('pattern')
   pattern = pattern.strip()
@@ -1327,7 +1360,7 @@ def process_regex_replacement_match(
     )
     raise re.error(error_message) from replacement_error
   
-  regex_replacement_storage.store_replacement(pattern, replacement)
+  regex_replacement_storage.store_replacement(flag, pattern, replacement)
   
   return ''
 
@@ -1341,17 +1374,32 @@ def process_ordinary_replacements(
   ordinary_replacement_storage, cmd_name, markup
 ):
   """
-  Process ordinary replacements {: {pattern} : {replacement} :}.
+  Process ordinary replacements [flag]{: {pattern} : {replacement} :}.
   
   Whitespace around {pattern} and {replacement} is stripped.
   For {pattern} or {replacement} containing
   one or more consecutive colons,
   use a longer run of colons in the delimiters.
   
+  [flag] may consist of zero or one of the following characters,
+  and specifies when the ordinary replacement is to be applied:
+    A for immediately after processing ordinary replacements
+    p for just before processing preamble
+    b for just before processing blocks
+    t for just before processing tables
+    e for just before processing punctuation/escapes
+    c for just before processing line continuations
+    i for just before processing images
+    l for just before processing links
+    h for just before processing headings
+    s for just before processing inline semantics
+    w for just before processing whitespace
+    Z for just before replacing placeholder strings
+  If [flag] is omitted, it defaults to A.
+  
   All ordinary replacement specifications are read and stored
-  using the ordinary replacement storage class
-  before being applied in order.
-  If the same pattern is specified more than once,
+  using the ordinary replacement storage class.
+  If the same pattern is specified more than once for a given flag,
   the latest specification shall prevail.
   
   WARNING:
@@ -1365,6 +1413,7 @@ def process_ordinary_replacements(
   
   markup = re.sub(
     fr'''
+      (?P<flag>  {REPLACEMENT_FLAG_REGEX}  ) ?
       \{{
         (?P<colons>  [:] +  )
           (?P<pattern>  {ANYTHING_MINIMAL_REGEX}  )
@@ -1380,8 +1429,6 @@ def process_ordinary_replacements(
     flags=re.VERBOSE
   )
   
-  markup = ordinary_replacement_storage.replace_patterns(markup)
-  
   return markup
 
 
@@ -1391,6 +1438,10 @@ def process_ordinary_replacement_match(
   """
   Process a single ordinary-replacement match object.
   """
+  
+  flag = match_object.group('flag')
+  if flag is None:
+    flag = 'A'
   
   pattern = match_object.group('pattern')
   pattern = pattern.strip()
@@ -1412,7 +1463,7 @@ def process_ordinary_replacement_match(
     )
     raise re.error(error_message) from replacement_error
   
-  ordinary_replacement_storage.store_replacement(pattern, replacement)
+  ordinary_replacement_storage.store_replacement(flag, pattern, replacement)
   
   return ''
 
@@ -3208,6 +3259,7 @@ def cmd_to_html(cmd, cmd_name):
     placeholder_storage, regex_replacement_storage, cmd_name,
     markup
   )
+  markup = regex_replacement_storage.replace_patterns('A', markup)
   
   # Process ordinary replacements
   ordinary_replacement_storage = OrdinaryReplacementStorage()
@@ -3215,8 +3267,11 @@ def cmd_to_html(cmd, cmd_name):
     ordinary_replacement_storage, cmd_name,
     markup
   )
+  markup = ordinary_replacement_storage.replace_patterns('A', markup)
   
   # Process preamble
+  markup = regex_replacement_storage.replace_patterns('p', markup)
+  markup = ordinary_replacement_storage.replace_patterns('p', markup)
   property_storage = PropertyStorage()
   markup = process_preamble(
     placeholder_storage, property_storage, cmd_name,
@@ -3224,37 +3279,57 @@ def cmd_to_html(cmd, cmd_name):
   )
   
   # Process blocks
+  markup = regex_replacement_storage.replace_patterns('b', markup)
+  markup = ordinary_replacement_storage.replace_patterns('b', markup)
   markup = process_blocks(placeholder_storage, markup)
   
   # Process tables
+  markup = regex_replacement_storage.replace_patterns('t', markup)
+  markup = ordinary_replacement_storage.replace_patterns('t', markup)
   markup = process_tables(placeholder_storage, markup)
   
   # Process punctuation
+  markup = regex_replacement_storage.replace_patterns('e', markup)
+  markup = ordinary_replacement_storage.replace_patterns('e', markup)
   markup = process_punctuation(placeholder_storage, markup)
   
   # Process line continuations
+  markup = regex_replacement_storage.replace_patterns('c', markup)
+  markup = ordinary_replacement_storage.replace_patterns('c', markup)
   markup = process_line_continuations(markup)
   
   # Process images
+  markup = regex_replacement_storage.replace_patterns('i', markup)
+  markup = ordinary_replacement_storage.replace_patterns('i', markup)
   image_definition_storage = ImageDefinitionStorage()
   markup = process_images(
     placeholder_storage, image_definition_storage, markup
   )
   
   # Process links
+  markup = regex_replacement_storage.replace_patterns('l', markup)
+  markup = ordinary_replacement_storage.replace_patterns('l', markup)
   link_definition_storage = LinkDefinitionStorage()
   markup = process_links(placeholder_storage, link_definition_storage, markup)
   
   # Process headings
+  markup = regex_replacement_storage.replace_patterns('h', markup)
+  markup = ordinary_replacement_storage.replace_patterns('h', markup)
   markup = process_headings(placeholder_storage, markup)
   
   # Process inline semantics
+  markup = regex_replacement_storage.replace_patterns('s', markup)
+  markup = ordinary_replacement_storage.replace_patterns('s', markup)
   markup = process_inline_semantics(placeholder_storage, markup)
   
   # Process whitespace
+  markup = regex_replacement_storage.replace_patterns('w', markup)
+  markup = ordinary_replacement_storage.replace_patterns('w', markup)
   markup = process_whitespace(markup)
   
   # Replace placeholders strings with markup portions
+  markup = regex_replacement_storage.replace_patterns('Z', markup)
+  markup = ordinary_replacement_storage.replace_patterns('Z', markup)
   markup = placeholder_storage.replace_placeholders_with_markup(markup)
   
   ################################################
