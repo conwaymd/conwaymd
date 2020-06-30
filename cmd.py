@@ -43,6 +43,8 @@ import string as strings
 ################################################################
 
 
+REGEX_FLAGS = re.ASCII|re.MULTILINE|re.VERBOSE
+
 ANY_CHARACTER_REGEX = r'[\s\S]'
 ANYTHING_MINIMAL_REGEX = r'[\s\S]*?'
 NON_EMPTY_MINIMAL_REGEX = r'[\s\S]+?'
@@ -91,7 +93,7 @@ def de_indent(string):
     ''',
     '',
     string,
-    flags=re.ASCII|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # Get list of all indentations, either
@@ -104,7 +106,7 @@ def de_indent(string):
       ^  (?=  {NOT_NEWLINE_CHARACTER_REGEX}  )
     ''',
     string,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # Remove longest common indentation
@@ -115,7 +117,7 @@ def de_indent(string):
     ''',
     '',
     string,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return string
@@ -138,7 +140,7 @@ def re_indent(number_of_spaces, string):
     ''',
     number_of_spaces * ' ',
     string,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return string
@@ -309,7 +311,7 @@ def replace_by_regex_dictionary(dictionary, string):
       pattern,
       replacement,
       string,
-      flags=re.ASCII|re.MULTILINE|re.VERBOSE
+      flags=REGEX_FLAGS
     )
   
   return string
@@ -374,7 +376,7 @@ class PlaceholderStorage:
       [0-9] +
       {PLACEHOLDER_MARKER}
     ''',
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   def __init__(self):
@@ -523,7 +525,7 @@ class PropertyStorage:
       ''',
       self.process_specification_match,
       preamble_content,
-      flags=re.ASCII|re.MULTILINE|re.VERBOSE
+      flags=REGEX_FLAGS
     )
   
   def process_specification_match(self, match_object):
@@ -798,7 +800,7 @@ def process_literals(placeholder_storage, markup):
     ''',
     functools.partial(process_literal_match, placeholder_storage),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -879,7 +881,7 @@ def process_display_code(placeholder_storage, markup):
     ''',
     functools.partial(process_display_code_match, placeholder_storage),
     markup,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -955,7 +957,7 @@ def process_inline_code(placeholder_storage, markup):
     ''',
     functools.partial(process_inline_code_match, placeholder_storage),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -1024,7 +1026,7 @@ def process_comments(markup):
     ''',
     '',
     markup,
-    flags=re.ASCII|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -1078,7 +1080,7 @@ def process_display_maths(placeholder_storage, markup):
     ''',
     functools.partial(process_display_maths_match, placeholder_storage),
     markup,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -1153,7 +1155,7 @@ def process_inline_maths(placeholder_storage, markup):
     ''',
     functools.partial(process_inline_maths_match, placeholder_storage),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -1212,7 +1214,7 @@ def process_inclusions(placeholder_storage, cmd_name, markup):
     ''',
     functools.partial(process_inclusion_match, placeholder_storage, cmd_name),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -1322,7 +1324,7 @@ def process_regex_replacements(
       cmd_name
     ),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -1347,7 +1349,7 @@ def process_regex_replacement_match(
   replacement = strip_whitespace(replacement)
   
   try:
-    re.sub(pattern, '', '', flags=re.ASCII|re.MULTILINE|re.VERBOSE)
+    re.sub(pattern, '', '', flags=REGEX_FLAGS)
   except re.error as pattern_error:
     match_string = match_object.group()
     error_message = join_staggered(2,
@@ -1361,7 +1363,7 @@ def process_regex_replacement_match(
     raise re.error(error_message) from pattern_error
   
   try:
-    re.sub(pattern, replacement, '', flags=re.ASCII|re.MULTILINE|re.VERBOSE)
+    re.sub(pattern, replacement, '', flags=REGEX_FLAGS)
   except re.error as replacement_error:
     match_string = match_object.group()
     error_message = join_staggered(2,
@@ -1440,7 +1442,7 @@ def process_ordinary_replacements(
       ordinary_replacement_storage, cmd_name
     ),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -1571,7 +1573,7 @@ def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
     ),
     markup,
     count=1,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   if preamble_count > 0:
@@ -1812,7 +1814,7 @@ def process_headings(placeholder_storage, markup):
     ''',
     functools.partial(process_heading_match, placeholder_storage),
     markup,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -1904,7 +1906,7 @@ def process_blocks(placeholder_storage, markup):
     ''',
     functools.partial(process_block_match, placeholder_storage),
     markup,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -1984,7 +1986,7 @@ def process_list_items(placeholder_storage, content):
     ''',
     functools.partial(process_list_item_match, placeholder_storage),
     content,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return content
@@ -2077,7 +2079,7 @@ def process_tables(placeholder_storage, markup):
     ''',
     functools.partial(process_table_match, placeholder_storage),
     markup,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -2169,7 +2171,7 @@ def process_table_cells(placeholder_storage, content):
     ''',
     functools.partial(process_table_cell_match, placeholder_storage),
     content,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return content
@@ -2253,7 +2255,7 @@ def process_table_rows(placeholder_storage, content):
     ''',
     functools.partial(process_table_row_match, placeholder_storage),
     content,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return content
@@ -2324,7 +2326,7 @@ def process_table_parts(placeholder_storage, content):
     ''',
     functools.partial(process_table_part_match, placeholder_storage),
     content,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return content
@@ -2457,7 +2459,7 @@ def process_line_continuations(markup):
     ''',
     '',
     markup,
-    flags=re.ASCII|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -2541,7 +2543,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     ''',
     functools.partial(process_inline_image_match, placeholder_storage),
     markup,
-    flags=re.ASCII|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # Reference-style image definitions
@@ -2580,7 +2582,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
       image_definition_storage
     ),
     markup,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # Reference-style images
@@ -2602,7 +2604,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
       image_definition_storage
     ),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -2749,7 +2751,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
     ''',
     functools.partial(process_inline_link_match, placeholder_storage),
     markup,
-    flags=re.ASCII|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # Reference-style link definitions
@@ -2782,7 +2784,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
       link_definition_storage
     ),
     markup,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # Reference-style links
@@ -2800,7 +2802,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
     ''',
     functools.partial(process_reference_link_match, link_definition_storage),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -2948,7 +2950,7 @@ def process_inline_semantics(placeholder_storage, markup):
       placeholder_storage
     ),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # 312
@@ -2984,7 +2986,7 @@ def process_inline_semantics(placeholder_storage, markup):
       placeholder_storage
     ),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # 321
@@ -3020,7 +3022,7 @@ def process_inline_semantics(placeholder_storage, markup):
       placeholder_storage
     ),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # 22
@@ -3044,7 +3046,7 @@ def process_inline_semantics(placeholder_storage, markup):
       placeholder_storage
     ),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   # 11
@@ -3063,7 +3065,7 @@ def process_inline_semantics(placeholder_storage, markup):
       placeholder_storage
     ),
     markup,
-    flags=re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
@@ -3205,7 +3207,7 @@ def process_whitespace(markup):
     ''',
     '',
     markup,
-    flags=re.ASCII|re.MULTILINE|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   markup = re.sub(r'[\n]+', r'\n', markup)
   markup = re.sub(r'[\s]+(?=<br>)', '', markup, re.ASCII)
@@ -3220,7 +3222,7 @@ def process_whitespace(markup):
     ''',
     r' \g<attribute_name>=\g<quoted_attribute_value>',
     markup,
-    flags=re.ASCII|re.VERBOSE
+    flags=REGEX_FLAGS
   )
   
   return markup
