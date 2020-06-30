@@ -35,6 +35,7 @@ import fnmatch
 import functools
 import os
 import re
+import string as strings
 
 
 ################################################################
@@ -58,6 +59,18 @@ NOT_WHITESPACE_MINIMAL_REGEX = r'[\S]*?'
 
 NOT_NEWLINE_CHARACTER_REGEX = r'[^\n]'
 
+ASCII_WHITESPACE = strings.whitespace
+
+
+def strip_whitespace(string):
+  """
+  Strip string of leading and trailing ASCII whitespace.
+  """
+  
+  string = string.strip(ASCII_WHITESPACE)
+  
+  return string
+
 
 def de_indent(string):
   """
@@ -78,7 +91,7 @@ def de_indent(string):
     ''',
     '',
     string,
-    flags=re.VERBOSE
+    flags=re.ASCII|re.VERBOSE
   )
   
   # Get list of all indentations, either
@@ -91,7 +104,7 @@ def de_indent(string):
       ^  (?=  {NOT_NEWLINE_CHARACTER_REGEX}  )
     ''',
     string,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   # Remove longest common indentation
@@ -215,7 +228,7 @@ def escape_html_attribute_value(placeholder_storage, string):
   """
   
   string = de_indent(string)
-  string = string.strip()
+  string = strip_whitespace(string)
   string = process_line_continuations(string)
   string = escape_html_syntax_characters(string)
   string = placeholder_storage.replace_placeholders_with_markup(string)
@@ -238,9 +251,9 @@ def build_html_attribute(
   if (
     attribute_value is None
       or
-    placeholder_storage
-      .replace_placeholders_with_markup(attribute_value)
-      .strip()
+    strip_whitespace(
+      placeholder_storage.replace_placeholders_with_markup(attribute_value)
+    )
       == ''
   ):
     return ''
@@ -285,6 +298,7 @@ def replace_by_ordinary_dictionary(
 def replace_by_regex_dictionary(dictionary, string):
   """
   Apply a dictionary of regex replacements to a string.
+  The flags re.ASCII, re.MULTILINE, and re.VERBOSE are enabled.
   """
   
   for pattern in dictionary:
@@ -295,7 +309,7 @@ def replace_by_regex_dictionary(dictionary, string):
       pattern,
       replacement,
       string,
-      flags=re.MULTILINE|re.VERBOSE
+      flags=re.ASCII|re.MULTILINE|re.VERBOSE
     )
   
   return string
@@ -509,7 +523,7 @@ class PropertyStorage:
       ''',
       self.process_specification_match,
       preamble_content,
-      flags=re.MULTILINE|re.VERBOSE
+      flags=re.ASCII|re.MULTILINE|re.VERBOSE
     )
   
   def process_specification_match(self, match_object):
@@ -521,7 +535,7 @@ class PropertyStorage:
     
     property_markup = match_object.group('property_markup')
     property_markup = de_indent(property_markup)
-    property_markup = property_markup.strip()
+    property_markup = strip_whitespace(property_markup)
     
     self.store_property_markup(property_name, property_markup)
     
@@ -655,7 +669,7 @@ class ImageDefinitionStorage:
     """
     
     label = label.lower()
-    label = label.strip()
+    label = strip_whitespace(label)
     
     class_attribute = build_html_attribute(
       placeholder_storage, 'class', class_
@@ -684,7 +698,7 @@ class ImageDefinitionStorage:
     """
     
     label = label.lower()
-    label = label.strip()
+    label = strip_whitespace(label)
     
     attributes = self.dictionary.get(label, None)
     
@@ -721,7 +735,7 @@ class LinkDefinitionStorage:
     """
     
     label = label.lower()
-    label = label.strip()
+    label = strip_whitespace(label)
     
     class_attribute = build_html_attribute(
       placeholder_storage, 'class', class_
@@ -745,7 +759,7 @@ class LinkDefinitionStorage:
     """
     
     label = label.lower()
-    label = label.strip()
+    label = strip_whitespace(label)
     
     attributes = self.dictionary.get(label, None)
     
@@ -803,7 +817,7 @@ def process_literal_match(placeholder_storage, match_object):
   
   content = match_object.group('content')
   content = de_indent(content)
-  content = content.strip()
+  content = strip_whitespace(content)
   
   if not enabled_unescaped_flag:
     content = escape_html_syntax_characters(content)
@@ -865,7 +879,7 @@ def process_display_code(placeholder_storage, markup):
     ''',
     functools.partial(process_display_code_match, placeholder_storage),
     markup,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   return markup
@@ -959,7 +973,7 @@ def process_inline_code_match(placeholder_storage, match_object):
   enabled_whitespace_flag = enabled_all_flags or 'w' in flags
   
   content = match_object.group('content')
-  content = content.strip()
+  content = strip_whitespace(content)
   
   if not enabled_unescaped_flag:
     content = escape_html_syntax_characters(content)
@@ -1010,7 +1024,7 @@ def process_comments(markup):
     ''',
     '',
     markup,
-    flags=re.VERBOSE
+    flags=re.ASCII|re.VERBOSE
   )
   
   return markup
@@ -1064,7 +1078,7 @@ def process_display_maths(placeholder_storage, markup):
     ''',
     functools.partial(process_display_maths_match, placeholder_storage),
     markup,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   return markup
@@ -1084,7 +1098,7 @@ def process_display_maths_match(placeholder_storage, match_object):
   class_ = match_object.group('class_')
   if class_ is None:
     class_ = ''
-  class_ = class_.strip()
+  class_ = strip_whitespace(class_)
   class_attribute = build_html_attribute(
     placeholder_storage, 'class', f'js-maths {class_}'
   )
@@ -1154,7 +1168,7 @@ def process_inline_maths_match(placeholder_storage, match_object):
   enabled_whitespace_flag = 'w' in flags
   
   content = match_object.group('content')
-  content = content.strip()
+  content = strip_whitespace(content)
   content = escape_html_syntax_characters(content)
   
   if enabled_whitespace_flag:
@@ -1210,7 +1224,7 @@ def process_inclusion_match(placeholder_storage, cmd_name, match_object):
   """
   
   file_name = match_object.group('file_name')
-  file_name = file_name.strip()
+  file_name = strip_whitespace(file_name)
   
   try:
     with open(file_name, 'r', encoding='utf-8') as file:
@@ -1252,7 +1266,7 @@ def process_regex_replacements(
   """
   Process regex replacements [flag]{% {pattern} % {replacement} %}.
   Python regex syntax is used,
-  and the flags re.MULTILINE and re.VERBOSE are enabled.
+  and the flags re.ASCII, re.MULTILINE, and re.VERBOSE are enabled.
   
   Whitespace around {pattern} and {replacement} is stripped.
   For {pattern} or {replacement} containing
@@ -1326,14 +1340,14 @@ def process_regex_replacement_match(
     flag = 'A'
   
   pattern = match_object.group('pattern')
-  pattern = pattern.strip()
+  pattern = strip_whitespace(pattern)
   pattern = placeholder_storage.replace_placeholders_with_markup(pattern)
   
   replacement = match_object.group('replacement')
-  replacement = replacement.strip()
+  replacement = strip_whitespace(replacement)
   
   try:
-    re.sub(pattern, '', '')
+    re.sub(pattern, '', '', flags=re.ASCII|re.MULTILINE|re.VERBOSE)
   except re.error as pattern_error:
     match_string = match_object.group()
     error_message = join_staggered(2,
@@ -1347,7 +1361,7 @@ def process_regex_replacement_match(
     raise re.error(error_message) from pattern_error
   
   try:
-    re.sub(pattern, replacement, '')
+    re.sub(pattern, replacement, '', flags=re.ASCII|re.MULTILINE|re.VERBOSE)
   except re.error as replacement_error:
     match_string = match_object.group()
     error_message = join_staggered(2,
@@ -1444,10 +1458,10 @@ def process_ordinary_replacement_match(
     flag = 'A'
   
   pattern = match_object.group('pattern')
-  pattern = pattern.strip()
+  pattern = strip_whitespace(pattern)
   
   replacement = match_object.group('replacement')
-  replacement = replacement.strip()
+  replacement = strip_whitespace(replacement)
   
   try:
     re.sub('', replacement, '')
@@ -1557,7 +1571,7 @@ def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
     ),
     markup,
     count=1,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   if preamble_count > 0:
@@ -1798,7 +1812,7 @@ def process_headings(placeholder_storage, markup):
     ''',
     functools.partial(process_heading_match, placeholder_storage),
     markup,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   return markup
@@ -1817,7 +1831,7 @@ def process_heading_match(placeholder_storage, match_object):
   id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
   
   content = match_object.group('content')
-  content = content.strip()
+  content = strip_whitespace(content)
   
   heading = f'<{tag_name}{id_attribute}>{content}</{tag_name}>'
   
@@ -1890,7 +1904,7 @@ def process_blocks(placeholder_storage, markup):
     ''',
     functools.partial(process_block_match, placeholder_storage),
     markup,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   return markup
@@ -1970,7 +1984,7 @@ def process_list_items(placeholder_storage, content):
     ''',
     functools.partial(process_list_item_match, placeholder_storage),
     content,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   return content
@@ -1988,7 +2002,7 @@ def process_list_item_match(placeholder_storage, match_object):
   class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
   
   list_item_content = match_object.group('list_item_content')
-  list_item_content = list_item_content.strip()
+  list_item_content = strip_whitespace(list_item_content)
   
   list_item = f'''
     <li{id_attribute}{class_attribute}>{list_item_content}
@@ -2063,7 +2077,7 @@ def process_tables(placeholder_storage, markup):
     ''',
     functools.partial(process_table_match, placeholder_storage),
     markup,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   return markup
@@ -2155,7 +2169,7 @@ def process_table_cells(placeholder_storage, content):
     ''',
     functools.partial(process_table_cell_match, placeholder_storage),
     content,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   return content
@@ -2186,7 +2200,7 @@ def process_table_cell_match(placeholder_storage, match_object):
   )
   
   table_cell_content = match_object.group('table_cell_content')
-  table_cell_content = table_cell_content.strip()
+  table_cell_content = strip_whitespace(table_cell_content)
   
   attributes = (
     id_attribute + class_attribute + rowspan_attribute + colspan_attribute
@@ -2239,7 +2253,7 @@ def process_table_rows(placeholder_storage, content):
     ''',
     functools.partial(process_table_row_match, placeholder_storage),
     content,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   return content
@@ -2257,7 +2271,7 @@ def process_table_row_match(placeholder_storage, match_object):
   class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
   
   table_row_content = match_object.group('table_row_content')
-  table_row_content = table_row_content.strip()
+  table_row_content = strip_whitespace(table_row_content)
   
   table_row = f'''
     <tr{id_attribute}{class_attribute}>
@@ -2310,7 +2324,7 @@ def process_table_parts(placeholder_storage, content):
     ''',
     functools.partial(process_table_part_match, placeholder_storage),
     content,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   return content
@@ -2331,7 +2345,7 @@ def process_table_part_match(placeholder_storage, match_object):
   class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
   
   table_part_content = match_object.group('table_part_content')
-  table_part_content = table_part_content.strip()
+  table_part_content = strip_whitespace(table_part_content)
   
   table_part = f'''
     <{tag_name}{id_attribute}{class_attribute}>
@@ -2443,7 +2457,7 @@ def process_line_continuations(markup):
     ''',
     '',
     markup,
-    flags=re.VERBOSE
+    flags=re.ASCII|re.VERBOSE
   )
   
   return markup
@@ -2527,7 +2541,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     ''',
     functools.partial(process_inline_image_match, placeholder_storage),
     markup,
-    flags=re.VERBOSE
+    flags=re.ASCII|re.VERBOSE
   )
   
   # Reference-style image definitions
@@ -2566,7 +2580,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
       image_definition_storage
     ),
     markup,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   # Reference-style images
@@ -2647,7 +2661,7 @@ def process_reference_image_match(
   alt_attribute = build_html_attribute(placeholder_storage, 'alt', alt)
   
   label = match_object.group('label')
-  if label is None or label.strip() == '':
+  if label is None or strip_whitespace(label) == '':
     label = alt
   
   attributes = image_definition_storage.get_definition_attributes(label)
@@ -2735,7 +2749,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
     ''',
     functools.partial(process_inline_link_match, placeholder_storage),
     markup,
-    flags=re.VERBOSE
+    flags=re.ASCII|re.VERBOSE
   )
   
   # Reference-style link definitions
@@ -2768,7 +2782,7 @@ def process_links(placeholder_storage, link_definition_storage, markup):
       link_definition_storage
     ),
     markup,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   
   # Reference-style links
@@ -2798,7 +2812,7 @@ def process_inline_link_match(placeholder_storage, match_object):
   """
   
   content = match_object.group('content')
-  content = content.strip()
+  content = strip_whitespace(content)
   
   href = match_object.group('href')
   href_attribute = build_html_attribute(placeholder_storage, 'href', href)
@@ -2839,10 +2853,10 @@ def process_reference_link_match(link_definition_storage, match_object):
   """
   
   content = match_object.group('content')
-  content = content.strip()
+  content = strip_whitespace(content)
   
   label = match_object.group('label')
-  if label is None or label.strip() == '':
+  if label is None or strip_whitespace(label) == '':
     label = content
   
   attributes = link_definition_storage.get_definition_attributes(label)
@@ -3068,7 +3082,7 @@ def process_inline_semantic_match_2_layer_special(
   )
   
   inner_content = match_object.group('inner_content')
-  inner_content = inner_content.strip()
+  inner_content = strip_whitespace(inner_content)
   
   # Process nested inline semantics (inner)
   inner_content = process_inline_semantics(placeholder_storage, inner_content)
@@ -3109,7 +3123,7 @@ def process_inline_semantic_match_2_layer_general(
   )
   
   inner_content = match_object.group('inner_content')
-  inner_content = inner_content.strip()
+  inner_content = strip_whitespace(inner_content)
   
   # Process nested inline semantics (inner)
   inner_content = process_inline_semantics(placeholder_storage, inner_content)
@@ -3154,7 +3168,7 @@ def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
   class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
   
   content = match_object.group('content')
-  content = content.strip()
+  content = strip_whitespace(content)
   
   # Process nested inline semantics
   content = process_inline_semantics(placeholder_storage, content)
@@ -3191,10 +3205,10 @@ def process_whitespace(markup):
     ''',
     '',
     markup,
-    flags=re.MULTILINE|re.VERBOSE
+    flags=re.ASCII|re.MULTILINE|re.VERBOSE
   )
   markup = re.sub(r'[\n]+', r'\n', markup)
-  markup = re.sub(r'[\s]+(?=<br>)', '', markup)
+  markup = re.sub(r'[\s]+(?=<br>)', '', markup, re.ASCII)
   markup = re.sub(
     fr'''
       [\s] +?
@@ -3206,7 +3220,7 @@ def process_whitespace(markup):
     ''',
     r' \g<attribute_name>=\g<quoted_attribute_value>',
     markup,
-    flags=re.VERBOSE
+    flags=re.ASCII|re.VERBOSE
   )
   
   return markup
