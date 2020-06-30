@@ -1267,7 +1267,7 @@ def process_regex_replacements(
     p for just before processing preamble
     b for just before processing blocks
     t for just before processing tables
-    e for just before processing punctuation/escapes
+    e for just before processing escapes
     c for just before processing line continuations
     i for just before processing images
     l for just before processing links
@@ -1387,7 +1387,7 @@ def process_ordinary_replacements(
     p for just before processing preamble
     b for just before processing blocks
     t for just before processing tables
-    e for just before processing punctuation/escapes
+    e for just before processing escapes
     c for just before processing line continuations
     i for just before processing images
     l for just before processing links
@@ -2343,11 +2343,11 @@ def process_table_part_match(placeholder_storage, match_object):
 
 
 ################################################################
-# Punctuation (or, escapes)
+# Escapes
 ################################################################
 
 
-PUNCTUATION_REPLACEMENT_DICTIONARY = {
+ESCAPE_REPLACEMENT_DICTIONARY = {
   r'\\': '\\',
   r'\/': '',
   r'\ /': ' ',
@@ -2376,9 +2376,9 @@ PUNCTUATION_REPLACEMENT_DICTIONARY = {
 }
 
 
-def process_punctuation(placeholder_storage, markup):
+def process_escapes(placeholder_storage, markup):
   r"""
-  Process punctuation.
+  Process escapes.
     \\  becomes \
     \/  becomes the empty string
     \ / becomes   U+0020 SPACE
@@ -2417,7 +2417,7 @@ def process_punctuation(placeholder_storage, markup):
   """
   
   markup = replace_by_ordinary_dictionary(
-    PUNCTUATION_REPLACEMENT_DICTIONARY, markup, placeholder_storage
+    ESCAPE_REPLACEMENT_DICTIONARY, markup, placeholder_storage
   )
   
   markup = re.sub(r'\\\+', '<br>', markup)
@@ -3288,10 +3288,10 @@ def cmd_to_html(cmd, cmd_name):
   markup = ordinary_replacement_storage.replace_patterns('t', markup)
   markup = process_tables(placeholder_storage, markup)
   
-  # Process punctuation
+  # Process escapes
   markup = regex_replacement_storage.replace_patterns('e', markup)
   markup = ordinary_replacement_storage.replace_patterns('e', markup)
-  markup = process_punctuation(placeholder_storage, markup)
+  markup = process_escapes(placeholder_storage, markup)
   
   # Process line continuations
   markup = regex_replacement_storage.replace_patterns('c', markup)
