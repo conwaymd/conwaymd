@@ -1001,15 +1001,19 @@ def process_inline_code_match(placeholder_storage, match_object):
 
 def process_comments(markup):
   """
-  Process comments <!-- {content} -->.
+  Process comments <# {content} #>.
   
-  <!-- {content} --> is removed,
+  <# {content} #> is removed,
   along with any preceding horizontal whitespace.
+  For {content} containing one or more consecutive hashes
+  followed by a closing angle bracket,
+  use a longer run of hashes in the delimiters.
+  
   Although comments are weaker than literals and code
   they may still be used to remove them, e.g.
-    ~~ A <!-- B --> ~~ becomes A <!-- B --> with HTML escaping,
+    ~~ A <# B #> ~~ becomes A <# B #> with HTML escaping,
   but
-    <!-- A ~~ B ~~ --> is removed entirely.
+    <# A ~~ B ~~ #> is removed entirely.
   In this sense they are stronger than literals and code.
   Therefore, while the comment syntax is not placeholder-protected,
   it is nevertheless accorded this status.
@@ -1018,10 +1022,10 @@ def process_comments(markup):
   markup = re.sub(
     f'''
       {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} *
-      <!
-        [-] {{2}}
+      <
+        (?P<hashes>  [#] +  )
           (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
-        [-] {{2}}
+        (?P=hashes)
       >
     ''',
     '',
