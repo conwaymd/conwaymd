@@ -1191,11 +1191,11 @@ def process_inline_maths_match(placeholder_storage, match_object):
 
 def process_inclusions(placeholder_storage, cmd_name, markup):
   r"""
-  Process inclusions (+ {file name} +).
+  Process inclusions {+ {file name} +}.
   
-  (+ {file name} +) includes the content of the file {file name}.
+  {+ {file name} +} includes the content of the file {file name}.
   For {file name} containing one or more consecutive plus signs
-  followed by a closing round bracket,
+  followed by a closing curly bracket,
   use a longer run of plus signs in the delimiters.
   
   All of the syntax above (CMD literals through to inline maths)
@@ -1206,11 +1206,11 @@ def process_inclusions(placeholder_storage, cmd_name, markup):
   
   markup = re.sub(
     fr'''
-      \(
+      \{{
         (?P<plus_signs>  [+] +  )
           (?P<file_name>  {ANYTHING_MINIMAL_REGEX}  )
         (?P=plus_signs)
-      \)
+      \}}
     ''',
     functools.partial(process_inclusion_match, placeholder_storage, cmd_name),
     markup,
