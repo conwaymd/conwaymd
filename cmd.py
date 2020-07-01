@@ -1621,6 +1621,22 @@ DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS = '''
 '''
 
 
+def process_head_element_content(placeholder_storage, markup):
+  """
+  Process content for elements inside <head>.
+  
+  Processes CMD syntax which does not produce new elements,
+  i.e. escapes, line continuations, and whitespace,
+  and then protects the content with a placeholder.
+  """
+  
+  markup = process_escapes(placeholder_storage, markup)
+  markup = process_line_continuations(markup)
+  markup = process_whitespace(markup)
+  
+  return placeholder_storage.create_placeholder_store_markup(markup)
+
+
 def process_preamble_match(
   placeholder_storage, property_storage, cmd_name, match_object
 ):
@@ -1651,6 +1667,7 @@ def process_preamble_match(
   
   # Derived property %meta-element-author
   author = property_storage.get_property_markup('author')
+  author = process_head_element_content(placeholder_storage, author)
   author = escape_html_attribute_value(placeholder_storage, author)
   if author == '':
     meta_element_author = ''
@@ -1662,6 +1679,7 @@ def process_preamble_match(
   
   # Derived property %meta-element-description
   description = property_storage.get_property_markup('description')
+  description = process_head_element_content(placeholder_storage, description)
   description = escape_html_attribute_value(placeholder_storage, description)
   if description == '':
     meta_element_description = ''
@@ -1685,9 +1703,11 @@ def process_preamble_match(
   )
   
   # Derived property %title-element
-  title = property_storage.get_property_markup('title')
   title_suffix = property_storage.get_property_markup('title-suffix')
-  title_element = f'<title>{title}{title_suffix}</title>'
+  title = property_storage.get_property_markup('title')
+  title += title_suffix
+  title = process_head_element_content(placeholder_storage, title)
+  title_element = f'<title>{title}</title>'
   property_storage.store_property_markup('title-element', title_element)
   
   # Derived property %style-element
