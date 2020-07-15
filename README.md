@@ -2,6 +2,8 @@
 
 Conway's fence-style markdown (CMD), implemented in Python 3.6+.
 
+Licensed under "MIT No Attribution" (MIT-0), see [LICENSE](LICENSE).
+
 For a detailed description of the syntax,
 see the [GitHub pages documentation][cmd-docs] ([repository][cmd-docs-repo]).
 
