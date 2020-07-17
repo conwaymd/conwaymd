@@ -464,8 +464,7 @@ class PropertyStorage:
   Property storage class.
   
   Properties are specified in the content of the preamble,
-  which is split according to leading occurrences of %<PROPERTY NAME>
-  (i.e. occurrences preceded only by whitespace on their lines),
+  which is split according to leading occurrences of %<PROPERTY NAME>,
   where <PROPERTY NAME> may only contain letters, digits, and hyphens.
   Property specifications end at the next property specification,
   or at the end of the (preamble) content being split.
@@ -857,8 +856,6 @@ def process_display_code(placeholder_storage, markup):
     <CONTENT>
   ``
   
-  The delimiting backticks must be the first
-  non-whitespace characters on their lines.
   If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
@@ -1069,8 +1066,6 @@ def process_display_maths(placeholder_storage, markup):
     <CONTENT>
   $$
   
-  The delimiting dollar signs must be the first
-  non-whitespace characters on their lines.
   If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
@@ -1536,14 +1531,10 @@ def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
     <CONTENT>
   %%
   
-  The delimiting percent signs must be the first
-  non-whitespace characters on their lines.
-  
   Produces the HTML preamble,
   i.e. everything from <!DOCTYPE html> through to <body>.
   <CONTENT> is split into property specifications
-  according to leading occurrences of %<PROPERTY NAME>
-  (i.e. occurrences preceded only by whitespace on their lines),
+  according to leading occurrences of %<PROPERTY NAME>,
   where <PROPERTY NAME> may only contain letters, digits, and hyphens.
   Property specifications end at the next property specification,
   or at the end of the (preamble) content being split.
@@ -1932,8 +1923,6 @@ def process_blocks(placeholder_storage, markup):
     <CONTENT>
   <C><C><C><C>
   
-  The delimiting characters <C> must be the first
-  non-whitespace characters on their lines.
   If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
@@ -2025,8 +2014,7 @@ def process_list_items(placeholder_storage, content):
   Process list items.
   
   Content is split into list items <li>
-  according to leading occurrences of <Y><id>{<class>}
-  (i.e. occurrences preceded only by whitespace on their lines),
+  according to leading occurrences of <Y><id>{<class>},
   with the following delimiters <Y>:
     *
     +
@@ -2118,8 +2106,6 @@ def process_tables(placeholder_storage, markup):
     <CONTENT>
   ''''
   
-  The delimiting apostrophes must be the first
-  non-whitespace characters on their lines.
   If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
@@ -2194,8 +2180,7 @@ def process_table_cells(placeholder_storage, content):
   Process table cells.
   
   Content is split into table cells <th>, <td> according to
-  leading occurrences of <Z><id>{<class>}[<rowspan>,<colspan>]
-  (i.e. occurrences preceded only by whitespace on their lines),
+  leading occurrences of <Z><id>{<class>}[<rowspan>,<colspan>],
   with the following delimiters <Z>:
     ;  <th>
     ,  <td>
@@ -2297,8 +2282,7 @@ def process_table_rows(placeholder_storage, content):
   Process table rows.
   
   Content is split into table rows <tr>
-  according to leading occurrences of ==<id>{<class>}
-  (i.e. occurrences preceded only by whitespace on their lines).
+  according to leading occurrences of ==<id>{<class>}.
   Table rows end at the next table row or table part,
   or at the end of the content being split.
   If <class> is empty,
@@ -2368,8 +2352,7 @@ def process_table_parts(placeholder_storage, content):
   Process table parts.
   
   Content is split into table parts <thead>, <tbody>, <tfoot>
-  according to leading occurrences of <Y><id>{<class>}
-  (i.e. occurrences preceded only by whitespace on their lines),
+  according to leading occurrences of <Y><id>{<class>},
   with the following delimiters <Y>:
     |^  <thead>
     |~  <tbody>
@@ -2577,8 +2560,6 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   IMAGE:
     ![<ALT>][<label>]
   
-  The delimiting at signs in a definition must be the first
-  non-whitespace characters on their lines.
   A single space may be included
   between [<ALT>] and [<label>] in an image.
   The referencing strings <LABEL> and <label> are case insensitive
@@ -2796,8 +2777,6 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   LINK:
     [<CONTENT>][<label>]
   
-  The delimiting at signs in a definition must be the first
-  non-whitespace characters on their lines.
   A single space may be included
   between [<CONTENT>] and [<label>] in a link.
   The referencing strings <LABEL> and <label> are case insensitive
