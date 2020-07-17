@@ -1886,13 +1886,13 @@ LIST_TAG_NAMES = ['ul', 'ol']
 
 def process_blocks(placeholder_storage, markup):
   """
-  Process blocks cccc<id>{<class>}↵ <CONTENT> cccc.
+  Process blocks <C><C><C><C><id>{<class>}↵ <CONTENT> <C><C><C><C>.
   The delimiting characters (c) must be the first
   non-whitespace characters on their lines.
   If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
-  The following delimiting characters (c) are used:
+  The following delimiting characters <C> are used:
     Non-lists
       -  <p>
       |  <div>
@@ -1900,7 +1900,7 @@ def process_blocks(placeholder_storage, markup):
     Lists
       =  <ul>
       +  <ol>
-  cccc<id>{<class>}↵ <CONTENT> cccc becomes
+  <C><C><C><C><id>{<class>}↵ <CONTENT> <C><C><C><C> becomes
   <<TAG NAME> id="<id>" class="<class>">↵<CONTENT></<TAG NAME>>.
   For <CONTENT> containing four or more
   consecutive delimiting characters
@@ -1979,9 +1979,9 @@ def process_list_items(placeholder_storage, content):
   Process list items.
   
   Content is split into list items <li>
-  according to leading occurrences of Y<id>{<class>}
+  according to leading occurrences of <Y><id>{<class>}
   (i.e. occurrences preceded only by whitespace on their lines),
-  with the following delimiters (Y):
+  with the following delimiters <Y>:
     *
     +
     -
@@ -2142,9 +2142,9 @@ def process_table_cells(placeholder_storage, content):
   Process table cells.
   
   Content is split into table cells <th>, <td> according to
-  leading occurrences of Z<id>{<class>}[<rowspan>,<colspan>]
+  leading occurrences of <Z><id>{<class>}[<rowspan>,<colspan>]
   (i.e. occurrences preceded only by whitespace on their lines),
-  with the following delimiters (Z):
+  with the following delimiters <Z>:
     ;  <th>
     ,  <td>
   Table cells end at the next table cell, table row, or table part,
@@ -2316,9 +2316,9 @@ def process_table_parts(placeholder_storage, content):
   Process table parts.
   
   Content is split into table parts <thead>, <tbody>, <tfoot>
-  according to leading occurrences of Y<id>{<class>}
+  according to leading occurrences of <Y><id>{<class>}
   (i.e. occurrences preceded only by whitespace on their lines),
-  with the following delimiters (Y):
+  with the following delimiters <Y>:
     |^  <thead>
     |~  <tbody>
     |_  <tfoot>
@@ -2914,39 +2914,41 @@ INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX = '[*_]'
 
 def process_inline_semantics(placeholder_storage, markup):
   r"""
-  Process inline semantics X{<class>} <CONTENT> X.
+  Process inline semantics <X>{<class>} <CONTENT> <X>.
   <CONTENT> must be non-empty.
   If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
-  The following delimiters (X) are used:
+  The following delimiters <X>, equal to one or two
+  delimiting characters <C>, are used:
     *   <em>
     **  <strong>
     _   <i>
     __  <b>
-  X{<class>} <CONTENT> X (c or cc) becomes
+  <X>{<class>} <CONTENT> <X> becomes
   <<TAG NAME> class="<class>"><CONTENT></<TAG NAME>>.
   Whitespace around <CONTENT> is stripped.
-  For <CONTENT> containing one or more occurrences of c (* or _),
+  For <CONTENT> containing one or more occurrences of * or _,
   use CMD literals or \* and \_.
   
   Separate patterns are required
-  for the following groupings of delimiting characters (c)
-  so that the processing is performed in this order:
-    33    ccc{<inner class>} <INNER CONTENT> ccc
-    312   ccc{<inner class>} <INNER CONTENT> c <OUTER CONTENT> cc
-    321   ccc{<inner class>} <INNER CONTENT> cc <OUTER CONTENT> c
-    22    cc{<class>} <CONTENT> cc
-    11    c{<class>} <CONTENT> c
+  for the following groupings of delimiting characters <C>
+  so that the processing is performed in this order
+  (for brevity, C is used in place of <C> below):
+    33    CCC{<inner class>} <INNER CONTENT> CCC
+    312   CCC{<inner class>} <INNER CONTENT> C <OUTER CONTENT> CC
+    321   CCC{<inner class>} <INNER CONTENT> CC <OUTER CONTENT> C
+    22    CC{<class>} <CONTENT> CC
+    11    C{<class>} <CONTENT> C
   33 is effectively 312 with empty <OUTER CONTENT>.
   However, once such a pattern has been matched,
   only three cases need to be handled for the resulting match object:
     2-layer special (for 33)
-      XY{<inner class>} <INNER CONTENT> YX
+      <X><Y>{<inner class>} <INNER CONTENT> <Y><X>
     2-layer general (for 312, 321):
-      XY{<inner class>} <INNER CONTENT> Y <OUTER CONTENT> X
+      <X><Y>{<inner class>} <INNER CONTENT> <Y> <OUTER CONTENT> <X>
     1-layer (for 22, 11):
-      X{<class>} <CONTENT> X
+      <X>{<class>} <CONTENT> <X>
   
   Recursive calls are used to process nested inline semantics.
   """
