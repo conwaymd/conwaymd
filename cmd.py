@@ -19,6 +19,11 @@ Conway: It works, really!
 You   : You're crazy.
 Conway: Oh shut up, I already know that.
 
+Arguments in the docstrings here are enclosed in angle brackets;
+this was the most readable choice given the CMD syntax.
+In particular <UPPER CASE> is used for mandatory arguments
+and <lower case> is used for optional arguments.
+
 Documentation: <https://conway-markdown.github.io/>
 GitHub: <https://github.com/conway-markdown/conway-markdown>
 
@@ -243,9 +248,9 @@ def build_html_attribute(
   placeholder_storage, attribute_name, attribute_value
 ):
   """
-  Build an HTML attribute {attribute name}="{attribute value}",
-  with a leading space and the necessary escaping for {attribute value}.
-  If {attribute value} is None or empty, the empty string is returned.
+  Build an HTML attribute <ATTRIBUTE NAME>="<ATTRIBUTE VALUE>",
+  with a leading space and the necessary escaping for <ATTRIBUTE VALUE>.
+  If <ATTRIBUTE VALUE> is None or empty, the empty string is returned.
   """
   
   if (
@@ -345,25 +350,25 @@ class PlaceholderStorage:
   by any replacements in the processing to follow.
   To protect these portions of markup from further alteration,
   they are temporarily replaced by placeholder strings of the form
-    X{n}X
+    <X><N><X>
   where
-  (a) X is U+E000, the first "Private Use Area" code point,
+  (a) <X> is U+E000, the first "Private Use Area" code point,
       referred to as the "placeholder marker", and
-  (b) {n} is an integer counter which is incremented.
-  Actual occurrences of X in the original markup
+  (b) <N> is an integer counter which is incremented.
+  Actual occurrences of <X> in the original markup
   are themselves to be replaced with a placeholder;
   this ensures that those actual occurrences
-  are not confounded with the placeholder strings X{n}X.
+  are not confounded with the placeholder strings <X><N><X>.
   
   Assuming that the user does not supply regex or ordinary replacements
-  which alter strings of the form X{n}X,
+  which alter strings of the form <X><N><X>,
   the placeholder strings will reliably protect portions of markup
   from any further processing.
   
   Each portion of markup which is to be protected
   from alteration by further processing
   is stored in a dictionary of ordinary replacements, with
-    KEYS: the placeholder strings (X{n}X), and
+    KEYS: the placeholder strings (<X><N><X>), and
     VALUES: the respective portions of markup.
   """
   
@@ -423,9 +428,9 @@ class PlaceholderStorage:
   
   def replace_marker_with_placeholder(self, string):
     """
-    Replace the placeholder marker X with its own placeholder string.
-    This ensures that actual occurrences of X in a string
-    are not confounded with the placeholder strings X{n}X.
+    Replace the placeholder marker <X> with its own placeholder string.
+    This ensures that actual occurrences of <X> in a string
+    are not confounded with the placeholder strings <X><N><X>.
     """
     
     string = re.sub(
@@ -439,7 +444,7 @@ class PlaceholderStorage:
   def replace_placeholders_with_markup(self, string):
     """
     Replace all placeholder strings with their markup portions.
-    X{n}X becomes its markup portion as stored in the dictionary.
+    <X><N><X> becomes its markup portion as stored in the dictionary.
     """
     
     string = re.sub(
@@ -459,18 +464,18 @@ class PropertyStorage:
   Property storage class.
   
   Properties are specified in the content of the preamble,
-  which is split according to leading occurrences of %{property name}
+  which is split according to leading occurrences of %<PROPERTY NAME>
   (i.e. occurrences preceded only by whitespace on their lines),
-  where {property name} may only contain letters, digits, and hyphens.
+  where <PROPERTY NAME> may only contain letters, digits, and hyphens.
   Property specifications end at the next property specification,
   or at the end of the (preamble) content being split.
   
   Properties are stored in a dictionary of ordinary replacements,
   with
-    KEYS: %{property name}
-    VALUES: {property markup}
+    KEYS: %<PROPERTY NAME>
+    VALUES: <PROPERTY MARKUP>
   
-  These may be referenced by writing %{property name},
+  These may be referenced by writing %<PROPERTY NAME>,
   called a property string, anywhere else in the document.
   """
   
@@ -568,13 +573,13 @@ class RegexReplacementStorage:
   Regex replacement storage class.
   
   Regex replacements are specified in the form
-  [flag]{% {pattern} % {replacement} %},
+  <flag>{% <PATTERN> % <REPLACEMENT> %},
   and are stored in a dictionary of dictionaries, with
-    KEYS: [flag]
-    VALUES: {regex replacement dictionary}
+    KEYS: <flag>
+    VALUES: <REGEX REPLACEMENT DICTIONARY>
   and each regex replacement dictionary with
-    KEYS: {pattern}
-    VALUES: {replacement}
+    KEYS: <PATTERN>
+    VALUES: <REPLACEMENT>
   """
   
   def __init__(self):
@@ -606,13 +611,13 @@ class OrdinaryReplacementStorage:
   Ordinary replacement storage class.
   
   Ordinary replacements are specified in the form
-  [flag]{: {pattern} : {replacement} :},
+  <flag>{: <PATTERN> : <REPLACEMENT> :},
   and are stored in a dictionary of dictionaries, with
-    KEYS: [flag]
-    VALUES: {ordinary replacement dictionary}
+    KEYS: <flag>
+    VALUES: <ORDINARY REPLACEMENT DICTIONARY>
   and each ordinary replacement dictionary with
-    KEYS: {pattern}
-    VALUES: {replacement}
+    KEYS: <PATTERN>
+    VALUES: <REPLACEMENT>
   """
   
   def __init__(self):
@@ -644,13 +649,13 @@ class ImageDefinitionStorage:
   Image definition storage class.
   
   Definitions for reference-style images are specified in the form
-  @@![{label}]{[class]}↵ {src} [title] @@[width],
+  @@![<LABEL>]{<class>}[<width>]↵ <src> <title> @@,
   and are stored in a dictionary with
-    KEYS: {label}
-    VALUES: {attributes}
-  where {attributes} is the sequence of attributes
-  built from [class], {src}, [title], and [width].
-  {label} is case insensitive,
+    KEYS: <LABEL>
+    VALUES: <ATTRIBUTES>
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <class>, <width>, <src>, and <title>.
+  <LABEL> is case insensitive,
   and is stored canonically in lower case.
   """
   
@@ -710,13 +715,13 @@ class LinkDefinitionStorage:
   Link definition storage class.
   
   Definitions for reference-style links are specified in the form
-  @@[{label}]{[class]}↵ {href} [title] @@,
+  @@[<LABEL>]{<class>}↵ <href> <title> @@,
   and are stored in a dictionary with
-    KEYS: {label}
-    VALUES: {attributes}
-  where {attributes} is the sequence of attributes
-  built from [class], {href}, and [title].
-  {label} is case insensitive,
+    KEYS: <LABEL>
+    VALUES: <ATTRIBUTES>
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <class>, <href>, and <title>.
+  <LABEL> is case insensitive,
   and is stored canonically in lower case.
   """
   
@@ -773,18 +778,18 @@ class LinkDefinitionStorage:
 
 def process_literals(placeholder_storage, markup):
   """
-  Process CMD literals [flags]~~ {content} ~~.
+  Process CMD literals <flags>~~ <CONTENT> ~~.
   
-  [flags]~~ {content} ~~ becomes {content}, literally,
+  <flags>~~ <CONTENT> ~~ becomes <CONTENT>, literally,
   with HTML syntax-character escaping
-  and de-indentation for {content}.
-  Whitespace around {content} is stripped.
-  [flags] may consist of zero or more of the following characters:
+  and de-indentation for <CONTENT>.
+  Whitespace around <CONTENT> is stripped.
+  <flags> may consist of zero or more of the following characters:
     u to leave HTML syntax characters unescaped
     c to process line continuations
     w to process whitespace completely
     a to enable all flags above
-  For {content} containing two or more consecutive tildes,
+  For <CONTENT> containing two or more consecutive tildes,
   use a longer run of tildes in the delimiters,
   e.g. "~~~ ~~ blah ~~ ~~~" for "~~ blah ~~".
   """
@@ -841,22 +846,22 @@ def process_literal_match(placeholder_storage, match_object):
 
 def process_display_code(placeholder_storage, markup):
   """
-  Process display code [flags]``[id]{[class]}↵ {content} ``.
+  Process display code <flags>``<id>{<class>}↵ <CONTENT> ``.
   The delimiting backticks must be the first
   non-whitespace characters on their lines.
-  If [class] is empty,
+  If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
-  [flags]``[id]{[class]}↵ {content} `` becomes
-  <pre id="[id]" class="[class]"><code>{content}</code></pre>,
+  <flags>``<id>{<class>}↵ <CONTENT> `` becomes
+  <pre id="<id>" class="<class>"><code><CONTENT></code></pre>,
   with HTML syntax-character escaping
-  and de-indentation for {content}.
-  [flags] may consist of zero or more of the following characters:
+  and de-indentation for <CONTENT>.
+  <flags> may consist of zero or more of the following characters:
     u to leave HTML syntax characters unescaped
     c to process line continuations
     w to process whitespace completely
     a to enable all flags above
-  For {content} containing two or more consecutive backticks
+  For <CONTENT> containing two or more consecutive backticks
   which are not protected by CMD literals,
   use a longer run of backticks in the delimiters.
   """
@@ -931,17 +936,17 @@ def process_display_code_match(placeholder_storage, match_object):
 
 def process_inline_code(placeholder_storage, markup):
   """
-  Process inline code [flags]` {content} `.
+  Process inline code <flags>` <CONTENT> `.
   
-  [flags]` {content} ` becomes <code>{content}</code>,
-  with HTML syntax-character escaping for {content}.
-  Whitespace around {content} is stripped.
-  [flags] may consist of zero or more of the following characters:
+  <flags>` <CONTENT> ` becomes <code><CONTENT></code>,
+  with HTML syntax-character escaping for <CONTENT>.
+  Whitespace around <CONTENT> is stripped.
+  <flags> may consist of zero or more of the following characters:
     u to leave HTML syntax characters unescaped
     c to process line continuations
     w to process whitespace completely
     a to enable all flags above
-  For {content} containing one or more consecutive backticks
+  For <CONTENT> containing one or more consecutive backticks
   which are not protected by CMD literals,
   use a longer run of backticks in the delimiters.
   """
@@ -999,11 +1004,11 @@ def process_inline_code_match(placeholder_storage, match_object):
 
 def process_comments(markup):
   """
-  Process comments <# {content} #>.
+  Process comments <# <CONTENT> #>.
   
-  <# {content} #> is removed,
+  <# <CONTENT> #> is removed,
   along with any preceding horizontal whitespace.
-  For {content} containing one or more consecutive hashes
+  For <CONTENT> containing one or more consecutive hashes
   followed by a closing angle bracket,
   use a longer run of hashes in the delimiters.
   
@@ -1041,19 +1046,19 @@ def process_comments(markup):
 
 def process_display_maths(placeholder_storage, markup):
   r"""
-  Process display maths [flags]$$[id]{[class]}↵ {content} $$.
+  Process display maths <flags>$$<id>{<class>}↵ <CONTENT> $$.
   The delimiting dollar signs must be the first
   non-whitespace characters on their lines.
-  If [class] is empty,
+  If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
-  [flags]$$[id]{[class]}↵ {content} $$ becomes
-  <div id="[id]" class="js-maths [class]">{content}</div>,
+  <flags>$$<id>{<class>}↵ <CONTENT> $$ becomes
+  <div id="<id>" class="js-maths <class>"><CONTENT></div>,
   with HTML syntax-character escaping
-  and de-indentation for {content}.
-  [flags] may consist of zero or more of the following characters:
+  and de-indentation for <CONTENT>.
+  <flags> may consist of zero or more of the following characters:
     w to process whitespace completely
-  For {content} containing two or more consecutive dollar signs
+  For <CONTENT> containing two or more consecutive dollar signs
   which are not protected by CMD literals,
   e.g. \text{\$$d$, i.e.~$d$~dollars},
   use a longer run of dollar signs in the delimiters.
@@ -1129,15 +1134,15 @@ def process_display_maths_match(placeholder_storage, match_object):
 
 def process_inline_maths(placeholder_storage, markup):
   r"""
-  Process inline maths [flags]$ {content} $.
+  Process inline maths <flags>$ <CONTENT> $.
   
-  [flags]$ {content} $ becomes
-  <span class="js-maths">{content}</span>,
-  with HTML syntax-character escaping for {content}.
-  Whitespace around {content} is stripped.
-  [flags] may consist of zero or more of the following characters:
+  <flags>$ <CONTENT> $ becomes
+  <span class="js-maths"><CONTENT></span>,
+  with HTML syntax-character escaping for <CONTENT>.
+  Whitespace around <CONTENT> is stripped.
+  <flags> may consist of zero or more of the following characters:
     w to process whitespace completely
-  For {content} containing one or more consecutive dollar signs
+  For <CONTENT> containing one or more consecutive dollar signs
   which are not protected by CMD literals,
   e.g. \text{$x = \infinity$ is very big},
   use a longer run of dollar signs in the delimiters.
@@ -1193,10 +1198,10 @@ def process_inline_maths_match(placeholder_storage, match_object):
 
 def process_inclusions(placeholder_storage, cmd_name, markup):
   r"""
-  Process inclusions {+ {file name} +}.
+  Process inclusions {+ <FILE NAME> +}.
   
-  {+ {file name} +} includes the content of the file {file name}.
-  For {file name} containing one or more consecutive plus signs
+  {+ <FILE NAME> +} includes the content of the file <FILE NAME>.
+  For <FILE NAME> containing one or more consecutive plus signs
   followed by a closing curly bracket,
   use a longer run of plus signs in the delimiters.
   
@@ -1268,18 +1273,18 @@ def process_regex_replacements(
   placeholder_storage, regex_replacement_storage, cmd_name, markup
 ):
   """
-  Process regex replacements [flag]{% {pattern} % {replacement} %}.
+  Process regex replacements <flag>{% <PATTERN> % <REPLACEMENT> %}.
   Python regex syntax is used,
   and the flags re.ASCII, re.MULTILINE, and re.VERBOSE are enabled.
   
-  Whitespace around {pattern} and {replacement} is stripped.
-  For {pattern} or {replacement} containing
+  Whitespace around <PATTERN> and <REPLACEMENT> is stripped.
+  For <PATTERN> or <REPLACEMENT> containing
   one or more consecutive percent signs,
   use a longer run of percent signs in the delimiters.
-  For {pattern} matching any of the syntax above,
+  For <PATTERN> matching any of the syntax above,
   which should not be processed using that syntax, use CMD literals.
   
-  [flag] may consist of zero or one of the following characters,
+  <flag> may consist of zero or one of the following characters,
   and specifies when the regex replacement is to be applied:
     A for immediately after processing regex replacements
     p for just before processing preamble
@@ -1293,7 +1298,7 @@ def process_regex_replacements(
     s for just before processing inline semantics
     w for just before processing whitespace
     Z for just before replacing placeholder strings
-  If [flag] is empty, it defaults to A.
+  If <flag> is empty, it defaults to A.
   
   All regex replacement specifications are read and stored
   using the regex replacement storage class.
@@ -1392,14 +1397,14 @@ def process_ordinary_replacements(
   ordinary_replacement_storage, cmd_name, markup
 ):
   """
-  Process ordinary replacements [flag]{: {pattern} : {replacement} :}.
+  Process ordinary replacements <flag>{: <PATTERN> : <REPLACEMENT> :}.
   
-  Whitespace around {pattern} and {replacement} is stripped.
-  For {pattern} or {replacement} containing
+  Whitespace around <PATTERN> and <REPLACEMENT> is stripped.
+  For <PATTERN> or <REPLACEMENT> containing
   one or more consecutive colons,
   use a longer run of colons in the delimiters.
   
-  [flag] may consist of zero or one of the following characters,
+  <flag> may consist of zero or one of the following characters,
   and specifies when the ordinary replacement is to be applied:
     A for immediately after processing ordinary replacements
     p for just before processing preamble
@@ -1413,7 +1418,7 @@ def process_ordinary_replacements(
     s for just before processing inline semantics
     w for just before processing whitespace
     Z for just before replacing placeholder strings
-  If [flag] is empty, it defaults to A.
+  If <flag> is empty, it defaults to A.
   
   All ordinary replacement specifications are read and stored
   using the ordinary replacement storage class.
@@ -1493,27 +1498,27 @@ def process_ordinary_replacement_match(
 
 def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
   """
-  Process the preamble %%↵ {content} %%.
+  Process the preamble %%↵ <CONTENT> %%.
   The delimiting percent signs must be the first
   non-whitespace characters on their lines.
   
-  %%↵ {content} %% becomes the HTML preamble,
+  %%↵ <CONTENT> %% becomes the HTML preamble,
   i.e. everything from <!DOCTYPE html> through to <body>.
-  {content} is split into property specifications
-  according to leading occurrences of %{property name}
+  <CONTENT> is split into property specifications
+  according to leading occurrences of %<PROPERTY NAME>
   (i.e. occurrences preceded only by whitespace on their lines),
-  where {property name} may only contain letters, digits, and hyphens.
+  where <PROPERTY NAME> may only contain letters, digits, and hyphens.
   Property specifications end at the next property specification,
   or at the end of the (preamble) content being split.
   
   Each property is then stored using the property storage class
-  and may be referenced by writing %{property name},
+  and may be referenced by writing %<PROPERTY NAME>,
   called a property string, anywhere else in the document.
   
   If the same property is specified more than once,
   the latest specification shall prevail.
   
-  For {content} containing two or more consecutive percent signs
+  For <CONTENT> containing two or more consecutive percent signs
   which are not protected by CMD literals,
   use a longer run of percent signs in the delimiters.
   
@@ -1811,14 +1816,14 @@ def process_preamble_match(
 
 def process_headings(placeholder_storage, markup):
   """
-  Process headings #[id] {content} #.
+  Process headings #<id> <CONTENT> #.
   The opening hash must be the first
   non-whitespace character of its line.
   
-  #[id] {content} # becomes <h1 id="[id]">{content}</h1>.
-  Whitespace around {content} is stripped.
+  #<id> <CONTENT> # becomes <h1 id="<id>"><CONTENT></h1>.
+  Whitespace around <CONTENT> is stripped.
   For <h2> to <h6>, use 2 to 6 delimiting hashes respectively.
-  For {content} containing the delimiting number of
+  For <CONTENT> containing the delimiting number of
   or more consecutive hashes, use CMD literals.
   """
   
@@ -1881,10 +1886,10 @@ LIST_TAG_NAMES = ['ul', 'ol']
 
 def process_blocks(placeholder_storage, markup):
   """
-  Process blocks cccc[id]{[class]}↵ {content} cccc.
+  Process blocks cccc<id>{<class>}↵ <CONTENT> cccc.
   The delimiting characters (c) must be the first
   non-whitespace characters on their lines.
-  If [class] is empty,
+  If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
   The following delimiting characters (c) are used:
@@ -1895,16 +1900,16 @@ def process_blocks(placeholder_storage, markup):
     Lists
       =  <ul>
       +  <ol>
-  cccc[id]{[class]}↵ {content} cccc becomes
-  <{tag name} id="[id]" class="[class]">↵{content}</{tag name}>.
-  For {content} containing four or more
+  cccc<id>{<class>}↵ <CONTENT> cccc becomes
+  <<TAG NAME> id="<id>" class="<class>">↵<CONTENT></<TAG NAME>>.
+  For <CONTENT> containing four or more
   consecutive delimiting characters
   which are not protected by CMD literals,
   use a longer run of delimiting characters in the delimiters.
   
   A recursive call is used to process nested blocks.
   
-  For list blocks, {content} is split into list items <li>
+  For list blocks, <CONTENT> is split into list items <li>
   according to list item processing.
   """
   
@@ -1974,7 +1979,7 @@ def process_list_items(placeholder_storage, content):
   Process list items.
   
   Content is split into list items <li>
-  according to leading occurrences of Y[id]{[class]}
+  according to leading occurrences of Y<id>{<class>}
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Y):
     *
@@ -1983,7 +1988,7 @@ def process_list_items(placeholder_storage, content):
     1. (or any run of digits followed by a full stop)
   List items end at the next list item,
   or at the end of the content being split.
-  If [class] is empty,
+  If <class> is empty,
   the curly brackets surrounding it may be omitted.
   """
   
@@ -2061,21 +2066,21 @@ TABLE_PART_DELIMITER_REGEX = '[|][\^:_]'
 
 def process_tables(placeholder_storage, markup):
   """
-  Process tables ''''[id]{[class]}↵ {content} ''''.
+  Process tables ''''<id>{<class>}↵ <CONTENT> ''''.
   The delimiting apostrophes must be the first
   non-whitespace characters on their lines.
-  If [class] is empty,
+  If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
-  ''''[id]{[class]}↵ {content} '''' becomes
-  <table id="[id]" class="[class]">↵{content}</table>.
-  For {content} containing four or more consecutive apostrophes
+  ''''<id>{<class>}↵ <CONTENT> '''' becomes
+  <table id="<id>" class="<class>">↵<CONTENT></table>.
+  For <CONTENT> containing four or more consecutive apostrophes
   which are not protected by CMD literals,
   use a longer run of apostrophes in the delimiters.
   
   A recursive call is used to process nested tables.
   
-  {content} is
+  <CONTENT> is
   (1) split into table cells <th>, <td>
       according to table cell processing,
   (2) split into table rows <tr>
@@ -2137,18 +2142,18 @@ def process_table_cells(placeholder_storage, content):
   Process table cells.
   
   Content is split into table cells <th>, <td> according to
-  leading occurrences of Z[id]{[class]}[[rowspan],[colspan]]
+  leading occurrences of Z<id>{<class>}[<rowspan>,<colspan>]
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Z):
     ;  <th>
     ,  <td>
   Table cells end at the next table cell, table row, or table part,
   or at the end of the content being split.
-  Non-empty [rowspan] and [colspan] must consist of digits only.
-  If [class] is empty,
+  Non-empty <rowspan> and <colspan> must consist of digits only.
+  If <class> is empty,
   the curly brackets surrounding it may be omitted.
-  If [colspan] is empty, the comma before it may be omitted.
-  If both [rowspan] and [colspan] are empty,
+  If <colspan> is empty, the comma before it may be omitted.
+  If both <rowspan> and <colspan> are empty,
   the comma between them and the square brackets surrounding them
   may be omitted.
   """
@@ -2240,11 +2245,11 @@ def process_table_rows(placeholder_storage, content):
   Process table rows.
   
   Content is split into table rows <tr>
-  according to leading occurrences of ==[id]{[class]}
+  according to leading occurrences of ==<id>{<class>}
   (i.e. occurrences preceded only by whitespace on their lines).
   Table rows end at the next table row or table part,
   or at the end of the content being split.
-  If [class] is empty,
+  If <class> is empty,
   the curly brackets surrounding it may be omitted.
   """
   
@@ -2311,7 +2316,7 @@ def process_table_parts(placeholder_storage, content):
   Process table parts.
   
   Content is split into table parts <thead>, <tbody>, <tfoot>
-  according to leading occurrences of Y[id]{[class]}
+  according to leading occurrences of Y<id>{<class>}
   (i.e. occurrences preceded only by whitespace on their lines),
   with the following delimiters (Y):
     |^  <thead>
@@ -2319,7 +2324,7 @@ def process_table_parts(placeholder_storage, content):
     |_  <tfoot>
   Table parts end at the next table part,
   or at the end of the content being split.
-  If [class] is empty,
+  If <class> is empty,
   the curly brackets surrounding it may be omitted.
   """
   
@@ -2497,47 +2502,47 @@ def process_images(placeholder_storage, image_definition_storage, markup):
   Process images.
   
   Inline-style:
-    IMAGE: ![{alt}]( {src} [title] )
+    IMAGE: ![<ALT>]( <src> <title> )
   (NOTE:
-    Unlike John Gruber's markdown, [title] is not surrounded by quotes.
-    If quotes are supplied to [title],
+    Unlike John Gruber's markdown, <title> is not surrounded by quotes.
+    If quotes are supplied to <title>,
     they are automatically escaped as &quot;.
   )
   
-  ![{alt}]( {src} [title] ) becomes
-  <img alt="{alt}" src="{src}" title="[title]">.
+  ![<ALT>]( <src> <title> ) becomes
+  <img alt="<ALT>" src="<src>" title="<title>">.
   
-  For {alt}, {src}, or [title] containing
+  For <ALT>, <src>, or <title> containing
   one or more closing square or round brackets, use CMD literals.
   
   Reference-style:
-    DEFINITION: @@![{label}]{[class]}[[width]]↵ {src} [title] @@
-    IMAGE: ![{alt}][[label]]
+    DEFINITION: @@![<LABEL>]{<class>}[<width>]↵ <src> <title> @@
+    IMAGE: ![<ALT>][<label>]
   The delimiting at signs in a definition must be the first
   non-whitespace characters on their lines.
   A single space may be included
-  between [{alt}] and [[label]] in an image.
-  The referencing strings {label} and [label] are case insensitive
+  between [<ALT>] and [<label>] in an image.
+  The referencing strings <LABEL> and <label> are case insensitive
   (this is handled by the image definition storage class).
-  Non-empty [width] in a definition must consist of digits only.
-  If [class] in a definition is empty,
+  Non-empty <width> in a definition must consist of digits only.
+  If <class> in a definition is empty,
   the curly brackets surrounding it may be omitted.
-  If [width] in a definition is empty,
+  If <width> in a definition is empty,
   the square brackets surrounding it may be omitted.
-  If [label] in an image is empty,
+  If <label> in an image is empty,
   the square brackets surrounding it may be omitted,
-  and {alt} is used as the label for that image.
+  and <ALT> is used as the label for that image.
   
-  ![{alt}][[label]] becomes <img alt="alt"{attributes}>,
-  where {attributes} is the sequence of attributes
-  built from [class], {src}, [title], and [width].
+  ![<ALT>][<label>] becomes <img alt="alt"<ATTRIBUTES>>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <class>, <width>, <src>, and <title>.
   
-  Whitespace around [label] is stripped.
-  For definitions whose {label}, [class], {src}, or [title]
+  Whitespace around <label> is stripped.
+  For definitions whose <label>, <class>, <src>, or <title>
   contains two or more consecutive at signs
   which are not protected by CMD literals,
   use a longer run of at signs in the delimiters.
-  For images whose {alt} or [label] contains
+  For images whose <ALT> or <label> contains
   one or more closing square brackets, use CMD literals.
   
   All (reference-style) image definitions are read and stored
@@ -2708,45 +2713,45 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   Process links.
   
   Inline-style:
-    LINK: [{content}]( {href} [title] )
+    LINK: [<CONTENT>]( <href> <title> )
   (NOTE:
-    Unlike John Gruber's markdown, [title] is not surrounded by quotes.
-    If quotes are supplied to [title],
+    Unlike John Gruber's markdown, <title> is not surrounded by quotes.
+    If quotes are supplied to <title>,
     they are automatically escaped as &quot;.
   )
   
-  [{content}]( {href} [title] ) becomes
-  <a href="{href}" title="[title]">{content}</a>.
+  [<CONTENT>]( <href> <title> ) becomes
+  <a href="<href>" title="<title>"><CONTENT></a>.
   
-  Whitespace around {content} is stripped.
-  For {content}, {href}, or [title] containing
+  Whitespace around <CONTENT> is stripped.
+  For <CONTENT>, <href>, or <title> containing
   one or more closing square or round brackets, use CMD literals.
   
   Reference-style:
-    DEFINITION: @@[{label}]{[class]}↵ {href} [title] @@
-    LINK: [{content}][[label]]
+    DEFINITION: @@[<LABEL>]{<class>}↵ <href> <title> @@
+    LINK: [<CONTENT>][<label>]
   The delimiting at signs in a definition must be the first
   non-whitespace characters on their lines.
   A single space may be included
-  between [{content}] and [[label]] in a link.
-  The referencing strings {label} and [label] are case insensitive
+  between [<CONTENT>] and [<label>] in a link.
+  The referencing strings <LABEL> and <label> are case insensitive
   (this is handled by the link definition storage class).
-  If [class] in a definition is empty,
+  If <class> in a definition is empty,
   the curly brackets surrounding it may be omitted.
-  If [label] in a link is empty,
+  If <label> in a link is empty,
   the square brackets surrounding it may be omitted,
-  and {content} is used as the label for that link.
+  and <content> is used as the label for that link.
   
-  [{content}][[label]] becomes <a{attributes}>{content}</a>,
-  where {attributes} is the sequence of attributes
-  built from [class], {href}, and [title].
+  [<CONTENT>][<label>] becomes <a<ATTRIBUTES>><CONTENT></a>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <class>, <href>, and <title>.
   
-  Whitespace around {content} and [label] is stripped.
-  For definitions whose {label}, [class], {href}, or [title]
+  Whitespace around <CONTENT> and <label> is stripped.
+  For definitions whose <label>, <class>, <href>, or <title>
   contains two or more consecutive at signs
   which are not protected by CMD literals,
   use a longer run of at signs in the delimiters.
-  For links whose {content} or [label] contains
+  For links whose <CONTENT> or <label> contains
   one or more closing square brackets, use CMD literals.
   
   All (reference-style) link definitions are read and stored
@@ -2909,9 +2914,9 @@ INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX = '[*_]'
 
 def process_inline_semantics(placeholder_storage, markup):
   r"""
-  Process inline semantics X{[class]} {content} X.
-  {content} must be non-empty.
-  If [class] is empty,
+  Process inline semantics X{<class>} <CONTENT> X.
+  <CONTENT> must be non-empty.
+  If <class> is empty,
   the curly brackets surrounding it may be omitted.
   
   The following delimiters (X) are used:
@@ -2919,29 +2924,29 @@ def process_inline_semantics(placeholder_storage, markup):
     **  <strong>
     _   <i>
     __  <b>
-  X{[class]} {content} X (c or cc) becomes
-  <{tag name} class="[class]">{content}</{tag name}>.
-  Whitespace around {content} is stripped.
-  For {content} containing one or more occurrences of c (* or _),
+  X{<class>} <CONTENT> X (c or cc) becomes
+  <<TAG NAME> class="<class>"><CONTENT></<TAG NAME>>.
+  Whitespace around <CONTENT> is stripped.
+  For <CONTENT> containing one or more occurrences of c (* or _),
   use CMD literals or \* and \_.
   
   Separate patterns are required
   for the following groupings of delimiting characters (c)
   so that the processing is performed in this order:
-    33    ccc{[inner class]} {inner content} ccc
-    312   ccc{[inner class]} {inner content} c {outer content} cc
-    321   ccc{[inner class]} {inner content} cc {outer content} c
-    22    cc{[class]} {content} cc
-    11    c{[class]} {content} c
-  33 is effectively 312 with empty {outer content}.
+    33    ccc{<inner class>} <INNER CONTENT> ccc
+    312   ccc{<inner class>} <INNER CONTENT> c <OUTER CONTENT> cc
+    321   ccc{<inner class>} <INNER CONTENT> cc <OUTER CONTENT> c
+    22    cc{<class>} <CONTENT> cc
+    11    c{<class>} <CONTENT> c
+  33 is effectively 312 with empty <OUTER CONTENT>.
   However, once such a pattern has been matched,
   only three cases need to be handled for the resulting match object:
     2-layer special (for 33)
-      XY{[inner class]} {inner content} YX
+      XY{<inner class>} <INNER CONTENT> YX
     2-layer general (for 312, 321):
-      XY{[inner class]} {inner content} Y {outer content} X
+      XY{<inner class>} <INNER CONTENT> Y <OUTER CONTENT> X
     1-layer (for 22, 11):
-      X{[class]} {content} X
+      X{<class>} <CONTENT> X
   
   Recursive calls are used to process nested inline semantics.
   """
