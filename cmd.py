@@ -244,33 +244,6 @@ def escape_html_attribute_value(placeholder_storage, string):
   return placeholder_storage.create_placeholder_store_markup(string)
 
 
-def build_html_attribute(
-  placeholder_storage, attribute_name, attribute_value
-):
-  """
-  Build an HTML attribute <ATTRIBUTE NAME>="<ATTRIBUTE VALUE>",
-  with a leading space and the necessary escaping for <ATTRIBUTE VALUE>.
-  If <ATTRIBUTE VALUE> is None or empty, the empty string is returned.
-  """
-  
-  if (
-    attribute_value is None
-      or
-    strip_whitespace(
-      placeholder_storage.replace_placeholders_with_markup(attribute_value)
-    )
-      == ''
-  ):
-    return ''
-  
-  attribute_value = escape_html_attribute_value(
-    placeholder_storage, attribute_value
-  )
-  attribute = f' {attribute_name}="{attribute_value}"'
-  
-  return attribute
-
-
 ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY = {
   '#': 'id',
   '.': 'class',
@@ -1705,8 +1678,8 @@ def process_preamble_match(
   
   # Derived property %html-lang-attribute
   lang = property_storage.get_property_markup('lang')
-  html_lang_attribute = build_html_attribute(
-    placeholder_storage, 'lang', lang
+  html_lang_attribute = build_html_attributes(
+    placeholder_storage, {'lang': lang}
   )
   property_storage.store_property_markup(
     'html-lang-attribute', html_lang_attribute
