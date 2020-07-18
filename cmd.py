@@ -2339,10 +2339,10 @@ def process_table_rows(placeholder_storage, content):
   Process table rows.
   
   Content is split into table rows <tr>
-  according to leading occurrences of ==<id>{<class>}.
+  according to leading occurrences of =={<attribute specification>}.
   Table rows end at the next table row or table part,
   or at the end of the content being split.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   """
   
@@ -2350,10 +2350,11 @@ def process_table_rows(placeholder_storage, content):
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       {TABLE_ROW_DELIMITER_REGEX}
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
       (?:
@@ -2386,17 +2387,15 @@ def process_table_row_match(placeholder_storage, match_object):
   Process a single table-row match object.
   """
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   table_row_content = match_object.group('table_row_content')
   table_row_content = strip_whitespace(table_row_content)
   
   table_row = f'''
-    <tr{id_attribute}{class_attribute}>
+    <tr{attributes}>
       {table_row_content}
     </tr>
   '''
