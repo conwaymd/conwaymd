@@ -548,16 +548,16 @@ PROPERTY_NAME_REGEX = '[a-zA-Z0-9-]+'
 
 class PropertyStorage:
   """
-  Property storage class.
+  Property definition storage class.
   
-  Properties are specified in the content of the preamble,
+  Property definitions are specified in the content of the preamble,
   which is split according to leading occurrences of %<PROPERTY NAME>,
   where <PROPERTY NAME> may only contain letters, digits, and hyphens.
-  Property specifications end at the next property specification,
+  Property definitions end at the next property definition,
   or at the end of the (preamble) content being split.
   
-  Properties are stored in a dictionary of ordinary replacements,
-  with
+  Property definitions are stored in a dictionary
+  of ordinary replacements, with
     KEYS: %<PROPERTY NAME>
     VALUES: <PROPERTY MARKUP>
   These may be referenced by writing %<PROPERTY NAME>,
@@ -592,9 +592,9 @@ class PropertyStorage:
     
     return property_markup
   
-  def read_specifications_store_markup(self, preamble_content):
+  def read_definitions_store_markup(self, preamble_content):
     """
-    Read and store property specifications.
+    Read and store property definitions.
     """
     
     re.sub(
@@ -611,14 +611,14 @@ class PropertyStorage:
           \Z
         )
       ''',
-      self.process_specification_match,
+      self.process_definition_match,
       preamble_content,
       flags=REGEX_FLAGS
     )
   
-  def process_specification_match(self, match_object):
+  def process_definition_match(self, match_object):
     """
-    Process a single property-specification match object.
+    Process a single property-definition match object.
     """
     
     property_name = match_object.group('property_name')
@@ -655,9 +655,9 @@ REPLACEMENT_STORAGE_DICTIONARY_INITIAL = {
 
 class RegexReplacementStorage:
   """
-  Regex replacement storage class.
+  Regex replacement definition storage class.
   
-  Regex replacements are specified in the form
+  Regex replacement definitions are specified in the form
     <flag>{% <PATTERN> % <REPLACEMENT> %}
   and are stored in a dictionary of dictionaries, with
     KEYS: <flag>
@@ -693,9 +693,9 @@ class RegexReplacementStorage:
 
 class OrdinaryReplacementStorage:
   """
-  Ordinary replacement storage class.
+  Ordinary replacement definition storage class.
   
-  Ordinary replacements are specified in the form
+  Ordinary replacement definitions are specified in the form
     <flag>{: <PATTERN> : <REPLACEMENT> :}
   and are stored in a dictionary of dictionaries, with
     KEYS: <flag>
@@ -1410,10 +1410,10 @@ def process_regex_replacement_definitions(
     Z for just before replacing placeholder strings
   If <flag> is empty, it defaults to A.
   
-  All regex replacement specifications are read and stored
-  using the regex replacement storage class.
+  All regex replacement definitions are read and stored
+  using the regex replacement definition storage class.
   If the same pattern is specified more than once for a given flag,
-  the latest specification shall prevail.
+  the latest definition shall prevail.
   
   WARNING:
     Malicious or careless user-defined regex replacements
@@ -1507,7 +1507,7 @@ def process_ordinary_replacement_definitions(
   ordinary_replacement_storage, cmd_name, markup
 ):
   """
-  Process ordinary replacements.
+  Process ordinary replacement definitions.
   
   <flag>{: <PATTERN> : <REPLACEMENT> :}
   
@@ -1532,10 +1532,10 @@ def process_ordinary_replacement_definitions(
     Z for just before replacing placeholder strings
   If <flag> is empty, it defaults to A.
   
-  All ordinary replacement specifications are read and stored
-  using the ordinary replacement storage class.
+  All ordinary replacement definitions are read and stored
+  using the ordinary replacement definition storage class.
   If the same pattern is specified more than once for a given flag,
-  the latest specification shall prevail.
+  the latest definition shall prevail.
   
   WARNING:
     Malicious or careless user-defined ordinary replacements
@@ -1618,18 +1618,19 @@ def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
   
   Produces the HTML preamble,
   i.e. everything from <!DOCTYPE html> through to <body>.
-  <CONTENT> is split into property specifications
+  
+  <CONTENT> is split into property definitions
   according to leading occurrences of %<PROPERTY NAME>,
   where <PROPERTY NAME> may only contain letters, digits, and hyphens.
-  Property specifications end at the next property specification,
+  Property definitions end at the next property definition,
   or at the end of the (preamble) content being split.
-  
-  Each property is then stored using the property storage class
+  Each property definition is then stored
+  using the property definition storage class
   and may be referenced by writing %<PROPERTY NAME>,
   called a property string, anywhere else in the document.
   
   If the same property is specified more than once,
-  the latest specification shall prevail.
+  the latest definition shall prevail.
   
   For <CONTENT> containing two or more consecutive percent signs
   which are not protected by CMD literals,
@@ -1720,7 +1721,7 @@ def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
   return markup
 
 
-DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS = '''
+DEFAULT_ORIGINAL_PROPERTY_DEFINITIONS = '''
   %lang en
   %viewport width=device-width, initial-scale=1
   %title Title
@@ -1759,7 +1760,7 @@ def process_preamble_match(
   """
   Process a single preamble match object.
   
-  (1) The default property specifications
+  (1) The default property definitions
       for original properties are prepended as defaults
       (which will be overwritten by the supplied properties).
   (2) The properties are stored.
@@ -1768,9 +1769,9 @@ def process_preamble_match(
   """
   
   content = match_object.group('content')
-  content = DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS + content
+  content = DEFAULT_ORIGINAL_PROPERTY_DEFINITIONS + content
   
-  property_storage.read_specifications_store_markup(content)
+  property_storage.read_definitions_store_markup(content)
   
   # Derived property %html-lang-attribute
   lang = property_storage.get_property_markup('lang')
