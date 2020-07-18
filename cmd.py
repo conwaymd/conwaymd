@@ -271,6 +271,40 @@ def build_html_attribute(
   return attribute
 
 
+def build_html_attribute_sequence(placeholder_storage, attribute_dictionary):
+  """
+  Build a sequence of HTML attributes each of the form
+  <ATTRIBUTE NAME>="<ATTRIBUTE VALUE>" with a leading space
+  and with the necessary escaping for <ATTRIBUTE VALUE>
+  from an attribute dictionary, with
+    KEYS: <ATTRIBUTE NAME>
+    VALUES: <ATTRIBUTE VALUE>
+  The attribute with name <ATTRIBUTE NAME> is only included
+  if <ATTRIBUTE VALUE> is not None and not empty.
+  """
+  
+  attribute_sequence = ''
+  
+  for attribute_name in attribute_dictionary:
+    
+    attribute_value = attribute_dictionary[attribute_name]
+    
+    if (
+      attribute_value is not None
+        and
+      strip_whitespace(
+        placeholder_storage.replace_placeholders_with_markup(attribute_value)
+      )
+        != ''
+    ):
+      attribute_value = escape_html_attribute_value(
+        placeholder_storage, attribute_value
+      )
+      attribute_sequence += f' {attribute_name}="{attribute_value}"'
+  
+  return attribute_sequence
+
+
 ################################################################
 # Temporary storage
 ################################################################
