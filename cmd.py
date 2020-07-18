@@ -1931,12 +1931,14 @@ def process_headings(placeholder_storage, markup):
   """
   Process headings.
   
-  #<id> <CONTENT> #
+  #{<attribute specification>} <CONTENT> #
   
-  The opening hash must be the first
-  non-whitespace character of its line.
+  If <attribute specification> is empty,
+  the curly brackets surrounding it may be omitted.
   
-  Produces <h1 id="<id>"><CONTENT></h1>.
+  Produces <h1<ATTRIBUTES>><CONTENT></h1>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>.
   Whitespace around <CONTENT> is stripped.
   For <h2> to <h6>, use 2 to 6 delimiting hashes respectively.
   For <CONTENT> containing the delimiting number of
@@ -1950,7 +1952,13 @@ def process_headings(placeholder_storage, markup):
         [#] {{1,6}}
         (?!  [#]  )
       )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+        (?:
+          \{{
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
+          \}}
+        ) ?
       [\s] +
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
       (?P=hashes)
@@ -1972,13 +1980,14 @@ def process_heading_match(placeholder_storage, match_object):
   level = len(hashes)
   tag_name = f'h{level}'
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   content = strip_whitespace(content)
   
-  heading = f'<{tag_name}{id_attribute}>{content}</{tag_name}>'
+  heading = f'<{tag_name}{attributes}>{content}</{tag_name}>'
   
   return heading
 
