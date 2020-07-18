@@ -3025,10 +3025,10 @@ def process_inline_semantics(placeholder_storage, markup):
   r"""
   Process inline semantics.
   
-  <X>{<class>} <CONTENT> <X>
+  <X>{<attribute specification>} <CONTENT> <X>
   
   <CONTENT> must be non-empty.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   The following delimiters <X>, equal to one or two
@@ -3039,7 +3039,7 @@ def process_inline_semantics(placeholder_storage, markup):
     __  <b>
   
   Produces the inline semantic
-  <<TAG NAME> class="<class>"><CONTENT></<TAG NAME>>.
+  <<TAG NAME><ATTRIBUTES>><CONTENT></<TAG NAME>>.
   Whitespace around <CONTENT> is stripped.
   For <CONTENT> containing one or more occurrences of * or _,
   use CMD literals or \* and \_.
@@ -3047,21 +3047,22 @@ def process_inline_semantics(placeholder_storage, markup):
   Separate patterns are required
   for the following groupings of delimiting characters <C>
   so that the processing is performed in this order
-  (for brevity, C is used in place of <C> below):
-    33    CCC{<inner class>} <INNER CONTENT> CCC
-    312   CCC{<inner class>} <INNER CONTENT> C <OUTER CONTENT> CC
-    321   CCC{<inner class>} <INNER CONTENT> CC <OUTER CONTENT> C
-    22    CC{<class>} <CONTENT> CC
-    11    C{<class>} <CONTENT> C
+  (for brevity, C is used in place of <C>,
+  and 'spec' in place of 'attribute specification', below):
+    33    CCC{<inner spec>} <INNER CONTENT> CCC
+    312   CCC{<inner spec>} <INNER CONTENT> C <OUTER CONTENT> CC
+    321   CCC{<inner spec>} <INNER CONTENT> CC <OUTER CONTENT> C
+    22    CC{<spec>} <CONTENT> CC
+    11    C{<spec>} <CONTENT> C
   33 is effectively 312 with empty <OUTER CONTENT>.
   However, once such a pattern has been matched,
   only three cases need to be handled for the resulting match object:
     2-layer special (for 33)
-      <X><Y>{<inner class>} <INNER CONTENT> <Y><X>
+      <X><Y>{<inner spec>} <INNER CONTENT> <Y><X>
     2-layer general (for 312, 321):
-      <X><Y>{<inner class>} <INNER CONTENT> <Y> <OUTER CONTENT> <X>
+      <X><Y>{<inner spec>} <INNER CONTENT> <Y> <OUTER CONTENT> <X>
     1-layer (for 22, 11):
-      <X>{<class>} <CONTENT> <X>
+      <X>{<spec>} <CONTENT> <X>
   
   Recursive calls are used to process nested inline semantics.
   """
@@ -3077,7 +3078,9 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (?:
           \{{
-            (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<inner_attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<inner_content>
@@ -3106,7 +3109,9 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (?:
           \{{
-            (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<inner_attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<inner_content>
@@ -3142,7 +3147,9 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (?:
           \{{
-            (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<inner_attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<inner_content>
@@ -3178,7 +3185,9 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<content>  {NON_EMPTY_MINIMAL_REGEX}  )
@@ -3197,7 +3206,9 @@ def process_inline_semantics(placeholder_storage, markup):
       (?P<delimiter>  {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<content>  {NON_EMPTY_MINIMAL_REGEX}  )
@@ -3220,9 +3231,14 @@ def process_inline_semantic_match_2_layer_special(
   Process a single 2-layer special inline-semantic match object.
   """
   
-  inner_class = match_object.group('inner_class')
-  inner_class_attribute = build_html_attribute(
-    placeholder_storage, 'class', inner_class
+  inner_attribute_specification = match_object.group(
+    'inner_attribute_specification'
+  )
+  inner_attribute_dictionary = parse_attribute_specification(
+    inner_attribute_specification
+  )
+  inner_attributes = build_html_attributes(
+    placeholder_storage, inner_attribute_dictionary
   )
   
   inner_content = match_object.group('inner_content')
@@ -3245,7 +3261,7 @@ def process_inline_semantic_match_2_layer_special(
   
   inline_semantic = (
     f'<{outer_tag_name}>'
-      f'<{inner_tag_name}{inner_class_attribute}>'
+      f'<{inner_tag_name}{inner_attributes}>'
         f'{inner_content}'
       f'</{inner_tag_name}>'
     f'</{outer_tag_name}>'
@@ -3261,9 +3277,14 @@ def process_inline_semantic_match_2_layer_general(
   Process a single 2-layer general inline-semantic match object.
   """
   
-  inner_class = match_object.group('inner_class')
-  inner_class_attribute = build_html_attribute(
-    placeholder_storage, 'class', inner_class
+  inner_attribute_specification = match_object.group(
+    'inner_attribute_specification'
+  )
+  inner_attribute_dictionary = parse_attribute_specification(
+    inner_attribute_specification
+  )
+  inner_attributes = build_html_attributes(
+    placeholder_storage, inner_attribute_dictionary
   )
   
   inner_content = match_object.group('inner_content')
@@ -3290,7 +3311,7 @@ def process_inline_semantic_match_2_layer_general(
   
   inline_semantic = (
     f'<{outer_tag_name}>'
-      f'<{inner_tag_name}{inner_class_attribute}>'
+      f'<{inner_tag_name}{inner_attributes}>'
         f'{inner_content}'
       f'</{inner_tag_name}>'
       f'{outer_content}'
@@ -3308,8 +3329,9 @@ def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
   delimiter = match_object.group('delimiter')
   tag_name = INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   content = strip_whitespace(content)
@@ -3317,7 +3339,7 @@ def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
   # Process nested inline semantics
   content = process_inline_semantics(placeholder_storage, content)
   
-  inline_semantic = f'<{tag_name}{class_attribute}>{content}</{tag_name}>'
+  inline_semantic = f'<{tag_name}{attributes}>{content}</{tag_name}>'
   
   return inline_semantic
 
