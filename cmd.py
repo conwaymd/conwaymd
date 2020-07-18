@@ -1435,7 +1435,7 @@ def process_regex_replacement_definitions(
         (?P=percent_signs)
       \}}
     ''',
-    functools.partial(process_regex_replacement_match,
+    functools.partial(process_regex_replacement_definition_match,
       placeholder_storage,
       regex_replacement_storage,
       cmd_name
@@ -1447,7 +1447,7 @@ def process_regex_replacement_definitions(
   return markup
 
 
-def process_regex_replacement_match(
+def process_regex_replacement_definition_match(
   placeholder_storage, regex_replacement_storage, cmd_name, match_object
 ):
   """
@@ -1557,7 +1557,7 @@ def process_ordinary_replacement_definitions(
         (?P=colons)
       \}}
     ''',
-    functools.partial(process_ordinary_replacement_match,
+    functools.partial(process_ordinary_replacement_definition_match,
       ordinary_replacement_storage, cmd_name
     ),
     markup,
@@ -1567,7 +1567,7 @@ def process_ordinary_replacement_definitions(
   return markup
 
 
-def process_ordinary_replacement_match(
+def process_ordinary_replacement_definition_match(
   ordinary_replacement_storage, cmd_name, match_object
 ):
   """
