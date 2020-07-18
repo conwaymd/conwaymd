@@ -948,6 +948,8 @@ def process_display_code(placeholder_storage, markup):
   
   Produces
     <pre<ATTRIBUTES>><code><CONTENT></code></pre>
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>,
   with HTML syntax-character escaping
   and de-indentation for <CONTENT>.
   
