@@ -299,6 +299,8 @@ def parse_attribute_specification(attribute_specification):
   
   attribute_dictionary = {'id': '', 'class': ''}
   
+  if attribute_specification is None:
+    attribute_specification = ''
   attribute_form_list = attribute_specification.split()
   
   for attribute_form in attribute_form_list:
@@ -937,15 +939,15 @@ def process_display_code(placeholder_storage, markup):
   """
   Process display code.
   
-  <flags>``<id>{<class>}
+  <flags>``{<attribute specification>}
     <CONTENT>
   ``
   
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   Produces
-    <pre id="<id>" class="<class>"><code><CONTENT></code></pre>
+    <pre<ATTRIBUTES>><code><CONTENT></code></pre>
   with HTML syntax-character escaping
   and de-indentation for <CONTENT>.
   
@@ -965,10 +967,11 @@ def process_display_code(placeholder_storage, markup):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<flags>  [ucwa] *  )
       (?P<backticks>  [`] {{2,}}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}} ?
         ) ?
       \n
@@ -995,11 +998,11 @@ def process_display_code_match(placeholder_storage, match_object):
   enabled_continuations_flag = enabled_all_flags or 'c' in flags
   enabled_whitespace_flag = enabled_all_flags or 'w' in flags
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attribute_sequence(
+    placeholder_storage, attribute_dictionary
+  )
   
   content = match_object.group('content')
   content = de_indent(content)
@@ -1014,7 +1017,7 @@ def process_display_code_match(placeholder_storage, match_object):
     content = process_whitespace(content)
   
   display_code = (
-    f'<pre{id_attribute}{class_attribute}><code>{content}</code></pre>'
+    f'<pre{attributes}><code>{content}</code></pre>'
   )
   display_code = (
     placeholder_storage.create_placeholder_store_markup(display_code)
