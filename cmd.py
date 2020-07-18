@@ -271,6 +271,57 @@ def build_html_attribute(
   return attribute
 
 
+ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY = {
+  '#': 'id',
+  '.': 'class',
+  'r': 'rowspan',
+  'c': 'colspan',
+  'w': 'width',
+}
+
+
+def parse_attribute_specification(attribute_specification):
+  """
+  Parse an attribute specification string into an attribute dictionary.
+  The attribute specification string is split by whitespace,
+  with the following forms recognised:
+    #<ID>
+    .<CLASS>
+    r<ROWSPAN>
+    c<COLSPAN>
+    w<WIDTH>
+  Unrecognised forms are ignored.
+  If the class attribute is specified more than once,
+  the new value is appended to the existing values.
+  If a non-class attribute is specified more than once,
+  the latest specification shall prevail.
+  """
+  
+  attribute_dictionary = {'id': '', 'class': ''}
+  
+  attribute_form_list = attribute_specification.split()
+  
+  for attribute_form in attribute_form_list:
+    
+    leading_character = attribute_form[0]
+    if (
+      leading_character in
+        ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY
+    ):
+      attribute_name = (
+        ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY[
+          leading_character
+        ]
+      )
+      attribute_value = attribute_form[1:]
+      if attribute_name == 'class':
+        attribute_dictionary[attribute_name] += f' {attribute_value}'
+      else:
+        attribute_dictionary[attribute_name] = attribute_value
+  
+  return attribute_dictionary
+
+
 def build_html_attribute_sequence(placeholder_storage, attribute_dictionary):
   """
   Build a sequence of HTML attributes each of the form
