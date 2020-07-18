@@ -729,135 +729,61 @@ class OrdinaryReplacementStorage:
     return string
 
 
-class ImageDefinitionStorage:
+class ReferenceStorage:
   """
-  Image definition storage class.
+  Reference-style definition storage class.
   
-  Definitions for reference-style images are specified in the form
-    @@![<LABEL>]{<class>}[<width>]
-      <src> <title>
-    @@
-  and are stored in a dictionary with
+  Reference-style (image and link) definitions
+  are specified in the form
+    @[<LABEL>]{<attribute specification>} <address> <title> @
+  and are stored in a dictionary, with
     KEYS: <LABEL>
-    VALUES: <ATTRIBUTES>
-  where <ATTRIBUTES> is the sequence of attributes
-  built from <class>, <width>, <src>, and <title>.
+    VALUES: <ATTRIBUTE DICTIONARY>
+  where <ATTRIBUTE DICTIONARY> is formed from
+  <address>, <title>, and <attribute specification>.
   <LABEL> is case insensitive,
   and is stored canonically in lower case.
   """
   
   def __init__(self):
     """
-    Initialise image definition storage.
+    Initialise reference-style definition storage.
     """
     
     self.dictionary = {}
   
-  def store_definition_attributes(self,
-    placeholder_storage, label, class_, src, title, width
+  def store_definition_attribute_dictionary(self,
+    placeholder_storage, label, attribute_specification, address, title
   ):
     """
-    Store attributes for an image definition.
+    Store attribute dictionary for a reference-style definition.
     """
     
     label = label.lower()
     label = strip_whitespace(label)
     
-    class_attribute = build_html_attribute(
-      placeholder_storage, 'class', class_
-    )
-    src_attribute = build_html_attribute(
-      placeholder_storage, 'src', src
-    )
-    title_attribute = build_html_attribute(
-      placeholder_storage, 'title', title
-    )
-    width_attribute = build_html_attribute(
-      placeholder_storage, 'width', width
+    attribute_dictionary = parse_attribute_specification(
+      attribute_specification
     )
     
-    attributes = (
-      class_attribute + src_attribute + title_attribute + width_attribute
-    )
+    attribute_dictionary["address"] = address
+    attribute_dictionary["title"] = title
     
-    self.dictionary[label] = attributes
+    self.dictionary[label] = attribute_dictionary
   
-  def get_definition_attributes(self, label):
+  def get_definition_attribute_dictionary(self, label):
     """
-    Get attributes for an image definition.
+    Get attribute dictionary for a reference-style definition.
     
-    If no image is defined for the given label, return None.
+    If no definition exists for the given label, return None.
     """
     
     label = label.lower()
     label = strip_whitespace(label)
     
-    attributes = self.dictionary.get(label, None)
+    attribute_dictionary = self.dictionary.get(label, None)
     
-    return attributes
-
-
-class LinkDefinitionStorage:
-  """
-  Link definition storage class.
-  
-  Definitions for reference-style links are specified in the form
-    @@[<LABEL>]{<class>}
-      <href> <title>
-    @@
-  and are stored in a dictionary with
-    KEYS: <LABEL>
-    VALUES: <ATTRIBUTES>
-  where <ATTRIBUTES> is the sequence of attributes
-  built from <class>, <href>, and <title>.
-  <LABEL> is case insensitive,
-  and is stored canonically in lower case.
-  """
-  
-  def __init__(self):
-    """
-    Initialise link definition storage.
-    """
-    
-    self.dictionary = {}
-  
-  def store_definition_attributes(self,
-    placeholder_storage, label, class_, href, title
-  ):
-    """
-    Store attributes for a link definition.
-    """
-    
-    label = label.lower()
-    label = strip_whitespace(label)
-    
-    class_attribute = build_html_attribute(
-      placeholder_storage, 'class', class_
-    )
-    href_attribute = build_html_attribute(
-      placeholder_storage, 'href', href
-    )
-    title_attribute = build_html_attribute(
-      placeholder_storage, 'title', title
-    )
-    
-    attributes = class_attribute + href_attribute + title_attribute
-    
-    self.dictionary[label] = attributes
-  
-  def get_definition_attributes(self, label):
-    """
-    Get attributes for a link definition.
-    
-    If no link is defined for the given label, return None.
-    """
-    
-    label = label.lower()
-    label = strip_whitespace(label)
-    
-    attributes = self.dictionary.get(label, None)
-    
-    return attributes
+    return attribute_dictionary
 
 
 ################################################################
@@ -2593,71 +2519,134 @@ def process_line_continuations(markup):
 
 
 ################################################################
+# Reference-style definitions
+################################################################
+
+
+def process_reference_definitions(
+  placeholder_storage, reference_storage, markup
+):
+  """
+  Process reference-style definitions.
+  
+  @[<LABEL>]{<attribute specification>} <address> <title> @
+  
+  The referencing <LABEL> is case insensitive.
+  For definitions whose <address> or <title>
+  contains one or more consecutive at signs
+  which are not protected by CMD literals,
+  use a longer run of at signs in the delimiters.
+  
+  <address> is used for <src> in images and <href> in links.
+  
+  All reference-style definitions are read and stored
+  using the reference-style definition storage class.
+  If the same label (which is case insensitive)
+  is specified more than once,
+  the latest definition shall prevail.
+  """
+  
+  markup = re.sub(
+    fr'''
+      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+      (?P<at_signs>  [@] +  )
+      \[
+        (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+      \]
+        (?:
+          \{{
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
+          \}}
+        ) ?
+      (?:
+        [\s] *
+        (?P<address>  {ANYTHING_MINIMAL_REGEX}  )
+        (?:
+          [\s] +?
+          (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
+        ) ??
+      ) ??
+      (?P=at_signs)
+    ''',
+    functools.partial(process_reference_definition_match,
+      placeholder_storage,
+      reference_storage
+    ),
+    markup,
+    flags=REGEX_FLAGS
+  )
+  
+  return markup
+
+
+def process_reference_definition_match(
+  placeholder_storage, reference_storage, match_object
+):
+  """
+  Process a single reference-style definition match object.
+  """
+  
+  label = match_object.group('label')
+  attribute_specification = match_object.group('attribute_specification')
+  address = match_object.group('address')
+  title = match_object.group('title')
+  
+  reference_storage.store_definition_attribute_dictionary(
+    placeholder_storage, label, attribute_specification, address, title
+  )
+  
+  return ''
+
+
+################################################################
 # Images
 ################################################################
 
 
-def process_images(placeholder_storage, image_definition_storage, markup):
+def process_images(placeholder_storage, reference_storage, markup):
   """
   Process images.
   
   ## Inline-style ##
   
-  IMAGE:
-    ![<ALT>](<src> <title>)
+  ![<ALT>](<src> <title>)
   
   Unlike John Gruber's markdown, <title> is not surrounded by quotes.
   If quotes are supplied to <title>,
   they are automatically escaped as &quot;.
   
-  Produces the image
-  <img alt="<ALT>" src="<src>" title="<title>">.
+  Produces the image <img<ATTRIBUTES>>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <ALT>, <src>, and <title>.
   
   For <ALT>, <src>, or <title> containing
   one or more closing square or round brackets, use CMD literals.
   
   ## Reference-style ##
   
-  DEFINITION:
-    @@![<LABEL>]{<class>}[<width>]
-      <src> <title>
-    @@
-  IMAGE:
-    ![<ALT>][<label>]
+  ![<ALT>][<label>]
   
-  A single space may be included
-  between [<ALT>] and [<label>] in an image.
-  The referencing strings <LABEL> and <label> are case insensitive
-  (this is handled by the image definition storage class).
-  Non-empty <width> in a definition must consist of digits only.
-  If <class> in a definition is empty,
-  the curly brackets surrounding it may be omitted.
-  If <width> in a definition is empty,
-  the square brackets surrounding it may be omitted.
-  If <label> in an image is empty,
+  A single space may be included between [<ALT>] and [<label>].
+  The referencing <label> is case insensitive
+  (this is handled by the reference-style definition storage class).
+  
+  If <label> is empty,
   the square brackets surrounding it may be omitted,
-  and <ALT> is used as the label for that image.
+  and <ALT> is used as the label.
   
-  Produces the image <img alt="alt"<ATTRIBUTES>>,
+  Produces the image <img<ATTRIBUTES>>,
   where <ATTRIBUTES> is the sequence of attributes
-  built from <class>, <width>, <src>, and <title>.
+  built from <ALT> and the attribute specifications
+  for the corresponding reference-style image definition.
   
   Whitespace around <label> is stripped.
-  For definitions whose <label>, <class>, <src>, or <title>
-  contains two or more consecutive at signs
-  which are not protected by CMD literals,
-  use a longer run of at signs in the delimiters.
   For images whose <ALT> or <label> contains
   one or more closing square brackets, use CMD literals.
-  
-  All (reference-style) image definitions are read and stored
-  using the image definition storage class.
-  If the same label (which is case insensitive)
-  is specified more than once,
-  the latest specification shall prevail.
   """
   
-  # Inline-style images
+  # Inline-style
   markup = re.sub(
     fr'''
       !
@@ -2678,46 +2667,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     flags=REGEX_FLAGS
   )
   
-  # Reference-style image definitions
-  markup = re.sub(
-    fr'''
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<at_signs>  [@] {{2,}})
-        !
-        \[
-          (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-        \]
-        (?:
-          \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
-          \}} ?
-        ) ?
-        (?:
-          \[
-            (?P<width>  [0-9] *  )
-          \] ?
-        ) ?
-      \n
-        (?:
-          [\s] *
-          (?P<src>  {ANYTHING_MINIMAL_REGEX}  )
-          (?:
-            [\s] +?
-            (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
-          ) ??
-        ) ??
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P=at_signs)
-    ''',
-    functools.partial(process_image_definition_match,
-      placeholder_storage,
-      image_definition_storage
-    ),
-    markup,
-    flags=REGEX_FLAGS
-  )
-  
-  # Reference-style images
+  # Reference-style
   markup = re.sub(
     fr'''
       !
@@ -2733,7 +2683,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     ''',
     functools.partial(process_reference_image_match,
       placeholder_storage,
-      image_definition_storage
+      reference_storage
     ),
     markup,
     flags=REGEX_FLAGS
@@ -2748,62 +2698,59 @@ def process_inline_image_match(placeholder_storage, match_object):
   """
   
   alt = match_object.group('alt')
-  alt_attribute = build_html_attribute(placeholder_storage, 'alt', alt)
-  
   src = match_object.group('src')
-  src_attribute = build_html_attribute(placeholder_storage, 'src', src)
-  
   title = match_object.group('title')
-  title_attribute = build_html_attribute(placeholder_storage, 'title', title)
   
-  image = f'<img{alt_attribute}{src_attribute}{title_attribute}>'
+  attribute_dictionary = {
+    'alt': alt,
+    'src': src,
+    'title': title,
+  }
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
+  
+  image = f'<img{attributes}>'
   
   return image
 
 
-def process_image_definition_match(
-  placeholder_storage, image_definition_storage, match_object
-):
-  """
-  Process a single image-definition match object.
-  """
-  
-  label = match_object.group('label')
-  class_ = match_object.group('class_')
-  src = match_object.group('src')
-  title = match_object.group('title')
-  width = match_object.group('width')
-  
-  image_definition_storage.store_definition_attributes(
-    placeholder_storage, label, class_, src, title, width
-  )
-  
-  return ''
-
-
 def process_reference_image_match(
-  placeholder_storage, image_definition_storage, match_object
+  placeholder_storage, reference_storage, match_object
 ):
   """
   Process a single reference-style-image match object.
   
   If no image is defined for the given label,
-  returned the entire string for the matched object as is.
+  return the entire string for the matched object as is.
+  
+  <address> specified in the definition is used for <src>.
   """
   
   alt = match_object.group('alt')
-  alt_attribute = build_html_attribute(placeholder_storage, 'alt', alt)
   
   label = match_object.group('label')
   if label is None or strip_whitespace(label) == '':
     label = alt
   
-  attributes = image_definition_storage.get_definition_attributes(label)
-  if attributes is None:
+  definition_attribute_dictionary = (
+    reference_storage.get_definition_attribute_dictionary(label)
+  )
+  if definition_attribute_dictionary is None:
     match_string = match_object.group()
     return match_string
   
-  image = f'<img{alt_attribute}{attributes}>'
+  match_attribute_dictionary = {
+    'alt': alt,
+  }
+  
+  attribute_dictionary = {
+    **match_attribute_dictionary,
+    **definition_attribute_dictionary,
+  }
+  
+  attribute_dictionary['src'] = attribute_dictionary.pop('address')
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
+  
+  image = f'<img{attributes}>'
   
   return image
 
@@ -2813,21 +2760,21 @@ def process_reference_image_match(
 ################################################################
 
 
-def process_links(placeholder_storage, link_definition_storage, markup):
+def process_links(placeholder_storage, reference_storage, markup):
   """
   Process links.
   
   ## Inline-style ##
   
-  LINK:
-    [<CONTENT>](<href> <title>)
+  [<CONTENT>](<href> <title>)
   
   Unlike John Gruber's markdown, <title> is not surrounded by quotes.
   If quotes are supplied to <title>,
   they are automatically escaped as &quot;.
   
-  Produces the link
-  <a href="<href>" title="<title>"><CONTENT></a>.
+  Produces the link <a<ATTRIBUTES>><CONTENT></a>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <href> and <title>.
   
   Whitespace around <CONTENT> is stripped.
   For <CONTENT>, <href>, or <title> containing
@@ -2835,43 +2782,27 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   
   ## Reference-style ##
   
-  DEFINITION:
-    @@[<LABEL>]{<class>}
-      <href> <title>
-    @@
-  LINK:
-    [<CONTENT>][<label>]
+  [<CONTENT>][<label>]
   
-  A single space may be included
-  between [<CONTENT>] and [<label>] in a link.
-  The referencing strings <LABEL> and <label> are case insensitive
-  (this is handled by the link definition storage class).
-  If <class> in a definition is empty,
-  the curly brackets surrounding it may be omitted.
-  If <label> in a link is empty,
+  A single space may be included between [<CONTENT>] and [<label>].
+  The referencing <label> is case insensitive
+  (this is handled by the reference-style definition storage class).
+  
+  If <label> is empty,
   the square brackets surrounding it may be omitted,
-  and <content> is used as the label for that link.
+  and <CONTENT> is used as the label.
   
   Produces the link <a<ATTRIBUTES>><CONTENT></a>,
   where <ATTRIBUTES> is the sequence of attributes
-  built from <class>, <href>, and <title>.
+  built from the attribute specifications
+  for the corresponding reference-style link definition.
   
   Whitespace around <CONTENT> and <label> is stripped.
-  For definitions whose <label>, <class>, <href>, or <title>
-  contains two or more consecutive at signs
-  which are not protected by CMD literals,
-  use a longer run of at signs in the delimiters.
   For links whose <CONTENT> or <label> contains
   one or more closing square brackets, use CMD literals.
-  
-  All (reference-style) link definitions are read and stored
-  using the link definition storage class.
-  If the same label (which is case insensitive)
-  is specified more than once,
-  the latest specification shall prevail.
   """
   
-  # Inline-style links
+  # Inline-style
   markup = re.sub(
     fr'''
       \[
@@ -2891,39 +2822,6 @@ def process_links(placeholder_storage, link_definition_storage, markup):
     flags=REGEX_FLAGS
   )
   
-  # Reference-style link definitions
-  markup = re.sub(
-    fr'''
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<at_signs>  [@] {{2,}})
-        \[
-          (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-        \]
-        (?:
-          \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
-          \}} ?
-        ) ?
-      \n
-        (?:
-          [\s] *
-          (?P<href>  {ANYTHING_MINIMAL_REGEX}  )
-          (?:
-            [\s] +?
-            (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
-          ) ??
-        ) ??
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P=at_signs)
-    ''',
-    functools.partial(process_link_definition_match,
-      placeholder_storage,
-      link_definition_storage
-    ),
-    markup,
-    flags=REGEX_FLAGS
-  )
-  
   # Reference-style links
   markup = re.sub(
     fr'''
@@ -2937,7 +2835,10 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         \]
       ) ?
     ''',
-    functools.partial(process_reference_link_match, link_definition_storage),
+    functools.partial(process_reference_link_match,
+      placeholder_storage,
+      reference_storage
+    ),
     markup,
     flags=REGEX_FLAGS
   )
@@ -2954,41 +2855,29 @@ def process_inline_link_match(placeholder_storage, match_object):
   content = strip_whitespace(content)
   
   href = match_object.group('href')
-  href_attribute = build_html_attribute(placeholder_storage, 'href', href)
-  
   title = match_object.group('title')
-  title_attribute = build_html_attribute(placeholder_storage, 'title', title)
   
-  link = f'<a{href_attribute}{title_attribute}>{content}</a>'
+  attribute_dictionary = {
+    'href': href,
+    'title': title,
+  }
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
+  
+  link = f'<a{attributes}>{content}</a>'
   
   return link
 
 
-def process_link_definition_match(
-  placeholder_storage, link_definition_storage, match_object
+def process_reference_link_match(
+  placeholder_storage, reference_storage, match_object
 ):
-  """
-  Process a single link-definition match object.
-  """
-  
-  label = match_object.group('label')
-  class_ = match_object.group('class_')
-  href = match_object.group('href')
-  title = match_object.group('title')
-  
-  link_definition_storage.store_definition_attributes(
-    placeholder_storage, label, class_, href, title
-  )
-  
-  return ''
-
-
-def process_reference_link_match(link_definition_storage, match_object):
   """
   Process a single reference-style-link match object.
   
   If no link is defined for the given label,
-  returned the entire string for the matched object as is.
+  return the entire string for the matched object as is.
+  
+  <address> specified in the definition is used for <href>.
   """
   
   content = match_object.group('content')
@@ -2998,10 +2887,17 @@ def process_reference_link_match(link_definition_storage, match_object):
   if label is None or strip_whitespace(label) == '':
     label = content
   
-  attributes = link_definition_storage.get_definition_attributes(label)
-  if attributes is None:
+  definition_attribute_dictionary = (
+    reference_storage.get_definition_attribute_dictionary(label)
+  )
+  if definition_attribute_dictionary is None:
     match_string = match_object.group()
     return match_string
+  
+  attribute_dictionary = definition_attribute_dictionary
+  
+  attribute_dictionary['href'] = attribute_dictionary.pop('address')
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   link = f'<a{attributes}>{content}</a>'
   
@@ -3479,19 +3375,21 @@ def cmd_to_html(cmd, cmd_name):
   markup = ordinary_replacement_storage.replace_patterns('c', markup)
   markup = process_line_continuations(markup)
   
+  # Process reference-style definitions
+  reference_storage = ReferenceStorage()
+  markup = process_reference_definitions(
+    placeholder_storage, reference_storage, markup
+  )
+  
   # Process images
   markup = regex_replacement_storage.replace_patterns('i', markup)
   markup = ordinary_replacement_storage.replace_patterns('i', markup)
-  image_definition_storage = ImageDefinitionStorage()
-  markup = process_images(
-    placeholder_storage, image_definition_storage, markup
-  )
+  markup = process_images(placeholder_storage, reference_storage, markup)
   
   # Process links
   markup = regex_replacement_storage.replace_patterns('l', markup)
   markup = ordinary_replacement_storage.replace_patterns('l', markup)
-  link_definition_storage = LinkDefinitionStorage()
-  markup = process_links(placeholder_storage, link_definition_storage, markup)
+  markup = process_links(placeholder_storage, reference_storage, markup)
   
   # Process headings
   markup = regex_replacement_storage.replace_patterns('h', markup)
