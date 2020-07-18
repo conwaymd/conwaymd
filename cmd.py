@@ -2408,14 +2408,14 @@ def process_table_parts(placeholder_storage, content):
   Process table parts.
   
   Content is split into table parts <thead>, <tbody>, <tfoot>
-  according to leading occurrences of <Y><id>{<class>},
+  according to leading occurrences of <Y>{<attribute specification>},
   with the following delimiters <Y>:
     |^  <thead>
     |~  <tbody>
     |_  <tfoot>
   Table parts end at the next table part,
   or at the end of the content being split.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   """
   
@@ -2423,10 +2423,11 @@ def process_table_parts(placeholder_storage, content):
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<delimiter>  {TABLE_PART_DELIMITER_REGEX}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
       (?:
@@ -2458,17 +2459,15 @@ def process_table_part_match(placeholder_storage, match_object):
   delimiter = match_object.group('delimiter')
   tag_name = TABLE_PART_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   table_part_content = match_object.group('table_part_content')
   table_part_content = strip_whitespace(table_part_content)
   
   table_part = f'''
-    <{tag_name}{id_attribute}{class_attribute}>
+    <{tag_name}{attributes}>
       {table_part_content}
     </{tag_name}>
   '''
