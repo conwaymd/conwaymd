@@ -645,7 +645,7 @@ class PropertyStorage:
     return string
 
 
-REPLACEMENT_FLAGS = 'ApbtecilhswZ'
+REPLACEMENT_FLAGS = 'ApbtecrilhswZ'
 REPLACEMENT_FLAG_REGEX = f'[{REPLACEMENT_FLAGS}]'
 REPLACEMENT_STORAGE_DICTIONARY_INITIAL = {
   flag: {}
@@ -1322,12 +1322,13 @@ def process_regex_replacement_definitions(
   
   <flag> may consist of zero or one of the following characters,
   and specifies when the regex replacement is to be applied:
-    A for immediately after processing regex replacements
+    A for immediately after processing regex replacement definitions
     p for just before processing preamble
     b for just before processing blocks
     t for just before processing tables
     e for just before processing escapes
     c for just before processing line continuations
+    r for just before processing reference-style definitions
     i for just before processing images
     l for just before processing links
     h for just before processing headings
@@ -1444,12 +1445,13 @@ def process_ordinary_replacement_definitions(
   
   <flag> may consist of zero or one of the following characters,
   and specifies when the ordinary replacement is to be applied:
-    A for immediately after processing ordinary replacements
+    A for immediately after processing ordinary replacement definitions
     p for just before processing preamble
     b for just before processing blocks
     t for just before processing tables
     e for just before processing escapes
     c for just before processing line continuations
+    r for just before processing reference-style definitions
     i for just before processing images
     l for just before processing links
     h for just before processing headings
@@ -3380,6 +3382,8 @@ def cmd_to_html(cmd, cmd_name):
   markup = process_line_continuations(markup)
   
   # Process reference-style definitions
+  markup = regex_replacement_storage.replace_patterns('r', markup)
+  markup = ordinary_replacement_storage.replace_patterns('r', markup)
   reference_storage = ReferenceStorage()
   markup = process_reference_definitions(
     placeholder_storage, reference_storage, markup
