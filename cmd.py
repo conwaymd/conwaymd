@@ -781,7 +781,7 @@ class ReferenceStorage:
     label = label.lower()
     label = strip_whitespace(label)
     
-    attribute_dictionary = self.dictionary.get(label, None)
+    attribute_dictionary = copy.deepcopy(self.dictionary.get(label, None))
     
     return attribute_dictionary
 
