@@ -1843,6 +1843,7 @@ def process_headings(placeholder_storage, markup):
   Produces <h1<ATTRIBUTES>><CONTENT></h1>,
   where <ATTRIBUTES> is the sequence of attributes
   built from <attribute specification>.
+  
   Whitespace around <CONTENT> is stripped.
   For <h2> to <h6>, use 2 to 6 delimiting hashes respectively.
   For <CONTENT> containing the delimiting number of
@@ -2917,7 +2918,10 @@ def process_inline_semantics(placeholder_storage, markup):
     __  <b>
   
   Produces the inline semantic
-  <<TAG NAME><ATTRIBUTES>><CONTENT></<TAG NAME>>.
+  <<TAG NAME><ATTRIBUTES>><CONTENT></<TAG NAME>>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>.
+  
   Whitespace around <CONTENT> is stripped.
   For <CONTENT> containing one or more occurrences of * or _,
   use CMD literals or \* and \_.
