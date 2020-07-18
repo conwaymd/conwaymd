@@ -1372,15 +1372,15 @@ def process_inclusion_match(placeholder_storage, cmd_name, match_object):
 
 
 ################################################################
-# Regex replacements
+# Regex replacement definitions
 ################################################################
 
 
-def process_regex_replacements(
+def process_regex_replacement_definitions(
   placeholder_storage, regex_replacement_storage, cmd_name, markup
 ):
   """
-  Process regex replacements.
+  Process regex replacement definitions.
   
   <flag>{% <PATTERN> % <REPLACEMENT> %}
   
@@ -1499,11 +1499,11 @@ def process_regex_replacement_match(
 
 
 ################################################################
-# Ordinary replacements
+# Ordinary replacement definitions
 ################################################################
 
 
-def process_ordinary_replacements(
+def process_ordinary_replacement_definitions(
   ordinary_replacement_storage, cmd_name, markup
 ):
   """
@@ -3433,17 +3433,17 @@ def cmd_to_html(cmd, cmd_name):
   markup = process_inline_maths(placeholder_storage, markup)
   markup = process_inclusions(placeholder_storage, cmd_name, markup)
   
-  # Process regex replacements
+  # Process regex replacement definitions
   regex_replacement_storage = RegexReplacementStorage()
-  markup = process_regex_replacements(
+  markup = process_regex_replacement_definitions(
     placeholder_storage, regex_replacement_storage, cmd_name,
     markup
   )
   markup = regex_replacement_storage.replace_patterns('A', markup)
   
-  # Process ordinary replacements
+  # Process ordinary replacement definitions
   ordinary_replacement_storage = OrdinaryReplacementStorage()
-  markup = process_ordinary_replacements(
+  markup = process_ordinary_replacement_definitions(
     ordinary_replacement_storage, cmd_name,
     markup
   )
