@@ -2266,39 +2266,26 @@ def process_table_cells(placeholder_storage, content):
   Process table cells.
   
   Content is split into table cells <th>, <td> according to
-  leading occurrences of <Z><id>{<class>}[<rowspan>,<colspan>],
+  leading occurrences of <Z>{<attribute specification>},
   with the following delimiters <Z>:
     ;  <th>
     ,  <td>
   Table cells end at the next table cell, table row, or table part,
   or at the end of the content being split.
-  Non-empty <rowspan> and <colspan> must consist of digits only.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
-  If <colspan> is empty, the comma before it may be omitted.
-  If both <rowspan> and <colspan> are empty,
-  the comma between them and the square brackets surrounding them
-  may be omitted.
   """
   
   content = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<delimiter>  {TABLE_CELL_DELIMITER_REGEX}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
-        ) ?
-        (?:
-          \[
-            (?P<rowspan>  [0-9] *?  )
-            (?:
-              [,]
-              (?P<colspan>  [0-9] *?  )
-            ) ?
-          \]
         ) ?
       (?:
         {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
@@ -2335,28 +2322,12 @@ def process_table_cell_match(placeholder_storage, match_object):
   delimiter = match_object.group('delimiter')
   tag_name = TABLE_CELL_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
-  
-  rowspan = match_object.group('rowspan')
-  rowspan_attribute = (
-    build_html_attribute(placeholder_storage, 'rowspan', rowspan)
-  )
-  
-  colspan = match_object.group('colspan')
-  colspan_attribute = (
-    build_html_attribute(placeholder_storage, 'colspan', colspan)
-  )
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   table_cell_content = match_object.group('table_cell_content')
   table_cell_content = strip_whitespace(table_cell_content)
-  
-  attributes = (
-    id_attribute + class_attribute + rowspan_attribute + colspan_attribute
-  )
   
   table_cell = f'<{tag_name}{attributes}>{table_cell_content}</{tag_name}>\n'
   
