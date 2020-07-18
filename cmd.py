@@ -2749,8 +2749,8 @@ def process_reference_image_match(
     **definition_attribute_dictionary,
   }
   
-  attribute_dictionary['src'] = attribute_dictionary.pop('address')
-  attribute_dictionary['title'] = attribute_dictionary.pop('title')
+  attribute_dictionary['src'] = attribute_dictionary.pop('address', '')
+  attribute_dictionary['title'] = attribute_dictionary.pop('title', '')
   attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   image = f'<img{attributes}>'
@@ -2900,8 +2900,8 @@ def process_reference_link_match(
   
   attribute_dictionary = definition_attribute_dictionary
   
-  attribute_dictionary['href'] = attribute_dictionary.pop('address')
-  attribute_dictionary['title'] = attribute_dictionary.pop('title')
+  attribute_dictionary['href'] = attribute_dictionary.pop('address', '')
+  attribute_dictionary['title'] = attribute_dictionary.pop('title', '')
   attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   link = f'<a{attributes}>{content}</a>'
