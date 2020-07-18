@@ -2100,7 +2100,7 @@ def process_list_items(placeholder_storage, content):
   Process list items.
   
   Content is split into list items <li>
-  according to leading occurrences of <Y><id>{<class>},
+  according to leading occurrences of <Y>{<attribute specification>},
   with the following delimiters <Y>:
     *
     +
@@ -2108,7 +2108,7 @@ def process_list_items(placeholder_storage, content):
     1. (or any run of digits followed by a full stop)
   List items end at the next list item,
   or at the end of the content being split.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   """
   
@@ -2116,10 +2116,11 @@ def process_list_items(placeholder_storage, content):
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       {LIST_ITEM_DELIMITER_REGEX}
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
       [\s] +
@@ -2144,17 +2145,15 @@ def process_list_item_match(placeholder_storage, match_object):
   Process a single list-item match object.
   """
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   list_item_content = match_object.group('list_item_content')
   list_item_content = strip_whitespace(list_item_content)
   
   list_item = f'''
-    <li{id_attribute}{class_attribute}>{list_item_content}
+    <li{attributes}>{list_item_content}
     </li>
   '''
   
