@@ -2505,6 +2505,9 @@ def process_reference_definitions(
   
   @[<LABEL>]{<attribute specification>} <address> <title> @
   
+  If <attribute specification> is empty,
+  the curly brackets surrounding it may be omitted.
+  
   The referencing <LABEL> is case insensitive.
   For definitions whose <address> or <title>
   contains one or more consecutive at signs
