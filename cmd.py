@@ -2004,11 +2004,11 @@ def process_blocks(placeholder_storage, markup):
   """
   Process blocks.
   
-  <C><C><C><C><id>{<class>}
+  <C><C><C><C>{<attribute specification>}
     <CONTENT>
   <C><C><C><C>
   
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   The following delimiting characters <C> are used:
@@ -2020,8 +2020,10 @@ def process_blocks(placeholder_storage, markup):
       =  <ul>
       +  <ol>
   Produces the block
-    <<TAG NAME> id="<id>" class="<class>">
-    <CONTENT></<TAG NAME>>.
+    <<TAG NAME><ATTRIBUTES>>
+    <CONTENT></<TAG NAME>>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>.
   For <CONTENT> containing four or more
   consecutive delimiting characters
   which are not protected by CMD literals,
@@ -2040,10 +2042,11 @@ def process_blocks(placeholder_storage, markup):
         (?P<delimiter_character>  {BLOCK_DELIMITER_CHARACTER_REGEX}  )
         (?P=delimiter_character) {{3,}}
       )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}} ?
         ) ?
       \n
@@ -2070,11 +2073,9 @@ def process_block_match(placeholder_storage, match_object):
   )
   block_is_list = tag_name in LIST_TAG_NAMES
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   
@@ -2085,7 +2086,7 @@ def process_block_match(placeholder_storage, match_object):
     content = process_list_items(placeholder_storage, content)
   
   block = (
-    f'<{tag_name}{id_attribute}{class_attribute}>\n{content}</{tag_name}>'
+    f'<{tag_name}{attributes}>\n{content}</{tag_name}>'
   )
   
   return block
