@@ -2187,16 +2187,18 @@ def process_tables(placeholder_storage, markup):
   """
   Process tables.
   
-  ''''<id>{<class>}
+  ''''{<attribute specification>}
     <CONTENT>
   ''''
   
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   Produces the table
-    <table id="<id>" class="<class>"> 
-    <CONTENT></table>.
+    <table<ATTRIBUTES>>
+    <CONTENT></table>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>.
   For <CONTENT> containing four or more consecutive apostrophes
   which are not protected by CMD literals,
   use a longer run of apostrophes in the delimiters.
@@ -2216,10 +2218,11 @@ def process_tables(placeholder_storage, markup):
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<apostrophes>  ['] {{4,}}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}} ?
         ) ?
       \n
@@ -2240,11 +2243,9 @@ def process_table_match(placeholder_storage, match_object):
   Process a single table match object.
   """
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   
@@ -2255,7 +2256,7 @@ def process_table_match(placeholder_storage, match_object):
   content = process_table_rows(placeholder_storage, content)
   content = process_table_parts(placeholder_storage, content)
   
-  table = f'<table{id_attribute}{class_attribute}>\n{content}</table>'
+  table = f'<table{attributes}>\n{content}</table>'
   
   return table
 
