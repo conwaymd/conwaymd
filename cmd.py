@@ -1136,6 +1136,8 @@ def process_display_maths_match(placeholder_storage, match_object):
   enabled_whitespace_flag = 'w' in flags
   
   attribute_specification = match_object.group('attribute_specification')
+  if attribute_specification is None:
+    attribute_specification = ''
   attribute_specification = '.js-maths ' + attribute_specification
   attribute_dictionary = parse_attribute_specification(attribute_specification)
   attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
