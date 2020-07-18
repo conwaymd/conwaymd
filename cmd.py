@@ -324,7 +324,7 @@ def parse_attribute_specification(attribute_specification):
   return attribute_dictionary
 
 
-def build_html_attribute_sequence(placeholder_storage, attribute_dictionary):
+def build_html_attributes(placeholder_storage, attribute_dictionary):
   """
   Build a sequence of HTML attributes each of the form
   <ATTRIBUTE NAME>="<ATTRIBUTE VALUE>" with a leading space
@@ -336,7 +336,7 @@ def build_html_attribute_sequence(placeholder_storage, attribute_dictionary):
   if <ATTRIBUTE VALUE> is not None and not empty.
   """
   
-  attribute_sequence = ''
+  attributes = ''
   
   for attribute_name in attribute_dictionary:
     
@@ -353,9 +353,9 @@ def build_html_attribute_sequence(placeholder_storage, attribute_dictionary):
       attribute_value = escape_html_attribute_value(
         placeholder_storage, attribute_value
       )
-      attribute_sequence += f' {attribute_name}="{attribute_value}"'
+      attributes += f' {attribute_name}="{attribute_value}"'
   
-  return attribute_sequence
+  return attributes
 
 
 ################################################################
@@ -1000,9 +1000,7 @@ def process_display_code_match(placeholder_storage, match_object):
   
   attribute_specification = match_object.group('attribute_specification')
   attribute_dictionary = parse_attribute_specification(attribute_specification)
-  attributes = build_html_attribute_sequence(
-    placeholder_storage, attribute_dictionary
-  )
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   content = de_indent(content)
