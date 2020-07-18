@@ -1150,15 +1150,17 @@ def process_display_maths(placeholder_storage, markup):
   r"""
   Process display maths.
   
-  <flags>$$<id>{<class>}
+  <flags>$${<attribute specification>}
     <CONTENT>
   $$
   
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   Produces
-    <div id="<id>" class="js-maths <class>"><CONTENT></div>
+    <div<ATTRIBUTES>><CONTENT></div>
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification> with '.js-maths' prepended,
   with HTML syntax-character escaping and de-indentation for <CONTENT>.
   <flags> may consist of zero or more of the following characters:
     w to process whitespace completely
@@ -1179,10 +1181,11 @@ def process_display_maths(placeholder_storage, markup):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<flags>  [w] *  )
       (?P<dollar_signs>  [$] {{2,}}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}} ?
         ) ?
       \n
@@ -1206,16 +1209,10 @@ def process_display_maths_match(placeholder_storage, match_object):
   flags = match_object.group('flags')
   enabled_whitespace_flag = 'w' in flags
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  if class_ is None:
-    class_ = ''
-  class_ = strip_whitespace(class_)
-  class_attribute = build_html_attribute(
-    placeholder_storage, 'class', f'js-maths {class_}'
-  )
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_specification = '.js-maths ' + attribute_specification
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   content = de_indent(content)
@@ -1224,7 +1221,7 @@ def process_display_maths_match(placeholder_storage, match_object):
   if enabled_whitespace_flag:
     content = process_whitespace(content)
   
-  display_maths = f'<div{id_attribute}{class_attribute}>{content}</div>'
+  display_maths = f'<div{attributes}>{content}</div>'
   display_maths = (
     placeholder_storage.create_placeholder_store_markup(display_maths)
   )
