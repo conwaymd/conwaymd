@@ -244,31 +244,91 @@ def escape_html_attribute_value(placeholder_storage, string):
   return placeholder_storage.create_placeholder_store_markup(string)
 
 
-def build_html_attribute(
-  placeholder_storage, attribute_name, attribute_value
-):
+ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY = {
+  '#': 'id',
+  '.': 'class',
+  'r': 'rowspan',
+  'c': 'colspan',
+  'w': 'width',
+}
+
+
+def parse_attribute_specification(attribute_specification):
   """
-  Build an HTML attribute <ATTRIBUTE NAME>="<ATTRIBUTE VALUE>",
-  with a leading space and the necessary escaping for <ATTRIBUTE VALUE>.
-  If <ATTRIBUTE VALUE> is None or empty, the empty string is returned.
+  Parse an attribute specification string into an attribute dictionary.
+  The attribute specification string is split by whitespace,
+  with the following forms recognised:
+    #<ID>
+    .<CLASS>
+    r<ROWSPAN>
+    c<COLSPAN>
+    w<WIDTH>
+  Unrecognised forms are ignored.
+  If the class attribute is specified more than once,
+  the new value is appended to the existing values.
+  If a non-class attribute is specified more than once,
+  the latest specification shall prevail.
   """
   
-  if (
-    attribute_value is None
-      or
-    strip_whitespace(
-      placeholder_storage.replace_placeholders_with_markup(attribute_value)
-    )
-      == ''
-  ):
-    return ''
+  attribute_dictionary = {'id': '', 'class': ''}
   
-  attribute_value = escape_html_attribute_value(
-    placeholder_storage, attribute_value
-  )
-  attribute = f' {attribute_name}="{attribute_value}"'
+  if attribute_specification is None:
+    attribute_specification = ''
+  attribute_form_list = attribute_specification.split()
   
-  return attribute
+  for attribute_form in attribute_form_list:
+    
+    leading_character = attribute_form[0]
+    if (
+      leading_character in
+        ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY
+    ):
+      attribute_name = (
+        ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY[
+          leading_character
+        ]
+      )
+      attribute_value = attribute_form[1:]
+      if attribute_name == 'class':
+        attribute_dictionary[attribute_name] += f' {attribute_value}'
+      else:
+        attribute_dictionary[attribute_name] = attribute_value
+  
+  return attribute_dictionary
+
+
+def build_html_attributes(placeholder_storage, attribute_dictionary):
+  """
+  Build a sequence of HTML attributes each of the form
+  <ATTRIBUTE NAME>="<ATTRIBUTE VALUE>" with a leading space
+  and with the necessary escaping for <ATTRIBUTE VALUE>
+  from an attribute dictionary, with
+    KEYS: <ATTRIBUTE NAME>
+    VALUES: <ATTRIBUTE VALUE>
+  The attribute with name <ATTRIBUTE NAME> is only included
+  if <ATTRIBUTE VALUE> is not None and not empty.
+  """
+  
+  attributes = ''
+  
+  for attribute_name in attribute_dictionary:
+    
+    attribute_value = attribute_dictionary[attribute_name]
+    
+    if (
+      attribute_value is not None
+        and
+      strip_whitespace(
+        placeholder_storage.replace_placeholders_with_markup(attribute_value)
+      )
+        != ''
+    ):
+      attribute_value = escape_html_attribute_value(
+        placeholder_storage, attribute_value
+      )
+      attributes += f' {attribute_name}="{attribute_value}"'
+  
+  return attributes
 
 
 ################################################################
@@ -461,16 +521,16 @@ PROPERTY_NAME_REGEX = '[a-zA-Z0-9-]+'
 
 class PropertyStorage:
   """
-  Property storage class.
+  Property definition storage class.
   
-  Properties are specified in the content of the preamble,
+  Property definitions are specified in the content of the preamble,
   which is split according to leading occurrences of %<PROPERTY NAME>,
   where <PROPERTY NAME> may only contain letters, digits, and hyphens.
-  Property specifications end at the next property specification,
+  Property definitions end at the next property definition,
   or at the end of the (preamble) content being split.
   
-  Properties are stored in a dictionary of ordinary replacements,
-  with
+  Property definitions are stored in a dictionary
+  of ordinary replacements, with
     KEYS: %<PROPERTY NAME>
     VALUES: <PROPERTY MARKUP>
   These may be referenced by writing %<PROPERTY NAME>,
@@ -505,9 +565,9 @@ class PropertyStorage:
     
     return property_markup
   
-  def read_specifications_store_markup(self, preamble_content):
+  def read_definitions_store_markup(self, preamble_content):
     """
-    Read and store property specifications.
+    Read and store property definitions.
     """
     
     re.sub(
@@ -524,14 +584,14 @@ class PropertyStorage:
           \Z
         )
       ''',
-      self.process_specification_match,
+      self.process_definition_match,
       preamble_content,
       flags=REGEX_FLAGS
     )
   
-  def process_specification_match(self, match_object):
+  def process_definition_match(self, match_object):
     """
-    Process a single property-specification match object.
+    Process a single property-definition match object.
     """
     
     property_name = match_object.group('property_name')
@@ -558,7 +618,7 @@ class PropertyStorage:
     return string
 
 
-REPLACEMENT_FLAGS = 'ApbtecilhswZ'
+REPLACEMENT_FLAGS = 'ApbtecrilhswZ'
 REPLACEMENT_FLAG_REGEX = f'[{REPLACEMENT_FLAGS}]'
 REPLACEMENT_STORAGE_DICTIONARY_INITIAL = {
   flag: {}
@@ -568,9 +628,9 @@ REPLACEMENT_STORAGE_DICTIONARY_INITIAL = {
 
 class RegexReplacementStorage:
   """
-  Regex replacement storage class.
+  Regex replacement definition storage class.
   
-  Regex replacements are specified in the form
+  Regex replacement definitions are specified in the form
     <flag>{% <PATTERN> % <REPLACEMENT> %}
   and are stored in a dictionary of dictionaries, with
     KEYS: <flag>
@@ -606,9 +666,9 @@ class RegexReplacementStorage:
 
 class OrdinaryReplacementStorage:
   """
-  Ordinary replacement storage class.
+  Ordinary replacement definition storage class.
   
-  Ordinary replacements are specified in the form
+  Ordinary replacement definitions are specified in the form
     <flag>{: <PATTERN> : <REPLACEMENT> :}
   and are stored in a dictionary of dictionaries, with
     KEYS: <flag>
@@ -642,135 +702,61 @@ class OrdinaryReplacementStorage:
     return string
 
 
-class ImageDefinitionStorage:
+class ReferenceStorage:
   """
-  Image definition storage class.
+  Reference-style definition storage class.
   
-  Definitions for reference-style images are specified in the form
-    @@![<LABEL>]{<class>}[<width>]
-      <src> <title>
-    @@
-  and are stored in a dictionary with
+  Reference-style (image and link) definitions
+  are specified in the form
+    @[<LABEL>]{<attribute specification>} <address> <title> @
+  and are stored in a dictionary, with
     KEYS: <LABEL>
-    VALUES: <ATTRIBUTES>
-  where <ATTRIBUTES> is the sequence of attributes
-  built from <class>, <width>, <src>, and <title>.
+    VALUES: <ATTRIBUTE DICTIONARY>
+  where <ATTRIBUTE DICTIONARY> is formed from
+  <address>, <title>, and <attribute specification>.
   <LABEL> is case insensitive,
   and is stored canonically in lower case.
   """
   
   def __init__(self):
     """
-    Initialise image definition storage.
+    Initialise reference-style definition storage.
     """
     
     self.dictionary = {}
   
-  def store_definition_attributes(self,
-    placeholder_storage, label, class_, src, title, width
+  def store_definition_attribute_dictionary(self,
+    placeholder_storage, label, attribute_specification, address, title
   ):
     """
-    Store attributes for an image definition.
+    Store attribute dictionary for a reference-style definition.
     """
     
     label = label.lower()
     label = strip_whitespace(label)
     
-    class_attribute = build_html_attribute(
-      placeholder_storage, 'class', class_
-    )
-    src_attribute = build_html_attribute(
-      placeholder_storage, 'src', src
-    )
-    title_attribute = build_html_attribute(
-      placeholder_storage, 'title', title
-    )
-    width_attribute = build_html_attribute(
-      placeholder_storage, 'width', width
+    attribute_dictionary = parse_attribute_specification(
+      attribute_specification
     )
     
-    attributes = (
-      class_attribute + src_attribute + title_attribute + width_attribute
-    )
+    attribute_dictionary["address"] = address
+    attribute_dictionary["title"] = title
     
-    self.dictionary[label] = attributes
+    self.dictionary[label] = attribute_dictionary
   
-  def get_definition_attributes(self, label):
+  def get_definition_attribute_dictionary(self, label):
     """
-    Get attributes for an image definition.
+    Get attribute dictionary for a reference-style definition.
     
-    If no image is defined for the given label, return None.
+    If no definition exists for the given label, return None.
     """
     
     label = label.lower()
     label = strip_whitespace(label)
     
-    attributes = self.dictionary.get(label, None)
+    attribute_dictionary = copy.deepcopy(self.dictionary.get(label, None))
     
-    return attributes
-
-
-class LinkDefinitionStorage:
-  """
-  Link definition storage class.
-  
-  Definitions for reference-style links are specified in the form
-    @@[<LABEL>]{<class>}
-      <href> <title>
-    @@
-  and are stored in a dictionary with
-    KEYS: <LABEL>
-    VALUES: <ATTRIBUTES>
-  where <ATTRIBUTES> is the sequence of attributes
-  built from <class>, <href>, and <title>.
-  <LABEL> is case insensitive,
-  and is stored canonically in lower case.
-  """
-  
-  def __init__(self):
-    """
-    Initialise link definition storage.
-    """
-    
-    self.dictionary = {}
-  
-  def store_definition_attributes(self,
-    placeholder_storage, label, class_, href, title
-  ):
-    """
-    Store attributes for a link definition.
-    """
-    
-    label = label.lower()
-    label = strip_whitespace(label)
-    
-    class_attribute = build_html_attribute(
-      placeholder_storage, 'class', class_
-    )
-    href_attribute = build_html_attribute(
-      placeholder_storage, 'href', href
-    )
-    title_attribute = build_html_attribute(
-      placeholder_storage, 'title', title
-    )
-    
-    attributes = class_attribute + href_attribute + title_attribute
-    
-    self.dictionary[label] = attributes
-  
-  def get_definition_attributes(self, label):
-    """
-    Get attributes for a link definition.
-    
-    If no link is defined for the given label, return None.
-    """
-    
-    label = label.lower()
-    label = strip_whitespace(label)
-    
-    attributes = self.dictionary.get(label, None)
-    
-    return attributes
+    return attribute_dictionary
 
 
 ################################################################
@@ -852,15 +838,17 @@ def process_display_code(placeholder_storage, markup):
   """
   Process display code.
   
-  <flags>``<id>{<class>}
+  <flags>``{<attribute specification>}
     <CONTENT>
   ``
   
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   Produces
-    <pre id="<id>" class="<class>"><code><CONTENT></code></pre>
+    <pre<ATTRIBUTES>><code><CONTENT></code></pre>
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>,
   with HTML syntax-character escaping
   and de-indentation for <CONTENT>.
   
@@ -880,10 +868,11 @@ def process_display_code(placeholder_storage, markup):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<flags>  [ucwa] *  )
       (?P<backticks>  [`] {{2,}}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}} ?
         ) ?
       \n
@@ -910,11 +899,9 @@ def process_display_code_match(placeholder_storage, match_object):
   enabled_continuations_flag = enabled_all_flags or 'c' in flags
   enabled_whitespace_flag = enabled_all_flags or 'w' in flags
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   content = de_indent(content)
@@ -929,7 +916,7 @@ def process_display_code_match(placeholder_storage, match_object):
     content = process_whitespace(content)
   
   display_code = (
-    f'<pre{id_attribute}{class_attribute}><code>{content}</code></pre>'
+    f'<pre{attributes}><code>{content}</code></pre>'
   )
   display_code = (
     placeholder_storage.create_placeholder_store_markup(display_code)
@@ -1062,15 +1049,17 @@ def process_display_maths(placeholder_storage, markup):
   r"""
   Process display maths.
   
-  <flags>$$<id>{<class>}
+  <flags>$${<attribute specification>}
     <CONTENT>
   $$
   
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   Produces
-    <div id="<id>" class="js-maths <class>"><CONTENT></div>
+    <div<ATTRIBUTES>><CONTENT></div>
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification> with '.js-maths' prepended,
   with HTML syntax-character escaping and de-indentation for <CONTENT>.
   <flags> may consist of zero or more of the following characters:
     w to process whitespace completely
@@ -1091,10 +1080,11 @@ def process_display_maths(placeholder_storage, markup):
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<flags>  [w] *  )
       (?P<dollar_signs>  [$] {{2,}}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}} ?
         ) ?
       \n
@@ -1118,16 +1108,12 @@ def process_display_maths_match(placeholder_storage, match_object):
   flags = match_object.group('flags')
   enabled_whitespace_flag = 'w' in flags
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  if class_ is None:
-    class_ = ''
-  class_ = strip_whitespace(class_)
-  class_attribute = build_html_attribute(
-    placeholder_storage, 'class', f'js-maths {class_}'
-  )
+  attribute_specification = match_object.group('attribute_specification')
+  if attribute_specification is None:
+    attribute_specification = ''
+  attribute_specification = '.js-maths ' + attribute_specification
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   content = de_indent(content)
@@ -1136,7 +1122,7 @@ def process_display_maths_match(placeholder_storage, match_object):
   if enabled_whitespace_flag:
     content = process_whitespace(content)
   
-  display_maths = f'<div{id_attribute}{class_attribute}>{content}</div>'
+  display_maths = f'<div{attributes}>{content}</div>'
   display_maths = (
     placeholder_storage.create_placeholder_store_markup(display_maths)
   )
@@ -1287,15 +1273,15 @@ def process_inclusion_match(placeholder_storage, cmd_name, match_object):
 
 
 ################################################################
-# Regex replacements
+# Regex replacement definitions
 ################################################################
 
 
-def process_regex_replacements(
+def process_regex_replacement_definitions(
   placeholder_storage, regex_replacement_storage, cmd_name, markup
 ):
   """
-  Process regex replacements.
+  Process regex replacement definitions.
   
   <flag>{% <PATTERN> % <REPLACEMENT> %}
   
@@ -1311,12 +1297,13 @@ def process_regex_replacements(
   
   <flag> may consist of zero or one of the following characters,
   and specifies when the regex replacement is to be applied:
-    A for immediately after processing regex replacements
+    A for immediately after processing regex replacement definitions
     p for just before processing preamble
     b for just before processing blocks
     t for just before processing tables
     e for just before processing escapes
     c for just before processing line continuations
+    r for just before processing reference-style definitions
     i for just before processing images
     l for just before processing links
     h for just before processing headings
@@ -1325,10 +1312,10 @@ def process_regex_replacements(
     Z for just before replacing placeholder strings
   If <flag> is empty, it defaults to A.
   
-  All regex replacement specifications are read and stored
-  using the regex replacement storage class.
+  All regex replacement definitions are read and stored
+  using the regex replacement definition storage class.
   If the same pattern is specified more than once for a given flag,
-  the latest specification shall prevail.
+  the latest definition shall prevail.
   
   WARNING:
     Malicious or careless user-defined regex replacements
@@ -1350,7 +1337,7 @@ def process_regex_replacements(
         (?P=percent_signs)
       \}}
     ''',
-    functools.partial(process_regex_replacement_match,
+    functools.partial(process_regex_replacement_definition_match,
       placeholder_storage,
       regex_replacement_storage,
       cmd_name
@@ -1362,7 +1349,7 @@ def process_regex_replacements(
   return markup
 
 
-def process_regex_replacement_match(
+def process_regex_replacement_definition_match(
   placeholder_storage, regex_replacement_storage, cmd_name, match_object
 ):
   """
@@ -1414,15 +1401,15 @@ def process_regex_replacement_match(
 
 
 ################################################################
-# Ordinary replacements
+# Ordinary replacement definitions
 ################################################################
 
 
-def process_ordinary_replacements(
+def process_ordinary_replacement_definitions(
   ordinary_replacement_storage, cmd_name, markup
 ):
   """
-  Process ordinary replacements.
+  Process ordinary replacement definitions.
   
   <flag>{: <PATTERN> : <REPLACEMENT> :}
   
@@ -1433,12 +1420,13 @@ def process_ordinary_replacements(
   
   <flag> may consist of zero or one of the following characters,
   and specifies when the ordinary replacement is to be applied:
-    A for immediately after processing ordinary replacements
+    A for immediately after processing ordinary replacement definitions
     p for just before processing preamble
     b for just before processing blocks
     t for just before processing tables
     e for just before processing escapes
     c for just before processing line continuations
+    r for just before processing reference-style definitions
     i for just before processing images
     l for just before processing links
     h for just before processing headings
@@ -1447,10 +1435,10 @@ def process_ordinary_replacements(
     Z for just before replacing placeholder strings
   If <flag> is empty, it defaults to A.
   
-  All ordinary replacement specifications are read and stored
-  using the ordinary replacement storage class.
+  All ordinary replacement definitions are read and stored
+  using the ordinary replacement definition storage class.
   If the same pattern is specified more than once for a given flag,
-  the latest specification shall prevail.
+  the latest definition shall prevail.
   
   WARNING:
     Malicious or careless user-defined ordinary replacements
@@ -1472,7 +1460,7 @@ def process_ordinary_replacements(
         (?P=colons)
       \}}
     ''',
-    functools.partial(process_ordinary_replacement_match,
+    functools.partial(process_ordinary_replacement_definition_match,
       ordinary_replacement_storage, cmd_name
     ),
     markup,
@@ -1482,7 +1470,7 @@ def process_ordinary_replacements(
   return markup
 
 
-def process_ordinary_replacement_match(
+def process_ordinary_replacement_definition_match(
   ordinary_replacement_storage, cmd_name, match_object
 ):
   """
@@ -1533,18 +1521,19 @@ def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
   
   Produces the HTML preamble,
   i.e. everything from <!DOCTYPE html> through to <body>.
-  <CONTENT> is split into property specifications
+  
+  <CONTENT> is split into property definitions
   according to leading occurrences of %<PROPERTY NAME>,
   where <PROPERTY NAME> may only contain letters, digits, and hyphens.
-  Property specifications end at the next property specification,
+  Property definitions end at the next property definition,
   or at the end of the (preamble) content being split.
-  
-  Each property is then stored using the property storage class
+  Each property definition is then stored
+  using the property definition storage class
   and may be referenced by writing %<PROPERTY NAME>,
   called a property string, anywhere else in the document.
   
   If the same property is specified more than once,
-  the latest specification shall prevail.
+  the latest definition shall prevail.
   
   For <CONTENT> containing two or more consecutive percent signs
   which are not protected by CMD literals,
@@ -1635,7 +1624,7 @@ def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
   return markup
 
 
-DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS = '''
+DEFAULT_ORIGINAL_PROPERTY_DEFINITIONS = '''
   %lang en
   %viewport width=device-width, initial-scale=1
   %title Title
@@ -1674,7 +1663,7 @@ def process_preamble_match(
   """
   Process a single preamble match object.
   
-  (1) The default property specifications
+  (1) The default property definitions
       for original properties are prepended as defaults
       (which will be overwritten by the supplied properties).
   (2) The properties are stored.
@@ -1683,14 +1672,14 @@ def process_preamble_match(
   """
   
   content = match_object.group('content')
-  content = DEFAULT_ORIGINAL_PROPERTY_SPECIFICATIONS + content
+  content = DEFAULT_ORIGINAL_PROPERTY_DEFINITIONS + content
   
-  property_storage.read_specifications_store_markup(content)
+  property_storage.read_definitions_store_markup(content)
   
   # Derived property %html-lang-attribute
   lang = property_storage.get_property_markup('lang')
-  html_lang_attribute = build_html_attribute(
-    placeholder_storage, 'lang', lang
+  html_lang_attribute = build_html_attributes(
+    placeholder_storage, {'lang': lang}
   )
   property_storage.store_property_markup(
     'html-lang-attribute', html_lang_attribute
@@ -1846,12 +1835,15 @@ def process_headings(placeholder_storage, markup):
   """
   Process headings.
   
-  #<id> <CONTENT> #
+  #{<attribute specification>} <CONTENT> #
   
-  The opening hash must be the first
-  non-whitespace character of its line.
+  If <attribute specification> is empty,
+  the curly brackets surrounding it may be omitted.
   
-  Produces <h1 id="<id>"><CONTENT></h1>.
+  Produces <h1<ATTRIBUTES>><CONTENT></h1>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>.
+  
   Whitespace around <CONTENT> is stripped.
   For <h2> to <h6>, use 2 to 6 delimiting hashes respectively.
   For <CONTENT> containing the delimiting number of
@@ -1861,11 +1853,14 @@ def process_headings(placeholder_storage, markup):
   markup = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<hashes>
-        [#] {{1,6}}
-        (?!  [#]  )
-      )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
+      (?P<hashes>  [#] {{1,6}}  )
+        (?:
+          \{{
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
+          \}}
+        ) ?
       [\s] +
         (?P<content>  {ANYTHING_MINIMAL_REGEX}  )
       (?P=hashes)
@@ -1887,13 +1882,14 @@ def process_heading_match(placeholder_storage, match_object):
   level = len(hashes)
   tag_name = f'h{level}'
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   content = strip_whitespace(content)
   
-  heading = f'<{tag_name}{id_attribute}>{content}</{tag_name}>'
+  heading = f'<{tag_name}{attributes}>{content}</{tag_name}>'
   
   return heading
 
@@ -1919,11 +1915,11 @@ def process_blocks(placeholder_storage, markup):
   """
   Process blocks.
   
-  <C><C><C><C><id>{<class>}
+  <C><C><C><C>{<attribute specification>}
     <CONTENT>
   <C><C><C><C>
   
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   The following delimiting characters <C> are used:
@@ -1935,8 +1931,10 @@ def process_blocks(placeholder_storage, markup):
       =  <ul>
       +  <ol>
   Produces the block
-    <<TAG NAME> id="<id>" class="<class>">
-    <CONTENT></<TAG NAME>>.
+    <<TAG NAME><ATTRIBUTES>>
+    <CONTENT></<TAG NAME>>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>.
   For <CONTENT> containing four or more
   consecutive delimiting characters
   which are not protected by CMD literals,
@@ -1955,10 +1953,11 @@ def process_blocks(placeholder_storage, markup):
         (?P<delimiter_character>  {BLOCK_DELIMITER_CHARACTER_REGEX}  )
         (?P=delimiter_character) {{3,}}
       )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}} ?
         ) ?
       \n
@@ -1985,11 +1984,9 @@ def process_block_match(placeholder_storage, match_object):
   )
   block_is_list = tag_name in LIST_TAG_NAMES
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   
@@ -2000,7 +1997,7 @@ def process_block_match(placeholder_storage, match_object):
     content = process_list_items(placeholder_storage, content)
   
   block = (
-    f'<{tag_name}{id_attribute}{class_attribute}>\n{content}</{tag_name}>'
+    f'<{tag_name}{attributes}>\n{content}</{tag_name}>'
   )
   
   return block
@@ -2014,7 +2011,7 @@ def process_list_items(placeholder_storage, content):
   Process list items.
   
   Content is split into list items <li>
-  according to leading occurrences of <Y><id>{<class>},
+  according to leading occurrences of <Y>{<attribute specification>},
   with the following delimiters <Y>:
     *
     +
@@ -2022,7 +2019,7 @@ def process_list_items(placeholder_storage, content):
     1. (or any run of digits followed by a full stop)
   List items end at the next list item,
   or at the end of the content being split.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   """
   
@@ -2030,10 +2027,11 @@ def process_list_items(placeholder_storage, content):
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       {LIST_ITEM_DELIMITER_REGEX}
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
       [\s] +
@@ -2058,17 +2056,15 @@ def process_list_item_match(placeholder_storage, match_object):
   Process a single list-item match object.
   """
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   list_item_content = match_object.group('list_item_content')
   list_item_content = strip_whitespace(list_item_content)
   
   list_item = f'''
-    <li{id_attribute}{class_attribute}>{list_item_content}
+    <li{attributes}>{list_item_content}
     </li>
   '''
   
@@ -2102,16 +2098,18 @@ def process_tables(placeholder_storage, markup):
   """
   Process tables.
   
-  ''''<id>{<class>}
+  ''''{<attribute specification>}
     <CONTENT>
   ''''
   
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   Produces the table
-    <table id="<id>" class="<class>"> 
-    <CONTENT></table>.
+    <table<ATTRIBUTES>>
+    <CONTENT></table>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>.
   For <CONTENT> containing four or more consecutive apostrophes
   which are not protected by CMD literals,
   use a longer run of apostrophes in the delimiters.
@@ -2131,10 +2129,11 @@ def process_tables(placeholder_storage, markup):
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<apostrophes>  ['] {{4,}}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}} ?
         ) ?
       \n
@@ -2155,11 +2154,9 @@ def process_table_match(placeholder_storage, match_object):
   Process a single table match object.
   """
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   
@@ -2170,7 +2167,7 @@ def process_table_match(placeholder_storage, match_object):
   content = process_table_rows(placeholder_storage, content)
   content = process_table_parts(placeholder_storage, content)
   
-  table = f'<table{id_attribute}{class_attribute}>\n{content}</table>'
+  table = f'<table{attributes}>\n{content}</table>'
   
   return table
 
@@ -2180,39 +2177,26 @@ def process_table_cells(placeholder_storage, content):
   Process table cells.
   
   Content is split into table cells <th>, <td> according to
-  leading occurrences of <Z><id>{<class>}[<rowspan>,<colspan>],
+  leading occurrences of <Z>{<attribute specification>},
   with the following delimiters <Z>:
     ;  <th>
     ,  <td>
   Table cells end at the next table cell, table row, or table part,
   or at the end of the content being split.
-  Non-empty <rowspan> and <colspan> must consist of digits only.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
-  If <colspan> is empty, the comma before it may be omitted.
-  If both <rowspan> and <colspan> are empty,
-  the comma between them and the square brackets surrounding them
-  may be omitted.
   """
   
   content = re.sub(
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<delimiter>  {TABLE_CELL_DELIMITER_REGEX}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
-        ) ?
-        (?:
-          \[
-            (?P<rowspan>  [0-9] *?  )
-            (?:
-              [,]
-              (?P<colspan>  [0-9] *?  )
-            ) ?
-          \]
         ) ?
       (?:
         {HORIZONTAL_WHITESPACE_CHARACTER_REGEX} +
@@ -2249,28 +2233,12 @@ def process_table_cell_match(placeholder_storage, match_object):
   delimiter = match_object.group('delimiter')
   tag_name = TABLE_CELL_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
-  
-  rowspan = match_object.group('rowspan')
-  rowspan_attribute = (
-    build_html_attribute(placeholder_storage, 'rowspan', rowspan)
-  )
-  
-  colspan = match_object.group('colspan')
-  colspan_attribute = (
-    build_html_attribute(placeholder_storage, 'colspan', colspan)
-  )
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   table_cell_content = match_object.group('table_cell_content')
   table_cell_content = strip_whitespace(table_cell_content)
-  
-  attributes = (
-    id_attribute + class_attribute + rowspan_attribute + colspan_attribute
-  )
   
   table_cell = f'<{tag_name}{attributes}>{table_cell_content}</{tag_name}>\n'
   
@@ -2282,10 +2250,10 @@ def process_table_rows(placeholder_storage, content):
   Process table rows.
   
   Content is split into table rows <tr>
-  according to leading occurrences of ==<id>{<class>}.
+  according to leading occurrences of =={<attribute specification>}.
   Table rows end at the next table row or table part,
   or at the end of the content being split.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   """
   
@@ -2293,10 +2261,11 @@ def process_table_rows(placeholder_storage, content):
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       {TABLE_ROW_DELIMITER_REGEX}
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
       (?:
@@ -2329,17 +2298,15 @@ def process_table_row_match(placeholder_storage, match_object):
   Process a single table-row match object.
   """
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   table_row_content = match_object.group('table_row_content')
   table_row_content = strip_whitespace(table_row_content)
   
   table_row = f'''
-    <tr{id_attribute}{class_attribute}>
+    <tr{attributes}>
       {table_row_content}
     </tr>
   '''
@@ -2352,14 +2319,14 @@ def process_table_parts(placeholder_storage, content):
   Process table parts.
   
   Content is split into table parts <thead>, <tbody>, <tfoot>
-  according to leading occurrences of <Y><id>{<class>},
+  according to leading occurrences of <Y>{<attribute specification>},
   with the following delimiters <Y>:
     |^  <thead>
     |~  <tbody>
     |_  <tfoot>
   Table parts end at the next table part,
   or at the end of the content being split.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   """
   
@@ -2367,10 +2334,11 @@ def process_table_parts(placeholder_storage, content):
     fr'''
       {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
       (?P<delimiter>  {TABLE_PART_DELIMITER_REGEX}  )
-        (?P<id_>  {NOT_WHITESPACE_MINIMAL_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
       (?:
@@ -2402,17 +2370,15 @@ def process_table_part_match(placeholder_storage, match_object):
   delimiter = match_object.group('delimiter')
   tag_name = TABLE_PART_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
-  id_ = match_object.group('id_')
-  id_attribute = build_html_attribute(placeholder_storage, 'id', id_)
-  
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   table_part_content = match_object.group('table_part_content')
   table_part_content = strip_whitespace(table_part_content)
   
   table_part = f'''
-    <{tag_name}{id_attribute}{class_attribute}>
+    <{tag_name}{attributes}>
       {table_part_content}
     </{tag_name}>
   '''
@@ -2528,71 +2494,137 @@ def process_line_continuations(markup):
 
 
 ################################################################
+# Reference-style definitions
+################################################################
+
+
+def process_reference_definitions(
+  placeholder_storage, reference_storage, markup
+):
+  """
+  Process reference-style definitions.
+  
+  @[<LABEL>]{<attribute specification>} <address> <title> @
+  
+  If <attribute specification> is empty,
+  the curly brackets surrounding it may be omitted.
+  
+  The referencing <LABEL> is case insensitive.
+  For definitions whose <address> or <title>
+  contains one or more consecutive at signs
+  which are not protected by CMD literals,
+  use a longer run of at signs in the delimiters.
+  
+  <address> is used for <src> in images and <href> in links.
+  
+  All reference-style definitions are read and stored
+  using the reference-style definition storage class.
+  If the same label (which is case insensitive)
+  is specified more than once,
+  the latest definition shall prevail.
+  """
+  
+  markup = re.sub(
+    fr'''
+      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
+      (?P<at_signs>  [@] +  )
+      \[
+        (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
+      \]
+        (?:
+          \{{
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
+          \}}
+        ) ?
+      (?:
+        [\s] *
+        (?P<address>  {ANYTHING_MINIMAL_REGEX}  )
+        (?:
+          [\s] +?
+          (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
+        ) ??
+      ) ??
+      (?P=at_signs)
+    ''',
+    functools.partial(process_reference_definition_match,
+      placeholder_storage,
+      reference_storage
+    ),
+    markup,
+    flags=REGEX_FLAGS
+  )
+  
+  return markup
+
+
+def process_reference_definition_match(
+  placeholder_storage, reference_storage, match_object
+):
+  """
+  Process a single reference-style definition match object.
+  """
+  
+  label = match_object.group('label')
+  attribute_specification = match_object.group('attribute_specification')
+  address = match_object.group('address')
+  title = match_object.group('title')
+  
+  reference_storage.store_definition_attribute_dictionary(
+    placeholder_storage, label, attribute_specification, address, title
+  )
+  
+  return ''
+
+
+################################################################
 # Images
 ################################################################
 
 
-def process_images(placeholder_storage, image_definition_storage, markup):
+def process_images(placeholder_storage, reference_storage, markup):
   """
   Process images.
   
   ## Inline-style ##
   
-  IMAGE:
-    ![<ALT>](<src> <title>)
+  ![<ALT>](<src> <title>)
   
   Unlike John Gruber's markdown, <title> is not surrounded by quotes.
   If quotes are supplied to <title>,
   they are automatically escaped as &quot;.
   
-  Produces the image
-  <img alt="<ALT>" src="<src>" title="<title>">.
+  Produces the image <img<ATTRIBUTES>>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <ALT>, <src>, and <title>.
   
   For <ALT>, <src>, or <title> containing
   one or more closing square or round brackets, use CMD literals.
   
   ## Reference-style ##
   
-  DEFINITION:
-    @@![<LABEL>]{<class>}[<width>]
-      <src> <title>
-    @@
-  IMAGE:
-    ![<ALT>][<label>]
+  ![<ALT>][<label>]
   
-  A single space may be included
-  between [<ALT>] and [<label>] in an image.
-  The referencing strings <LABEL> and <label> are case insensitive
-  (this is handled by the image definition storage class).
-  Non-empty <width> in a definition must consist of digits only.
-  If <class> in a definition is empty,
-  the curly brackets surrounding it may be omitted.
-  If <width> in a definition is empty,
-  the square brackets surrounding it may be omitted.
-  If <label> in an image is empty,
+  A single space may be included between [<ALT>] and [<label>].
+  The referencing <label> is case insensitive
+  (this is handled by the reference-style definition storage class).
+  
+  If <label> is empty,
   the square brackets surrounding it may be omitted,
-  and <ALT> is used as the label for that image.
+  and <ALT> is used as the label.
   
-  Produces the image <img alt="alt"<ATTRIBUTES>>,
+  Produces the image <img<ATTRIBUTES>>,
   where <ATTRIBUTES> is the sequence of attributes
-  built from <class>, <width>, <src>, and <title>.
+  built from <ALT> and the attribute specifications
+  for the corresponding reference-style image definition.
   
   Whitespace around <label> is stripped.
-  For definitions whose <label>, <class>, <src>, or <title>
-  contains two or more consecutive at signs
-  which are not protected by CMD literals,
-  use a longer run of at signs in the delimiters.
   For images whose <ALT> or <label> contains
   one or more closing square brackets, use CMD literals.
-  
-  All (reference-style) image definitions are read and stored
-  using the image definition storage class.
-  If the same label (which is case insensitive)
-  is specified more than once,
-  the latest specification shall prevail.
   """
   
-  # Inline-style images
+  # Inline-style
   markup = re.sub(
     fr'''
       !
@@ -2613,46 +2645,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     flags=REGEX_FLAGS
   )
   
-  # Reference-style image definitions
-  markup = re.sub(
-    fr'''
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<at_signs>  [@] {{2,}})
-        !
-        \[
-          (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-        \]
-        (?:
-          \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
-          \}} ?
-        ) ?
-        (?:
-          \[
-            (?P<width>  [0-9] *  )
-          \] ?
-        ) ?
-      \n
-        (?:
-          [\s] *
-          (?P<src>  {ANYTHING_MINIMAL_REGEX}  )
-          (?:
-            [\s] +?
-            (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
-          ) ??
-        ) ??
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P=at_signs)
-    ''',
-    functools.partial(process_image_definition_match,
-      placeholder_storage,
-      image_definition_storage
-    ),
-    markup,
-    flags=REGEX_FLAGS
-  )
-  
-  # Reference-style images
+  # Reference-style
   markup = re.sub(
     fr'''
       !
@@ -2668,7 +2661,7 @@ def process_images(placeholder_storage, image_definition_storage, markup):
     ''',
     functools.partial(process_reference_image_match,
       placeholder_storage,
-      image_definition_storage
+      reference_storage
     ),
     markup,
     flags=REGEX_FLAGS
@@ -2683,62 +2676,61 @@ def process_inline_image_match(placeholder_storage, match_object):
   """
   
   alt = match_object.group('alt')
-  alt_attribute = build_html_attribute(placeholder_storage, 'alt', alt)
-  
   src = match_object.group('src')
-  src_attribute = build_html_attribute(placeholder_storage, 'src', src)
-  
   title = match_object.group('title')
-  title_attribute = build_html_attribute(placeholder_storage, 'title', title)
   
-  image = f'<img{alt_attribute}{src_attribute}{title_attribute}>'
+  attribute_dictionary = {
+    'alt': alt,
+    'src': src,
+    'title': title,
+  }
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
+  
+  image = f'<img{attributes}>'
   
   return image
 
 
-def process_image_definition_match(
-  placeholder_storage, image_definition_storage, match_object
-):
-  """
-  Process a single image-definition match object.
-  """
-  
-  label = match_object.group('label')
-  class_ = match_object.group('class_')
-  src = match_object.group('src')
-  title = match_object.group('title')
-  width = match_object.group('width')
-  
-  image_definition_storage.store_definition_attributes(
-    placeholder_storage, label, class_, src, title, width
-  )
-  
-  return ''
-
-
 def process_reference_image_match(
-  placeholder_storage, image_definition_storage, match_object
+  placeholder_storage, reference_storage, match_object
 ):
   """
   Process a single reference-style-image match object.
   
   If no image is defined for the given label,
-  returned the entire string for the matched object as is.
+  return the entire string for the matched object as is.
+  
+  <address> specified in the definition is used for <src>.
+  <title> is moved to last in the sequence of attributes.
   """
   
   alt = match_object.group('alt')
-  alt_attribute = build_html_attribute(placeholder_storage, 'alt', alt)
   
   label = match_object.group('label')
   if label is None or strip_whitespace(label) == '':
     label = alt
   
-  attributes = image_definition_storage.get_definition_attributes(label)
-  if attributes is None:
+  definition_attribute_dictionary = (
+    reference_storage.get_definition_attribute_dictionary(label)
+  )
+  if definition_attribute_dictionary is None:
     match_string = match_object.group()
     return match_string
   
-  image = f'<img{alt_attribute}{attributes}>'
+  match_attribute_dictionary = {
+    'alt': alt,
+  }
+  
+  attribute_dictionary = {
+    **match_attribute_dictionary,
+    **definition_attribute_dictionary,
+  }
+  
+  attribute_dictionary['src'] = attribute_dictionary.pop('address')
+  attribute_dictionary['title'] = attribute_dictionary.pop('title')
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
+  
+  image = f'<img{attributes}>'
   
   return image
 
@@ -2748,21 +2740,21 @@ def process_reference_image_match(
 ################################################################
 
 
-def process_links(placeholder_storage, link_definition_storage, markup):
+def process_links(placeholder_storage, reference_storage, markup):
   """
   Process links.
   
   ## Inline-style ##
   
-  LINK:
-    [<CONTENT>](<href> <title>)
+  [<CONTENT>](<href> <title>)
   
   Unlike John Gruber's markdown, <title> is not surrounded by quotes.
   If quotes are supplied to <title>,
   they are automatically escaped as &quot;.
   
-  Produces the link
-  <a href="<href>" title="<title>"><CONTENT></a>.
+  Produces the link <a<ATTRIBUTES>><CONTENT></a>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <href> and <title>.
   
   Whitespace around <CONTENT> is stripped.
   For <CONTENT>, <href>, or <title> containing
@@ -2770,43 +2762,27 @@ def process_links(placeholder_storage, link_definition_storage, markup):
   
   ## Reference-style ##
   
-  DEFINITION:
-    @@[<LABEL>]{<class>}
-      <href> <title>
-    @@
-  LINK:
-    [<CONTENT>][<label>]
+  [<CONTENT>][<label>]
   
-  A single space may be included
-  between [<CONTENT>] and [<label>] in a link.
-  The referencing strings <LABEL> and <label> are case insensitive
-  (this is handled by the link definition storage class).
-  If <class> in a definition is empty,
-  the curly brackets surrounding it may be omitted.
-  If <label> in a link is empty,
+  A single space may be included between [<CONTENT>] and [<label>].
+  The referencing <label> is case insensitive
+  (this is handled by the reference-style definition storage class).
+  
+  If <label> is empty,
   the square brackets surrounding it may be omitted,
-  and <content> is used as the label for that link.
+  and <CONTENT> is used as the label.
   
   Produces the link <a<ATTRIBUTES>><CONTENT></a>,
   where <ATTRIBUTES> is the sequence of attributes
-  built from <class>, <href>, and <title>.
+  built from the attribute specifications
+  for the corresponding reference-style link definition.
   
   Whitespace around <CONTENT> and <label> is stripped.
-  For definitions whose <label>, <class>, <href>, or <title>
-  contains two or more consecutive at signs
-  which are not protected by CMD literals,
-  use a longer run of at signs in the delimiters.
   For links whose <CONTENT> or <label> contains
   one or more closing square brackets, use CMD literals.
-  
-  All (reference-style) link definitions are read and stored
-  using the link definition storage class.
-  If the same label (which is case insensitive)
-  is specified more than once,
-  the latest specification shall prevail.
   """
   
-  # Inline-style links
+  # Inline-style
   markup = re.sub(
     fr'''
       \[
@@ -2826,39 +2802,6 @@ def process_links(placeholder_storage, link_definition_storage, markup):
     flags=REGEX_FLAGS
   )
   
-  # Reference-style link definitions
-  markup = re.sub(
-    fr'''
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P<at_signs>  [@] {{2,}})
-        \[
-          (?P<label>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
-        \]
-        (?:
-          \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
-          \}} ?
-        ) ?
-      \n
-        (?:
-          [\s] *
-          (?P<href>  {ANYTHING_MINIMAL_REGEX}  )
-          (?:
-            [\s] +?
-            (?P<title>  {ANYTHING_MINIMAL_REGEX}  )
-          ) ??
-        ) ??
-      {LEADING_HORIZONTAL_WHITESPACE_MAXIMAL_REGEX}
-      (?P=at_signs)
-    ''',
-    functools.partial(process_link_definition_match,
-      placeholder_storage,
-      link_definition_storage
-    ),
-    markup,
-    flags=REGEX_FLAGS
-  )
-  
   # Reference-style links
   markup = re.sub(
     fr'''
@@ -2872,7 +2815,10 @@ def process_links(placeholder_storage, link_definition_storage, markup):
         \]
       ) ?
     ''',
-    functools.partial(process_reference_link_match, link_definition_storage),
+    functools.partial(process_reference_link_match,
+      placeholder_storage,
+      reference_storage
+    ),
     markup,
     flags=REGEX_FLAGS
   )
@@ -2889,41 +2835,30 @@ def process_inline_link_match(placeholder_storage, match_object):
   content = strip_whitespace(content)
   
   href = match_object.group('href')
-  href_attribute = build_html_attribute(placeholder_storage, 'href', href)
-  
   title = match_object.group('title')
-  title_attribute = build_html_attribute(placeholder_storage, 'title', title)
   
-  link = f'<a{href_attribute}{title_attribute}>{content}</a>'
+  attribute_dictionary = {
+    'href': href,
+    'title': title,
+  }
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
+  
+  link = f'<a{attributes}>{content}</a>'
   
   return link
 
 
-def process_link_definition_match(
-  placeholder_storage, link_definition_storage, match_object
+def process_reference_link_match(
+  placeholder_storage, reference_storage, match_object
 ):
-  """
-  Process a single link-definition match object.
-  """
-  
-  label = match_object.group('label')
-  class_ = match_object.group('class_')
-  href = match_object.group('href')
-  title = match_object.group('title')
-  
-  link_definition_storage.store_definition_attributes(
-    placeholder_storage, label, class_, href, title
-  )
-  
-  return ''
-
-
-def process_reference_link_match(link_definition_storage, match_object):
   """
   Process a single reference-style-link match object.
   
   If no link is defined for the given label,
-  returned the entire string for the matched object as is.
+  return the entire string for the matched object as is.
+  
+  <address> specified in the definition is used for <href>.
+  <title> is moved to last in the sequence of attributes.
   """
   
   content = match_object.group('content')
@@ -2933,10 +2868,18 @@ def process_reference_link_match(link_definition_storage, match_object):
   if label is None or strip_whitespace(label) == '':
     label = content
   
-  attributes = link_definition_storage.get_definition_attributes(label)
-  if attributes is None:
+  definition_attribute_dictionary = (
+    reference_storage.get_definition_attribute_dictionary(label)
+  )
+  if definition_attribute_dictionary is None:
     match_string = match_object.group()
     return match_string
+  
+  attribute_dictionary = definition_attribute_dictionary
+  
+  attribute_dictionary['href'] = attribute_dictionary.pop('address')
+  attribute_dictionary['title'] = attribute_dictionary.pop('title')
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   link = f'<a{attributes}>{content}</a>'
   
@@ -2961,10 +2904,10 @@ def process_inline_semantics(placeholder_storage, markup):
   r"""
   Process inline semantics.
   
-  <X>{<class>} <CONTENT> <X>
+  <X>{<attribute specification>} <CONTENT> <X>
   
   <CONTENT> must be non-empty.
-  If <class> is empty,
+  If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
   The following delimiters <X>, equal to one or two
@@ -2975,7 +2918,10 @@ def process_inline_semantics(placeholder_storage, markup):
     __  <b>
   
   Produces the inline semantic
-  <<TAG NAME> class="<class>"><CONTENT></<TAG NAME>>.
+  <<TAG NAME><ATTRIBUTES>><CONTENT></<TAG NAME>>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <attribute specification>.
+  
   Whitespace around <CONTENT> is stripped.
   For <CONTENT> containing one or more occurrences of * or _,
   use CMD literals or \* and \_.
@@ -2983,21 +2929,22 @@ def process_inline_semantics(placeholder_storage, markup):
   Separate patterns are required
   for the following groupings of delimiting characters <C>
   so that the processing is performed in this order
-  (for brevity, C is used in place of <C> below):
-    33    CCC{<inner class>} <INNER CONTENT> CCC
-    312   CCC{<inner class>} <INNER CONTENT> C <OUTER CONTENT> CC
-    321   CCC{<inner class>} <INNER CONTENT> CC <OUTER CONTENT> C
-    22    CC{<class>} <CONTENT> CC
-    11    C{<class>} <CONTENT> C
+  (for brevity, C is used in place of <C>,
+  and 'spec' in place of 'attribute specification', below):
+    33    CCC{<inner spec>} <INNER CONTENT> CCC
+    312   CCC{<inner spec>} <INNER CONTENT> C <OUTER CONTENT> CC
+    321   CCC{<inner spec>} <INNER CONTENT> CC <OUTER CONTENT> C
+    22    CC{<spec>} <CONTENT> CC
+    11    C{<spec>} <CONTENT> C
   33 is effectively 312 with empty <OUTER CONTENT>.
   However, once such a pattern has been matched,
   only three cases need to be handled for the resulting match object:
     2-layer special (for 33)
-      <X><Y>{<inner class>} <INNER CONTENT> <Y><X>
+      <X><Y>{<inner spec>} <INNER CONTENT> <Y><X>
     2-layer general (for 312, 321):
-      <X><Y>{<inner class>} <INNER CONTENT> <Y> <OUTER CONTENT> <X>
+      <X><Y>{<inner spec>} <INNER CONTENT> <Y> <OUTER CONTENT> <X>
     1-layer (for 22, 11):
-      <X>{<class>} <CONTENT> <X>
+      <X>{<spec>} <CONTENT> <X>
   
   Recursive calls are used to process nested inline semantics.
   """
@@ -3013,7 +2960,9 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (?:
           \{{
-            (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<inner_attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<inner_content>
@@ -3042,7 +2991,9 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (?:
           \{{
-            (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<inner_attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<inner_content>
@@ -3078,7 +3029,9 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (?:
           \{{
-            (?P<inner_class>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<inner_attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<inner_content>
@@ -3114,7 +3067,9 @@ def process_inline_semantics(placeholder_storage, markup):
       )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<content>  {NON_EMPTY_MINIMAL_REGEX}  )
@@ -3133,7 +3088,9 @@ def process_inline_semantics(placeholder_storage, markup):
       (?P<delimiter>  {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}  )
         (?:
           \{{
-            (?P<class_>  {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}  )
+            (?P<attribute_specification>
+              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+            )
           \}}
         ) ?
         (?P<content>  {NON_EMPTY_MINIMAL_REGEX}  )
@@ -3156,9 +3113,14 @@ def process_inline_semantic_match_2_layer_special(
   Process a single 2-layer special inline-semantic match object.
   """
   
-  inner_class = match_object.group('inner_class')
-  inner_class_attribute = build_html_attribute(
-    placeholder_storage, 'class', inner_class
+  inner_attribute_specification = match_object.group(
+    'inner_attribute_specification'
+  )
+  inner_attribute_dictionary = parse_attribute_specification(
+    inner_attribute_specification
+  )
+  inner_attributes = build_html_attributes(
+    placeholder_storage, inner_attribute_dictionary
   )
   
   inner_content = match_object.group('inner_content')
@@ -3181,7 +3143,7 @@ def process_inline_semantic_match_2_layer_special(
   
   inline_semantic = (
     f'<{outer_tag_name}>'
-      f'<{inner_tag_name}{inner_class_attribute}>'
+      f'<{inner_tag_name}{inner_attributes}>'
         f'{inner_content}'
       f'</{inner_tag_name}>'
     f'</{outer_tag_name}>'
@@ -3197,9 +3159,14 @@ def process_inline_semantic_match_2_layer_general(
   Process a single 2-layer general inline-semantic match object.
   """
   
-  inner_class = match_object.group('inner_class')
-  inner_class_attribute = build_html_attribute(
-    placeholder_storage, 'class', inner_class
+  inner_attribute_specification = match_object.group(
+    'inner_attribute_specification'
+  )
+  inner_attribute_dictionary = parse_attribute_specification(
+    inner_attribute_specification
+  )
+  inner_attributes = build_html_attributes(
+    placeholder_storage, inner_attribute_dictionary
   )
   
   inner_content = match_object.group('inner_content')
@@ -3226,7 +3193,7 @@ def process_inline_semantic_match_2_layer_general(
   
   inline_semantic = (
     f'<{outer_tag_name}>'
-      f'<{inner_tag_name}{inner_class_attribute}>'
+      f'<{inner_tag_name}{inner_attributes}>'
         f'{inner_content}'
       f'</{inner_tag_name}>'
       f'{outer_content}'
@@ -3244,8 +3211,9 @@ def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
   delimiter = match_object.group('delimiter')
   tag_name = INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
   
-  class_ = match_object.group('class_')
-  class_attribute = build_html_attribute(placeholder_storage, 'class', class_)
+  attribute_specification = match_object.group('attribute_specification')
+  attribute_dictionary = parse_attribute_specification(attribute_specification)
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   content = match_object.group('content')
   content = strip_whitespace(content)
@@ -3253,7 +3221,7 @@ def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
   # Process nested inline semantics
   content = process_inline_semantics(placeholder_storage, content)
   
-  inline_semantic = f'<{tag_name}{class_attribute}>{content}</{tag_name}>'
+  inline_semantic = f'<{tag_name}{attributes}>{content}</{tag_name}>'
   
   return inline_semantic
 
@@ -3347,17 +3315,17 @@ def cmd_to_html(cmd, cmd_name):
   markup = process_inline_maths(placeholder_storage, markup)
   markup = process_inclusions(placeholder_storage, cmd_name, markup)
   
-  # Process regex replacements
+  # Process regex replacement definitions
   regex_replacement_storage = RegexReplacementStorage()
-  markup = process_regex_replacements(
+  markup = process_regex_replacement_definitions(
     placeholder_storage, regex_replacement_storage, cmd_name,
     markup
   )
   markup = regex_replacement_storage.replace_patterns('A', markup)
   
-  # Process ordinary replacements
+  # Process ordinary replacement definitions
   ordinary_replacement_storage = OrdinaryReplacementStorage()
-  markup = process_ordinary_replacements(
+  markup = process_ordinary_replacement_definitions(
     ordinary_replacement_storage, cmd_name,
     markup
   )
@@ -3392,19 +3360,23 @@ def cmd_to_html(cmd, cmd_name):
   markup = ordinary_replacement_storage.replace_patterns('c', markup)
   markup = process_line_continuations(markup)
   
+  # Process reference-style definitions
+  markup = regex_replacement_storage.replace_patterns('r', markup)
+  markup = ordinary_replacement_storage.replace_patterns('r', markup)
+  reference_storage = ReferenceStorage()
+  markup = process_reference_definitions(
+    placeholder_storage, reference_storage, markup
+  )
+  
   # Process images
   markup = regex_replacement_storage.replace_patterns('i', markup)
   markup = ordinary_replacement_storage.replace_patterns('i', markup)
-  image_definition_storage = ImageDefinitionStorage()
-  markup = process_images(
-    placeholder_storage, image_definition_storage, markup
-  )
+  markup = process_images(placeholder_storage, reference_storage, markup)
   
   # Process links
   markup = regex_replacement_storage.replace_patterns('l', markup)
   markup = ordinary_replacement_storage.replace_patterns('l', markup)
-  link_definition_storage = LinkDefinitionStorage()
-  markup = process_links(placeholder_storage, link_definition_storage, markup)
+  markup = process_links(placeholder_storage, reference_storage, markup)
   
   # Process headings
   markup = regex_replacement_storage.replace_patterns('h', markup)
