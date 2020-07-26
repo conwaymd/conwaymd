@@ -1572,6 +1572,7 @@ def process_preamble(placeholder_storage, property_storage, cmd_name, markup):
     %year-modified
     %year-modified-next
     %footer-element
+    %cmd-name
     %url
     %clean-url
   In particular, the year properties are taken
@@ -1808,6 +1809,11 @@ def process_preamble_match(
   '''
   property_storage.store_property_markup(
     'footer-element', footer_element
+  )
+  
+  # Derived property %cmd-name
+  property_storage.store_property_markup(
+    'cmd-name', cmd_name
   )
   
   # Derived property %url
