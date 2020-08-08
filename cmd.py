@@ -2910,14 +2910,16 @@ def process_inline_semantics(placeholder_storage, markup):
   r"""
   Process inline semantics.
   
-  <X>{<attribute specification>} <CONTENT> <X>
+  <X>{<attribute specification>} <CONTENT><X>
   
   <CONTENT> must be non-empty.
+  The opening delimiter <X> must not be followed by whitespace
+  or by </ (which would presumably be a closing tag).
+  The closing delimiter <X> must not be preceded by whitespace.
   If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
-  The following delimiters <X>, equal to one or two
-  delimiting characters <C>, are used:
+  The following delimiters <X> are used:
     *   <em>
     **  <strong>
     _   <i>
@@ -2932,145 +2934,52 @@ def process_inline_semantics(placeholder_storage, markup):
   For <CONTENT> containing one or more occurrences of * or _,
   use CMD literals or \* and \_.
   
-  Separate patterns are required
-  for the following groupings of delimiting characters <C>
-  so that the processing is performed in this order
-  (for brevity, C is used in place of <C>,
-  and 'spec' in place of 'attribute specification', below):
-    33    CCC{<inner spec>} <INNER CONTENT> CCC
-    312   CCC{<inner spec>} <INNER CONTENT> C <OUTER CONTENT> CC
-    321   CCC{<inner spec>} <INNER CONTENT> CC <OUTER CONTENT> C
-    22    CC{<spec>} <CONTENT> CC
-    11    C{<spec>} <CONTENT> C
-  33 is effectively 312 with empty <OUTER CONTENT>.
-  However, once such a pattern has been matched,
-  only three cases need to be handled for the resulting match object:
-    2-layer special (for 33)
-      <X><Y>{<inner spec>} <INNER CONTENT> <Y><X>
-    2-layer general (for 312, 321):
-      <X><Y>{<inner spec>} <INNER CONTENT> <Y> <OUTER CONTENT> <X>
-    1-layer (for 22, 11):
-      <X>{<spec>} <CONTENT> <X>
+  Multiple passes are used to process nested inline semantics
+  with the same delimiting character
+  (with <CONTENT> only matched during each pass
+  if it does not contain the delimiting character).
+  Delimiter matching is inner-greedy,
+  so ***blah*** produces
+    <em><strong>blah</strong></em>
+  rather than
+    <strong><em>blah</em></strong>.
+  For the latter, use an empty attribute specification
+  for the outer delimiter, i.e. **{} *blah***.
   
-  Recursive calls are used to process nested inline semantics.
+  Recursive calls are used to process nested inline semantics
+  with a different delimiting character.
   """
   
-  # 33
+  markup_has_changed = True
+  
+  while markup_has_changed:
+    
+    new_markup = process_inline_semantics_single_pass(
+      placeholder_storage, markup
+    )
+    
+    if new_markup == markup:
+      markup_has_changed = False
+    
+    markup = new_markup
+  
+  return markup
+
+
+def process_inline_semantics_single_pass(placeholder_storage, markup):
+  """
+  Process inline semantics single pass.
+  """
+  
   markup = re.sub(
     fr'''
       (?P<delimiter>
         (?P<delimiter_character>
           {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
         )
-        (?P=delimiter_character) {{2}}
+        (?P=delimiter_character) ?
       )
-        (?:
-          \{{
-            (?P<inner_attribute_specification>
-              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
-            )
-          \}}
-        ) ?
-        (?P<inner_content>
-          (?:
-            (?!  (?P=delimiter_character)  )
-            {ANY_CHARACTER_REGEX}
-          ) +?
-        )
-      (?P=delimiter)
-    ''',
-    functools.partial(process_inline_semantic_match_2_layer_special,
-      placeholder_storage
-    ),
-    markup,
-    flags=REGEX_FLAGS
-  )
-  
-  # 312
-  markup = re.sub(
-    fr'''
-      (?:
-        (?P<delimiter_character>
-          {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
-        )
-        (?P=delimiter_character) {{2}}
-      )
-        (?:
-          \{{
-            (?P<inner_attribute_specification>
-              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
-            )
-          \}}
-        ) ?
-        (?P<inner_content>
-          (?:
-            (?!  (?P=delimiter_character)  )
-            {ANY_CHARACTER_REGEX}
-          ) +?
-        )
-      (?P<inner_delimiter>  (?P=delimiter_character) {{1}}  )
-        (?P<outer_content>
-          (?:
-            (?!  (?P=delimiter_character)  )
-            {ANY_CHARACTER_REGEX}
-          ) +?
-        )
-      (?P<outer_delimiter>  (?P=delimiter_character) {{2}}  )
-    ''',
-    functools.partial(process_inline_semantic_match_2_layer_general,
-      placeholder_storage
-    ),
-    markup,
-    flags=REGEX_FLAGS
-  )
-  
-  # 321
-  markup = re.sub(
-    fr'''
-      (?:
-        (?P<delimiter_character>
-          {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
-        )
-        (?P=delimiter_character) {{2}}
-      )
-        (?:
-          \{{
-            (?P<inner_attribute_specification>
-              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
-            )
-          \}}
-        ) ?
-        (?P<inner_content>
-          (?:
-            (?!  (?P=delimiter_character)  )
-            {ANY_CHARACTER_REGEX}
-          ) +?
-        )
-      (?P<inner_delimiter>  (?P=delimiter_character) {{2}}  )
-        (?P<outer_content>
-          (?:
-            (?!  (?P=delimiter_character)  )
-            {ANY_CHARACTER_REGEX}
-          ) +?
-        )
-      (?P<outer_delimiter>  (?P=delimiter_character) {{1}}  )
-    ''',
-    functools.partial(process_inline_semantic_match_2_layer_general,
-      placeholder_storage
-    ),
-    markup,
-    flags=REGEX_FLAGS
-  )
-  
-  # 22
-  markup = re.sub(
-    fr'''
-      (?P<delimiter>
-        (?P<delimiter_character>
-          {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
-        )
-        (?P=delimiter_character)
-      )
+      (?! [\s] | [<][/] )
         (?:
           \{{
             (?P<attribute_specification>
@@ -3078,31 +2987,16 @@ def process_inline_semantics(placeholder_storage, markup):
             )
           \}}
         ) ?
-        (?P<content>  {NON_EMPTY_MINIMAL_REGEX}  )
+        (?P<content>
+          (?:
+            (?!  (?P=delimiter_character)  )
+            {ANY_CHARACTER_REGEX}
+          ) +?
+        )
+      (?<! [\s] )
       (?P=delimiter)
     ''',
-    functools.partial(process_inline_semantic_match_1_layer,
-      placeholder_storage
-    ),
-    markup,
-    flags=REGEX_FLAGS
-  )
-  
-  # 11
-  markup = re.sub(
-    f'''
-      (?P<delimiter>  {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}  )
-        (?:
-          \{{
-            (?P<attribute_specification>
-              {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
-            )
-          \}}
-        ) ?
-        (?P<content>  {NON_EMPTY_MINIMAL_REGEX}  )
-      (?P=delimiter)
-    ''',
-    functools.partial(process_inline_semantic_match_1_layer,
+    functools.partial(process_inline_semantic_match,
       placeholder_storage
     ),
     markup,
@@ -3112,106 +3006,9 @@ def process_inline_semantics(placeholder_storage, markup):
   return markup
 
 
-def process_inline_semantic_match_2_layer_special(
-  placeholder_storage, match_object
-):
+def process_inline_semantic_match(placeholder_storage, match_object):
   """
-  Process a single 2-layer special inline-semantic match object.
-  """
-  
-  inner_attribute_specification = match_object.group(
-    'inner_attribute_specification'
-  )
-  inner_attribute_dictionary = parse_attribute_specification(
-    inner_attribute_specification
-  )
-  inner_attributes = build_html_attributes(
-    placeholder_storage, inner_attribute_dictionary
-  )
-  
-  inner_content = match_object.group('inner_content')
-  inner_content = strip_whitespace(inner_content)
-  
-  # Process nested inline semantics (inner)
-  inner_content = process_inline_semantics(placeholder_storage, inner_content)
-  
-  delimiter_character = match_object.group('delimiter_character')
-  
-  inner_delimiter = delimiter_character
-  inner_tag_name = (
-    INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[inner_delimiter]
-  )
-  
-  outer_delimiter = delimiter_character * 2
-  outer_tag_name = (
-    INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[outer_delimiter]
-  )
-  
-  inline_semantic = (
-    f'<{outer_tag_name}>'
-      f'<{inner_tag_name}{inner_attributes}>'
-        f'{inner_content}'
-      f'</{inner_tag_name}>'
-    f'</{outer_tag_name}>'
-  )
-  
-  return inline_semantic
-
-
-def process_inline_semantic_match_2_layer_general(
-  placeholder_storage, match_object
-):
-  """
-  Process a single 2-layer general inline-semantic match object.
-  """
-  
-  inner_attribute_specification = match_object.group(
-    'inner_attribute_specification'
-  )
-  inner_attribute_dictionary = parse_attribute_specification(
-    inner_attribute_specification
-  )
-  inner_attributes = build_html_attributes(
-    placeholder_storage, inner_attribute_dictionary
-  )
-  
-  inner_content = match_object.group('inner_content')
-  inner_content = strip_whitespace(inner_content)
-  
-  # Process nested inline semantics (inner)
-  inner_content = process_inline_semantics(placeholder_storage, inner_content)
-  
-  inner_delimiter = match_object.group('inner_delimiter')
-  inner_tag_name = (
-    INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[inner_delimiter]
-  )
-  
-  outer_content = match_object.group('outer_content')
-  outer_content = outer_content.rstrip()
-  
-  outer_delimiter = match_object.group('outer_delimiter')
-  outer_tag_name = (
-    INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[outer_delimiter]
-  )
-  
-  # Process nested inline semantics (outer)
-  outer_content = process_inline_semantics(placeholder_storage, outer_content)
-  
-  inline_semantic = (
-    f'<{outer_tag_name}>'
-      f'<{inner_tag_name}{inner_attributes}>'
-        f'{inner_content}'
-      f'</{inner_tag_name}>'
-      f'{outer_content}'
-    f'</{outer_tag_name}>'
-  )
-  
-  return inline_semantic
-
-
-def process_inline_semantic_match_1_layer(placeholder_storage, match_object):
-  """
-  Process a single 1-layer inline-semantic match object.
+  Process a single inline-semantic match object.
   """
   
   delimiter = match_object.group('delimiter')
