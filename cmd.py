@@ -2422,6 +2422,7 @@ ESCAPE_REPLACEMENT_DICTIONARY = {
   r'\)': ')',
   r'\*': '*',
   r'\_': '_',
+  r'\|': '|',
   r'\=': '<hr>',
 }
 
@@ -2453,6 +2454,7 @@ def process_escapes(placeholder_storage, markup):
     \)  becomes )
     \*  becomes *
     \_  becomes _
+    \|  becomes |
     \=  becomes <hr>
     \+  becomes <br>
   
@@ -2939,6 +2941,7 @@ def process_inline_semantics(placeholder_storage, markup):
   Whitespace around <CONTENT> is stripped.
   For <CONTENT> containing one or more occurrences of * or _,
   use CMD literals or \* and \_.
+  For <CONTENT> ending in a pipe, use the escape \|.
   
   Multiple passes are used to process nested inline semantics
   with the same delimiting character
