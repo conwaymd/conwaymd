@@ -2910,12 +2910,13 @@ def process_inline_semantics(placeholder_storage, markup):
   r"""
   Process inline semantics.
   
-  <X>{<attribute specification>} <CONTENT><X>
+  <optional pipe><X>{<attribute specification>} <CONTENT><X>
   
   <CONTENT> must be non-empty.
   The opening delimiter <X> must not be followed by whitespace
   or by </ (which would presumably be a closing tag).
-  The closing delimiter <X> must not be preceded by whitespace.
+  The closing delimiter <X> must not be preceded by whitespace
+  or by a pipe |.
   If <attribute specification> is empty,
   the curly brackets surrounding it may be omitted.
   
@@ -2930,6 +2931,11 @@ def process_inline_semantics(placeholder_storage, markup):
   where <ATTRIBUTES> is the sequence of attributes
   built from <attribute specification>.
   
+  The leading <optional pipe> is to be used
+  as a disambiguator in some edge cases.
+  If present, it indicates that the delimiter directly afterwards
+  is opening rather than closing.
+  
   Whitespace around <CONTENT> is stripped.
   For <CONTENT> containing one or more occurrences of * or _,
   use CMD literals or \* and \_.
@@ -2943,8 +2949,8 @@ def process_inline_semantics(placeholder_storage, markup):
     <em><strong>blah</strong></em>
   rather than
     <strong><em>blah</em></strong>.
-  For the latter, use an empty attribute specification
-  for the outer delimiter, i.e. **{} *blah***.
+  For the latter, use the optional pipe for the inner occurrence,
+  i.e. **|*blah***.
   
   Recursive calls are used to process nested inline semantics
   with a different delimiting character.
@@ -2973,6 +2979,7 @@ def process_inline_semantics_single_pass(placeholder_storage, markup):
   
   markup = re.sub(
     fr'''
+      [|] ?
       (?P<delimiter>
         (?P<delimiter_character>
           {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
@@ -2993,7 +3000,7 @@ def process_inline_semantics_single_pass(placeholder_storage, markup):
             {ANY_CHARACTER_REGEX}
           ) +?
         )
-      (?<! [\s] )
+      (?<! [\s] | [|] )
       (?P=delimiter)
     ''',
     functools.partial(process_inline_semantic_match,
