@@ -2906,6 +2906,8 @@ INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY = {
   '**': 'strong',
   '_' : 'i',
   '__': 'b',
+  '"""': 'q',
+  "'''": 'cite',
 }
 
 
@@ -2928,6 +2930,8 @@ def process_inline_semantics(placeholder_storage, markup):
     **  <strong>
     _   <i>
     __  <b>
+    ""\" <q>
+    ''' <cite>
   
   Produces the inline semantic
   <<TAG NAME><ATTRIBUTES>><CONTENT></<TAG NAME>>,
@@ -2941,6 +2945,7 @@ def process_inline_semantics(placeholder_storage, markup):
   
   Whitespace around <CONTENT> is stripped.
   For <CONTENT> containing one or more occurrences of * or _,
+  or three or more consecutive occurrences of " or ',
   use CMD literals or \* and \_.
   For <CONTENT> ending in a pipe, use the escape \|.
   
@@ -2986,9 +2991,15 @@ def process_inline_semantics_single_pass(placeholder_storage, markup):
       [|] ?
       (?P<delimiter>
         (?P<delimiter_character>
-          [*_]
+          (?P<single_or_double>  [*_]  )
+            |
+          (?P<triple_only>  ["']  )
         )
-        (?P=delimiter_character) ?
+        (?(single_or_double)
+          (?P=single_or_double) ?
+            |
+          (?P=triple_only) {{2}}
+        )
       )
       (?! [\s] | [<][/] )
         (?:
