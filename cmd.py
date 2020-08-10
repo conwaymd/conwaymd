@@ -247,6 +247,7 @@ def escape_html_attribute_value(placeholder_storage, string):
 ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY = {
   '#': 'id',
   '.': 'class',
+  'l': 'lang',
   'r': 'rowspan',
   'c': 'colspan',
   'w': 'width',
@@ -260,6 +261,7 @@ def parse_attribute_specification(attribute_specification):
   with the following forms recognised:
     #<ID>
     .<CLASS>
+    l<LANG>
     r<ROWSPAN>
     c<COLSPAN>
     w<WIDTH>
