@@ -2907,7 +2907,6 @@ INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY = {
   '_' : 'i',
   '__': 'b',
 }
-INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX = '[*_]'
 
 
 def process_inline_semantics(placeholder_storage, markup):
@@ -2987,7 +2986,7 @@ def process_inline_semantics_single_pass(placeholder_storage, markup):
       [|] ?
       (?P<delimiter>
         (?P<delimiter_character>
-          {INLINE_SEMANTIC_DELIMITER_CHARACTER_REGEX}
+          [*_]
         )
         (?P=delimiter_character) ?
       )
