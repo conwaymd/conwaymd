@@ -2935,7 +2935,7 @@ def process_inline_semantics(placeholder_storage, markup):
   
   The leading <optional pipe> is to be used
   as a disambiguator in some edge cases.
-  If present, it indicates that the delimiter directly afterwards
+  If present, it indicates that the delimiter directly after it
   is opening rather than closing.
   
   Whitespace around <CONTENT> is stripped.
