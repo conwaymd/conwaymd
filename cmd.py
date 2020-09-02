@@ -265,6 +265,7 @@ def parse_attribute_specification(attribute_specification):
     r<ROWSPAN>
     c<COLSPAN>
     w<WIDTH>
+  An optional equals sign may be used after the leading character.
   Unrecognised forms are ignored.
   If the class attribute is specified more than once,
   the new value is appended to the existing values.
@@ -291,6 +292,8 @@ def parse_attribute_specification(attribute_specification):
         ]
       )
       attribute_value = attribute_form[1:]
+      if attribute_value[:1] == '=':
+        attribute_value = attribute_value[1:]
       if attribute_name == 'class':
         attribute_dictionary[attribute_name] += f' {attribute_value}'
       else:
