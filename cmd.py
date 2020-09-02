@@ -251,6 +251,7 @@ ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY = {
   'r': 'rowspan',
   'c': 'colspan',
   'w': 'width',
+  's': 'style',
 }
 
 
@@ -265,12 +266,14 @@ def parse_attribute_specification(attribute_specification):
     r<ROWSPAN>
     c<COLSPAN>
     w<WIDTH>
+    s<STYLE>
   An optional equals sign may be used after the leading character.
   Unrecognised forms are ignored.
   If the class attribute is specified more than once,
   the new value is appended to the existing values.
   If a non-class attribute is specified more than once,
   the latest specification shall prevail.
+  For <STYLE> containing whitespace, use CMD literals.
   """
   
   attribute_dictionary = {'id': '', 'class': ''}
