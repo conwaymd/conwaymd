@@ -5,6 +5,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v2.0.0] (2020-12-07)
+
 ### Added
 
 - Special value `\-` for attribute omission.
@@ -19,5 +21,6 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 - Initial release.
 
-[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.0.0...HEAD
+[v2.0.0]: https://github.com/conway-markdown/conway-markdown/compare/v1.0.0...v2.0.0
 [v1.0.0]: https://github.com/conway-markdown/conway-markdown/releases/tag/v1.0.0
