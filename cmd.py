@@ -313,8 +313,10 @@ def build_html_attributes(placeholder_storage, attribute_dictionary):
   from an attribute dictionary, with
     KEYS: <ATTRIBUTE NAME>
     VALUES: <ATTRIBUTE VALUE>
-  The attribute with name <ATTRIBUTE NAME> is only included
-  if <ATTRIBUTE VALUE> is not None and not empty.
+  An attribute will be omitted if any of the following hold:
+  (1) <ATTRIBUTE VALUE> is None.
+  (2) <ATTRIBUTE VALUE> stripped of whitespace is empty.
+  (3) <ATTRIBUTE VALUE> is the special value \- denoting omission.
   """
   
   attributes = ''
@@ -323,14 +325,15 @@ def build_html_attributes(placeholder_storage, attribute_dictionary):
     
     attribute_value = attribute_dictionary[attribute_name]
     
-    if (
-      attribute_value is not None
-        and
-      strip_whitespace(
-        placeholder_storage.replace_placeholders_with_markup(attribute_value)
-      )
-        != ''
-    ):
+    omit_attribute = (
+      attribute_value is None
+        or
+      strip_whitespace(attribute_value) == ''
+        or
+      attribute_value == r'\-'
+    )
+    
+    if not omit_attribute:
       attribute_value = escape_html_attribute_value(
         placeholder_storage, attribute_value
       )
