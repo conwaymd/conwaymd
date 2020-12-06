@@ -3,7 +3,7 @@
 This be the changelog for Conway's markdown (CMD),
 which adhereth unto [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## [Unreleased]
 
 ### Added
 
@@ -19,4 +19,5 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 - Initial release.
 
+[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v1.0.0...HEAD
 [v1.0.0]: https://github.com/conway-markdown/conway-markdown/releases/tag/v1.0.0
