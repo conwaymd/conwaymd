@@ -6,9 +6,11 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 ## Unreleased
 
 ### Added
+
 - Special value `\-` for attribute omission.
 
 ### Changed
+
 - For link and image attributes,
   the empty-string escape `\/` now provides an empty attribute
   instead of omitting it.
