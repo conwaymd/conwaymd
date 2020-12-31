@@ -5,6 +5,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v2.0.1] (2021-01-01)
+
 ### Changed
 
 - Fixed list item processing by requiring attribute specification
@@ -34,6 +36,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 - Initial release.
 
-[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.0.1...HEAD
+[v2.0.1]: https://github.com/conway-markdown/conway-markdown/compare/v2.0.0...v2.0.1
 [v2.0.0]: https://github.com/conway-markdown/conway-markdown/compare/v1.0.0...v2.0.0
 [v1.0.0]: https://github.com/conway-markdown/conway-markdown/releases/tag/v1.0.0
