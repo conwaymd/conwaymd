@@ -12,7 +12,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 - Fixed list item processing by requiring attribute specification
   or whitespace after the list item delimiter.
   This ensures that something like
-  ````
+  
+  ````cmd
   ====
   * text
     *em*
