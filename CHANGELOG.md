@@ -5,6 +5,19 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Fixed list item processing by requiring attribute specification
+  or whitespace after the list item delimiter.
+  This ensures that something like
+  ````
+  ====
+  * text
+    *em*
+  ====
+  ````
+  doesn't get parsed as a 2-item list.
+
 ## [v2.0.0] (2020-12-07)
 
 ### Added
