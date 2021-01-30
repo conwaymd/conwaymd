@@ -244,7 +244,7 @@ def escape_html_attribute_value(placeholder_storage, string):
   return placeholder_storage.create_placeholder_store_markup(string)
 
 
-ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY = {
+ATTRIBUTE_NAME_FROM_LEADING_CHARACTER = {
   '#': 'id',
   '.': 'class',
   'l': 'lang',
@@ -303,15 +303,10 @@ def parse_attribute_specification(attribute_specification):
     else:
       
       leading_character = attribute_form[0]
-      if (
-        leading_character in
-          ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY
-      ):
+      if leading_character in ATTRIBUTE_NAME_FROM_LEADING_CHARACTER:
         attribute_form_is_recognised = True
         attribute_name = (
-          ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY[
-            leading_character
-          ]
+          ATTRIBUTE_NAME_FROM_LEADING_CHARACTER[leading_character]
         )
         attribute_value = attribute_form[1:]
         if attribute_value[:1] == '=':
@@ -1938,7 +1933,7 @@ def process_heading_match(placeholder_storage, match_object):
 ################################################################
 
 
-BLOCK_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY = {
+TAG_NAME_FROM_BLOCK_DELIMITER_CHARACTER = {
   '-': 'p',
   '|': 'div',
   '"': 'blockquote',
@@ -2018,9 +2013,7 @@ def process_block_match(placeholder_storage, match_object):
   """
   
   delimiter_character = match_object.group('delimiter_character')
-  tag_name = (
-    BLOCK_DELIMITER_CHARACTER_TAG_NAME_DICTIONARY[delimiter_character]
-  )
+  tag_name = TAG_NAME_FROM_BLOCK_DELIMITER_CHARACTER[delimiter_character]
   block_is_list = tag_name in LIST_TAG_NAMES
   
   attribute_specification = match_object.group('attribute_specification')
@@ -2121,7 +2114,7 @@ def process_list_item_match(placeholder_storage, match_object):
 ################################################################
 
 
-TABLE_CELL_DELIMITER_TAG_NAME_DICTIONARY = {
+TAG_NAME_FROM_TABLE_CELL_DELIMITER = {
   ';': 'th',
   ',': 'td',
 }
@@ -2131,7 +2124,7 @@ TABLE_CELL_DELIMITER_REGEX = '[;,]'
 TABLE_ROW_DELIMITER_REGEX = '=='
 
 
-TABLE_PART_DELIMITER_TAG_NAME_DICTIONARY = {
+TAG_NAME_FROM_TABLE_PART_DELIMITER = {
   '|^': 'thead',
   '|:': 'tbody',
   '|_': 'tfoot',
@@ -2276,7 +2269,7 @@ def process_table_cell_match(placeholder_storage, match_object):
   """
   
   delimiter = match_object.group('delimiter')
-  tag_name = TABLE_CELL_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
+  tag_name = TAG_NAME_FROM_TABLE_CELL_DELIMITER[delimiter]
   
   attribute_specification = match_object.group('attribute_specification')
   attribute_dictionary = parse_attribute_specification(attribute_specification)
@@ -2413,7 +2406,7 @@ def process_table_part_match(placeholder_storage, match_object):
   """
   
   delimiter = match_object.group('delimiter')
-  tag_name = TABLE_PART_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
+  tag_name = TAG_NAME_FROM_TABLE_PART_DELIMITER[delimiter]
   
   attribute_specification = match_object.group('attribute_specification')
   attribute_dictionary = parse_attribute_specification(attribute_specification)
@@ -2938,7 +2931,7 @@ def process_reference_link_match(
 ################################################################
 
 
-INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY = {
+TAG_NAME_FROM_INLINE_SEMANTIC_DELIMITER = {
   '*': 'em',
   '**': 'strong',
   '_' : 'i',
@@ -3071,7 +3064,7 @@ def process_inline_semantic_match(placeholder_storage, match_object):
   """
   
   delimiter = match_object.group('delimiter')
-  tag_name = INLINE_SEMANTIC_DELIMITER_TAG_NAME_DICTIONARY[delimiter]
+  tag_name = TAG_NAME_FROM_INLINE_SEMANTIC_DELIMITER[delimiter]
   
   attribute_specification = match_object.group('attribute_specification')
   attribute_dictionary = parse_attribute_specification(attribute_specification)
