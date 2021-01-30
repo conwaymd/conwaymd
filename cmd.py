@@ -251,6 +251,7 @@ ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY = {
   'r': 'rowspan',
   'c': 'colspan',
   'w': 'width',
+  'h': 'height',
   's': 'style',
 }
 
@@ -267,6 +268,7 @@ def parse_attribute_specification(attribute_specification):
     r<ROWSPAN>
     c<COLSPAN>
     w<WIDTH>
+    h<HEIGHT>
     s<STYLE>
   The first is called "full form"; the rest are "short forms".
   An optional equals sign may be used after the leading character

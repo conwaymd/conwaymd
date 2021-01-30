@@ -8,6 +8,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Full form `<NAME>=<VALUE>` for attribute specifications.
+- Short form `h<HEIGHT>` for height attribute.
 
 ## [v2.0.1] (2021-01-01)
 
