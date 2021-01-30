@@ -260,6 +260,7 @@ def parse_attribute_specification(attribute_specification):
   Parse an attribute specification string into an attribute dictionary.
   The attribute specification string is split by whitespace,
   with the following forms recognised:
+    <NAME>=<VALUE>
     #<ID>
     .<CLASS>
     l<LANG>
@@ -267,13 +268,16 @@ def parse_attribute_specification(attribute_specification):
     c<COLSPAN>
     w<WIDTH>
     s<STYLE>
-  An optional equals sign may be used after the leading character.
-  Unrecognised forms are ignored.
+  The first is called "full form"; the rest are "short forms".
+  An optional equals sign may be used after the leading character
+  in short forms.
+  Unrecognised short forms are ignored.
   If the class attribute is specified more than once,
   the new value is appended to the existing values.
   If a non-class attribute is specified more than once,
   the latest specification shall prevail.
-  For <STYLE> containing whitespace, use CMD literals.
+  For <VALUE> etc. containing whitespace, use CMD literals.
+  For <ID> etc. containing equals signs, use CMD literals.
   """
   
   attribute_dictionary = {'id': '', 'class': ''}
@@ -284,19 +288,35 @@ def parse_attribute_specification(attribute_specification):
   
   for attribute_form in attribute_form_list:
     
-    leading_character = attribute_form[0]
-    if (
-      leading_character in
-        ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY
-    ):
-      attribute_name = (
-        ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY[
-          leading_character
-        ]
-      )
-      attribute_value = attribute_form[1:]
-      if attribute_value[:1] == '=':
-        attribute_value = attribute_value[1:]
+    first_equals_sign_index = attribute_form.find('=')
+    attribute_form_is_full = attribute_form.find('=') > 1
+    attribute_form_is_recognised = False
+    
+    if attribute_form_is_full:
+      
+      attribute_form_is_recognised = True
+      attribute_name = attribute_form[: first_equals_sign_index]
+      attribute_value = attribute_form[first_equals_sign_index+1 :]
+      
+    else:
+      
+      leading_character = attribute_form[0]
+      if (
+        leading_character in
+          ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY
+      ):
+        attribute_form_is_recognised = True
+        attribute_name = (
+          ATTRIBUTE_SPECIFICATION_CHARACTER_ATTRIBUTE_NAME_DICTIONARY[
+            leading_character
+          ]
+        )
+        attribute_value = attribute_form[1:]
+        if attribute_value[:1] == '=':
+          attribute_value = attribute_value[1:]
+    
+    if attribute_form_is_recognised:
+      
       if attribute_name == 'class':
         attribute_dictionary[attribute_name] += f' {attribute_value}'
       else:

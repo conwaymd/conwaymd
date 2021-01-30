@@ -5,6 +5,10 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Full form `<NAME>=<VALUE>` for attribute specifications.
+
 ## [v2.0.1] (2021-01-01)
 
 ### Changed
