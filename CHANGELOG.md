@@ -8,9 +8,11 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Optional attribute specification for inline-style images
+- Optional attribute specification for inline-style links
 
 ````cmd
 ![<ALT>]{<attribute specification>}(<src> <title>)
+[<CONTENT>]{<attribute specification>}(<href> <title>)
 ````
 
 ## [v2.1.0] (2021-01-31)

@@ -2804,7 +2804,7 @@ def process_links(placeholder_storage, reference_storage, markup):
   
   ## Inline-style ##
   
-  [<CONTENT>](<href> <title>)
+  [<CONTENT>]{<attribute specification>}(<href> <title>)
   
   Unlike John Gruber's markdown, <title> is not surrounded by quotes.
   If quotes are supplied to <title>,
@@ -2812,7 +2812,7 @@ def process_links(placeholder_storage, reference_storage, markup):
   
   Produces the link <a<ATTRIBUTES>><CONTENT></a>,
   where <ATTRIBUTES> is the sequence of attributes
-  built from <href> and <title>.
+  built from <href>, <title>, and <attribute specification>.
   
   Whitespace around <CONTENT> is stripped.
   For <CONTENT>, <href>, or <title> containing
@@ -2846,6 +2846,13 @@ def process_links(placeholder_storage, reference_storage, markup):
       \[
         (?P<content>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
+      (?:
+        \{{
+          (?P<attribute_specification>
+            {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+          )
+        \}}
+      ) ?
       \(
         [\s] *
         (?P<href>  {ANYTHING_MINIMAL_REGEX}  )
@@ -2895,10 +2902,21 @@ def process_inline_link_match(placeholder_storage, match_object):
   href = match_object.group('href')
   title = match_object.group('title')
   
-  attribute_dictionary = {
+  match_attribute_dictionary = {
     'href': href,
     'title': title,
   }
+  
+  attribute_specification = match_object.group('attribute_specification')
+  specification_attribute_dictionary = (
+    parse_attribute_specification(attribute_specification)
+  )
+  
+  attribute_dictionary = {
+    **match_attribute_dictionary,
+    **specification_attribute_dictionary,
+  }
+  
   attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   link = f'<a{attributes}>{content}</a>'
