@@ -2629,7 +2629,7 @@ def process_images(placeholder_storage, reference_storage, markup):
   
   ## Inline-style ##
   
-  ![<ALT>](<src> <title>)
+  ![<ALT>]{<attribute specification>}(<src> <title>)
   
   Unlike John Gruber's markdown, <title> is not surrounded by quotes.
   If quotes are supplied to <title>,
@@ -2637,7 +2637,7 @@ def process_images(placeholder_storage, reference_storage, markup):
   
   Produces the image <img<ATTRIBUTES>>,
   where <ATTRIBUTES> is the sequence of attributes
-  built from <ALT>, <src>, and <title>.
+  built from <ALT>, <src>, <title>, and <attribute specification>.
   
   For <ALT>, <src>, or <title> containing
   one or more closing square or round brackets, use CMD literals.
@@ -2671,6 +2671,13 @@ def process_images(placeholder_storage, reference_storage, markup):
       \[
         (?P<alt>  {NOT_CLOSING_SQUARE_BRACKET_MINIMAL_REGEX}  )
       \]
+      (?:
+        \{{
+          (?P<attribute_specification>
+            {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+          )
+        \}}
+      ) ?
       \(
         [\s] *
         (?P<src>  {ANYTHING_MINIMAL_REGEX}  )
@@ -2719,11 +2726,22 @@ def process_inline_image_match(placeholder_storage, match_object):
   src = match_object.group('src')
   title = match_object.group('title')
   
-  attribute_dictionary = {
+  match_attribute_dictionary = {
     'alt': alt,
     'src': src,
     'title': title,
   }
+  
+  attribute_specification = match_object.group('attribute_specification')
+  specification_attribute_dictionary = (
+    parse_attribute_specification(attribute_specification)
+  )
+  
+  attribute_dictionary = {
+    **match_attribute_dictionary,
+    **specification_attribute_dictionary,
+  }
+  
   attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
   
   image = f'<img{attributes}>'

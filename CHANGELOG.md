@@ -5,6 +5,14 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Optional attribute specification for inline-style images
+
+````cmd
+![<ALT>]{<attribute specification>}(<src> <title>)
+````
+
 ## [v2.1.0] (2021-01-31)
 
 ### Added
