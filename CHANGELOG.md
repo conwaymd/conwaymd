@@ -5,6 +5,12 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Fixed missing mentions of omittable curly brackets
+  for empty attribute specifications
+  among docstrings for inline-style images and links.
+
 ## [v2.2.0] (2021-03-09)
 
 ### Added

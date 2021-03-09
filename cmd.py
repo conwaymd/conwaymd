@@ -2635,6 +2635,9 @@ def process_images(placeholder_storage, reference_storage, markup):
   If quotes are supplied to <title>,
   they are automatically escaped as &quot;.
   
+  If <attribute specification> is empty,
+  the curly brackets surrounding it may be omitted.
+  
   Produces the image <img<ATTRIBUTES>>,
   where <ATTRIBUTES> is the sequence of attributes
   built from <ALT>, <src>, <title>, and <attribute specification>.
@@ -2813,6 +2816,9 @@ def process_links(placeholder_storage, reference_storage, markup):
   Produces the link <a<ATTRIBUTES>><CONTENT></a>,
   where <ATTRIBUTES> is the sequence of attributes
   built from <href>, <title>, and <attribute specification>.
+  
+  If <attribute specification> is empty,
+  the curly brackets surrounding it may be omitted.
   
   Whitespace around <CONTENT> is stripped.
   For <CONTENT>, <href>, or <title> containing
