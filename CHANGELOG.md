@@ -5,6 +5,10 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Fixed license year out of date
+
 ## [v2.2.1] (2021-03-09)
 
 ### Changed
