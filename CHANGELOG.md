@@ -1,6 +1,6 @@
 # Changelog
 
-This be the changelog for Conway's markdown (CMD),
+This be the changelog for Conway-Markdown (CMD),
 which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
@@ -9,6 +9,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 - Fixed license year out of date
 - Improved README description
+- Standardised name as 'Conway-Markdown' (hyphenated instead of possessive)
 
 ## [v2.2.1] (2021-03-09)
 

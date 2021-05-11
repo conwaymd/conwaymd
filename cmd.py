@@ -5,7 +5,7 @@
 cmd.py
 ----------------------------------------------------------------
 
-A converter from Conway's Markdown (CMD) to HTML,
+A converter from Conway-Markdown (CMD) to HTML,
 written for the sole purpose of building his site
 <https://yawnoc.github.io/>.
 
@@ -3386,7 +3386,7 @@ def main(cmd_name):
 if __name__ == '__main__':
   
   DESCRIPTION_TEXT = '''
-    Convert Conway's Markdown (CMD) to HTML.
+    Convert Conway-Markdown (CMD) to HTML.
   '''
   parser = argparse.ArgumentParser(description=DESCRIPTION_TEXT)
   

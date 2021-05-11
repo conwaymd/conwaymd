@@ -1,4 +1,4 @@
-# conway-markdown (CMD)
+# Conway-Markdown (CMD)
 
 A replacement-based "variant" of Markdown, with fence-style constructs.
 Implemented in Python 3.6+.
