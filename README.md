@@ -1,6 +1,6 @@
 # conway-markdown
 
-Conway's fence-style markdown (CMD), implemented in Python 3.6+.
+Conway's fence-style Markdown (CMD), implemented in Python 3.6+.
 
 Licensed under "MIT No Attribution" (MIT-0), see [LICENSE](LICENSE).
 
@@ -40,7 +40,7 @@ except those listed in `.cmdignore`.
 2. Add [`id` and `class`][attributes] to elements
 3. Write [arbitrary text] outside of code elements
    without using backslash escapes or HTML (ampersand) entities
-4. [Include] markdown from another file (e.g.&nbsp;a template)
+4. [Include] content from another file (e.g.&nbsp;a template)
 5. Use [`<b>`, `<i>`, and `<cite>` elements][semantics],
    not just `<strong>` and `<em>`
 6. Use [`<div>` elements][blocks] without falling back to HTML

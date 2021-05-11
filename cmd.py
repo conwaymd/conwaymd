@@ -5,13 +5,13 @@
 cmd.py
 ----------------------------------------------------------------
 
-A converter from Conway's markdown (CMD) to HTML,
+A converter from Conway's Markdown (CMD) to HTML,
 written for the sole purpose of building his site
 <https://yawnoc.github.io/>.
 
 Conversion is done entirely using regular expression replacements
 and placeholder dictionaries.
-Unlike John Gruber's markdown, I use fence-style constructs
+Unlike John Gruber's Markdown, I use fence-style constructs
 to avoid the need for proper parsing.
 
 You   : Why the hell would you use regex to do this?
@@ -2631,7 +2631,7 @@ def process_images(placeholder_storage, reference_storage, markup):
   
   ![<ALT>]{<attribute specification>}(<src> <title>)
   
-  Unlike John Gruber's markdown, <title> is not surrounded by quotes.
+  Unlike John Gruber's Markdown, <title> is not surrounded by quotes.
   If quotes are supplied to <title>,
   they are automatically escaped as &quot;.
   
@@ -2809,7 +2809,7 @@ def process_links(placeholder_storage, reference_storage, markup):
   
   [<CONTENT>]{<attribute specification>}(<href> <title>)
   
-  Unlike John Gruber's markdown, <title> is not surrounded by quotes.
+  Unlike John Gruber's Markdown, <title> is not surrounded by quotes.
   If quotes are supplied to <title>,
   they are automatically escaped as &quot;.
   
@@ -3386,7 +3386,7 @@ def main(cmd_name):
 if __name__ == '__main__':
   
   DESCRIPTION_TEXT = '''
-    Convert Conway's markdown (CMD) to HTML.
+    Convert Conway's Markdown (CMD) to HTML.
   '''
   parser = argparse.ArgumentParser(description=DESCRIPTION_TEXT)
   
