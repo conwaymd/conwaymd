@@ -5,6 +5,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v2.2.2] (2021-05-11)
+
 ### Changed
 
 - Fixed license year out of date
@@ -70,7 +72,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 - Initial release.
 
-[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.2...HEAD
+[v2.2.2]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.1...v2.2.2
 [v2.2.1]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.1.0...v2.2.0
 [v2.1.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.0.1...v2.1.0
