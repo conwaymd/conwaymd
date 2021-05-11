@@ -1,6 +1,7 @@
-# conway-markdown
+# conway-markdown (CMD)
 
-Conway's fence-style Markdown (CMD), implemented in Python 3.6+.
+A replacement-based "variant" of Markdown, with fence-style constructs.
+Implemented in Python 3.6+.
 
 Licensed under "MIT No Attribution" (MIT-0), see [LICENSE](LICENSE).
 

@@ -8,6 +8,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - Fixed license year out of date
+- Improved README description
 
 ## [v2.2.1] (2021-03-09)
 
