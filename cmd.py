@@ -473,7 +473,7 @@ class PlaceholderStorage:
   def __init__(self):
     """
     Initialise placeholder storage.
-    A placeholder is created for the placeholder marker X itself.
+    A placeholder is created for the placeholder marker <X> itself.
     """
     
     self.dictionary = {}
