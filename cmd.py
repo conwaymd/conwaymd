@@ -506,10 +506,10 @@ class PlaceholderStorage:
     are free of placeholder strings.
     """
     
+    markup_portion = self.replace_placeholders_with_markup(markup_portion)
+    
     placeholder_string = self.create_placeholder()
-    self.dictionary[placeholder_string] = (
-      self.replace_placeholders_with_markup(markup_portion)
-    )
+    self.dictionary[placeholder_string] = markup_portion
     self.counter += 1
     
     return placeholder_string
