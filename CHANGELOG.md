@@ -5,6 +5,22 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Made placeholder storage reuse placeholders for duplicate markup.
+  
+  ````cmd
+  [`text`]
+  @[`text`] url @
+  ````
+  now returns
+  ````html
+  <a href="url"><code>text</code></a>
+  ````
+  whereas previously it would not produce a link
+  because the two instances of `` `text` `` would be
+  temporarily replaced with different placeholder strings.
+
 ## [v2.2.2] (2021-05-11)
 
 ### Changed

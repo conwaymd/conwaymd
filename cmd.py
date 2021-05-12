@@ -458,6 +458,7 @@ class PlaceholderStorage:
   is stored in a dictionary of ordinary replacements, with
     KEYS: the placeholder strings (<X><N><X>), and
     VALUES: the respective portions of markup.
+  Placeholder strings are reused for duplicate markup portions.
   """
   
   PLACEHOLDER_MARKER = '\uE000'
@@ -477,6 +478,7 @@ class PlaceholderStorage:
     """
     
     self.dictionary = {}
+    self.inverse_dictionary = {}
     self.counter = 0
     
     self.PLACEHOLDER_MARKER_PLACEHOLDER_STRING = (
@@ -504,12 +506,20 @@ class PlaceholderStorage:
     before being stored in the dictionary.
     This ensures that all markup portions in the dictionary
     are free of placeholder strings.
+    
+    Placeholder strings are reused for duplicate markup portions.
+    An inverse dictionary is used to check for duplicates.
     """
     
     markup_portion = self.replace_placeholders_with_markup(markup_portion)
     
+    if markup_portion in self.inverse_dictionary:
+      placeholder_string = self.inverse_dictionary[markup_portion]
+      return placeholder_string
+    
     placeholder_string = self.create_placeholder()
     self.dictionary[placeholder_string] = markup_portion
+    self.inverse_dictionary[markup_portion] = placeholder_string
     self.counter += 1
     
     return placeholder_string
