@@ -5,7 +5,11 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-- Added support for direct-style links (called 'autolinks' in CommonMark).
+## [v2.4.0] (2021-06-06)
+
+### Added
+
+- Direct-style links (called 'autolinks' in CommonMark).
 
 ## [v2.3.0] (2021-05-13)
 
@@ -92,7 +96,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 - Initial release.
 
-[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.4.0...HEAD
+[v2.4.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.3.0...v2.4.0
 [v2.3.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.2...v2.3.0
 [v2.2.2]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.1...v2.2.2
 [v2.2.1]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.0...v2.2.1
