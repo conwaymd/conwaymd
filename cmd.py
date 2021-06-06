@@ -2828,6 +2828,9 @@ def process_links(placeholder_storage, reference_storage, markup):
     s to suppress the scheme separator in the link content
     a to enable all flags above
   
+  If <attribute specification> is empty,
+  the curly brackets surrounding it may be omitted.
+  
   ## Inline-style ##
   
   [<CONTENT>]{<attribute specification>}(<href> <title>)

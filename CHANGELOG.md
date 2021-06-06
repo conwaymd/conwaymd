@@ -5,6 +5,11 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Fixed missing mention of omittable curly brackets
+  in docstring for direct-style links.
+
 ## [v2.4.0] (2021-06-06)
 
 ### Added
