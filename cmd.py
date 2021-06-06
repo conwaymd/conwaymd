@@ -2815,6 +2815,18 @@ def process_links(placeholder_storage, reference_storage, markup):
   """
   Process links.
   
+  ## Direct-style ##
+  
+  <flags><<SCHEME>:<address>>{<attribute specification>}
+  
+  Produces the link <a<ATTRIBUTES>><SCHEME>:<address></a>,
+  where <ATTRIBUTES> is the sequence of attributes
+  built from <SCHEME>:<address> and <attribute specification>.
+  Neither <SCHEME> nor <address> may contain whitespace.
+  <flags> may consist of zero or more of the following characters:
+    b to enclose the link in angle brackets
+    s to suppress the scheme separator in the link content
+  
   ## Inline-style ##
   
   [<CONTENT>]{<attribute specification>}(<href> <title>)
@@ -2855,6 +2867,28 @@ def process_links(placeholder_storage, reference_storage, markup):
   For links whose <CONTENT> or <label> contains
   one or more closing square brackets, use CMD literals.
   """
+  
+  # Direct-style
+  markup = re.sub(
+    fr'''
+      (?P<flags>  [bs] *  )
+      <
+        (?P<scheme>  [\S]+?  )
+        :
+        (?P<address> [\S]*?  )
+      >
+      (?:
+        \{{
+          (?P<attribute_specification>
+            {NOT_CLOSING_CURLY_BRACKET_MINIMAL_REGEX}
+          )
+        \}}
+      ) ?
+    ''',
+    functools.partial(process_direct_link_match, placeholder_storage),
+    markup,
+    flags=REGEX_FLAGS
+  )
   
   # Inline-style
   markup = re.sub(
@@ -2905,6 +2939,47 @@ def process_links(placeholder_storage, reference_storage, markup):
   )
   
   return markup
+
+
+def process_direct_link_match(placeholder_storage, match_object):
+  """
+  Process a single direct-style-link match object.
+  """
+  
+  flags = match_object.group('flags')
+  enabled_brackets_flag = 'b' in flags
+  enabled_suppress_flag = 's' in flags
+  
+  scheme = match_object.group('scheme')
+  address = match_object.group('address')
+  
+  href = f'{scheme}:{address}'
+  if enabled_suppress_flag:
+    content = address
+    if content[:2] == '//':
+      content = content[2:]
+  else:
+    content = href
+  
+  match_attribute_dictionary = {'href': href}
+  
+  attribute_specification = match_object.group('attribute_specification')
+  specification_attribute_dictionary = (
+    parse_attribute_specification(attribute_specification)
+  )
+  
+  attribute_dictionary = {
+    **match_attribute_dictionary,
+    **specification_attribute_dictionary,
+  }
+  
+  attributes = build_html_attributes(placeholder_storage, attribute_dictionary)
+  
+  link = f'<a{attributes}>{content}</a>'
+  if enabled_brackets_flag:
+    link = f'&lt;{link}&gt;'
+  
+  return link
 
 
 def process_inline_link_match(placeholder_storage, match_object):
