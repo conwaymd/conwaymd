@@ -5,6 +5,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- Added support for direct-style links (called 'autolinks' in CommonMark).
+
 ## [v2.3.0] (2021-05-13)
 
 ### Changed
