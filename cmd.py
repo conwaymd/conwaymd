@@ -2826,6 +2826,7 @@ def process_links(placeholder_storage, reference_storage, markup):
   <flags> may consist of zero or more of the following characters:
     b to enclose the link in angle brackets
     s to suppress the scheme separator in the link content
+    a to enable all flags above
   
   ## Inline-style ##
   
@@ -2871,7 +2872,7 @@ def process_links(placeholder_storage, reference_storage, markup):
   # Direct-style
   markup = re.sub(
     fr'''
-      (?P<flags>  [bs] *  )
+      (?P<flags>  [bsa] *  )
       <
         (?P<scheme>  [\S]+?  )
         :
@@ -2947,8 +2948,9 @@ def process_direct_link_match(placeholder_storage, match_object):
   """
   
   flags = match_object.group('flags')
-  enabled_brackets_flag = 'b' in flags
-  enabled_suppress_flag = 's' in flags
+  enabled_all_flags = 'a' in flags
+  enabled_brackets_flag = enabled_all_flags or 'b' in flags
+  enabled_suppress_flag = enabled_all_flags or 's' in flags
   
   scheme = match_object.group('scheme')
   address = match_object.group('address')
