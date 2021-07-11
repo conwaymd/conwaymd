@@ -5,6 +5,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v2.4.1] (2021-07-11)
+
 ### Changed
 
 - Disallowed angle brackets in direct-style URLs.
@@ -123,7 +125,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 - Initial release.
 
-[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.4.1...HEAD
+[v2.4.1]: https://github.com/conway-markdown/conway-markdown/compare/v2.4.0...v2.4.1
 [v2.4.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.3.0...v2.4.0
 [v2.3.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.2...v2.3.0
 [v2.2.2]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.1...v2.2.2
