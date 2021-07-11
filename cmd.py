@@ -2822,7 +2822,7 @@ def process_links(placeholder_storage, reference_storage, markup):
   Produces the link <a<ATTRIBUTES>><SCHEME>:<address></a>,
   where <ATTRIBUTES> is the sequence of attributes
   built from <SCHEME>:<address> and <attribute specification>.
-  Neither <SCHEME> nor <address> may contain whitespace.
+  <SCHEME> and <address> may not contain whitespace or angle brackets.
   <flags> may consist of zero or more of the following characters:
     b to enclose the link in angle brackets
     s to suppress the scheme separator in the link content
@@ -2877,9 +2877,9 @@ def process_links(placeholder_storage, reference_storage, markup):
     fr'''
       (?P<flags>  [bsa] *  )
       <
-        (?P<scheme>  [\S]+?  )
+        (?P<scheme>  [^\s<>]+?  )
         :
-        (?P<address> [\S]*?  )
+        (?P<address> [^\s<>]*?  )
       >
       (?:
         \{{

@@ -7,6 +7,28 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Disallowed angle brackets in direct-style URLs.
+  
+  ````cmd
+  ====
+  - <https://example.com>
+  ====
+  ````
+  now returns
+  ````html
+  <ul>
+  <li><a href="https://example.com">https://example.com</a>
+  </li>
+  </ul>
+  ````
+  rather than the broken
+  ````html
+  <ul>
+  <a href="li&gt;&lt;https://example.com">li><https://example.com</a>
+  </li>
+  </ul>
+  ````
+
 - Fixed missing mention of omittable curly brackets
   in docstring for direct-style links.
 
