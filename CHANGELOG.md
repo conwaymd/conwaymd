@@ -11,7 +11,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 - Added release summaries to changelog headings
 
 
-## [v2.4.1] Direct-style URLs fix (2021-07-11)
+## [v2.4.1] No angle brackets (2021-07-11)
 
 - Disallowed angle brackets in direct-style URLs.
   
@@ -86,13 +86,13 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 ````
 
 
-## [v2.1.0] Full form attribute specifications (2021-01-31)
+## [v2.1.0] Full form attributes (2021-01-31)
 
 - Added full form `<NAME>=<VALUE>` for attribute specifications.
 - Added short form `h<HEIGHT>` for height attribute.
 
 
-## [v2.0.1] List item processing fix (2021-01-01)
+## [v2.0.1] List item processing (2021-01-01)
 
 - Fixed list item processing by requiring attribute specification
   or whitespace after the list item delimiter.
@@ -107,7 +107,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
   doesn't get parsed as a 2-item list.
 
 
-## [v2.0.0] Omitted (rather than empty) attributes (2020-12-07)
+## [v2.0.0] Attribute omission (2020-12-07)
 
 - Added special value `\-` for attribute omission.
 - For link and image attributes,
@@ -115,7 +115,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
   instead of omitting it.
 
 
-## [v1.0.0] Initial release (2020-09-02)
+## [v1.0.0] First stable (2020-09-02)
 
 - Initial release.
 
