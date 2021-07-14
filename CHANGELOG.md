@@ -3,7 +3,13 @@
 This be the changelog for Conway-Markdown (CMD),
 which adhereth unto [Semantic Versioning](https://semver.org/).
 
+
 ## [Unreleased]
+
+### Changed
+
+- Improved changelog source formatting
+
 
 ## [v2.4.1] (2021-07-11)
 
@@ -34,11 +40,13 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 - Fixed missing mention of omittable curly brackets
   in docstring for direct-style links.
 
+
 ## [v2.4.0] (2021-06-06)
 
 ### Added
 
 - Direct-style links (called 'autolinks' in CommonMark).
+
 
 ## [v2.3.0] (2021-05-13)
 
@@ -58,6 +66,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
   because the two instances of `` `text` `` would be
   temporarily replaced with different placeholder strings.
 
+
 ## [v2.2.2] (2021-05-11)
 
 ### Changed
@@ -66,6 +75,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 - Improved README description
 - Standardised name as 'Conway-Markdown' (hyphenated instead of possessive)
 
+
 ## [v2.2.1] (2021-03-09)
 
 ### Changed
@@ -73,6 +83,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 - Fixed missing mentions of omittable curly brackets
   for empty attribute specifications
   among docstrings for inline-style images and links.
+
 
 ## [v2.2.0] (2021-03-09)
 
@@ -86,12 +97,14 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 [<CONTENT>]{<attribute specification>}(<href> <title>)
 ````
 
+
 ## [v2.1.0] (2021-01-31)
 
 ### Added
 
 - Full form `<NAME>=<VALUE>` for attribute specifications.
 - Short form `h<HEIGHT>` for height attribute.
+
 
 ## [v2.0.1] (2021-01-01)
 
@@ -109,6 +122,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
   ````
   doesn't get parsed as a 2-item list.
 
+
 ## [v2.0.0] (2020-12-07)
 
 ### Added
@@ -121,18 +135,30 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
   the empty-string escape `\/` now provides an empty attribute
   instead of omitting it.
 
+
 ## [v1.0.0] (2020-09-02)
 
 - Initial release.
 
-[Unreleased]: https://github.com/conway-markdown/conway-markdown/compare/v2.4.1...HEAD
-[v2.4.1]: https://github.com/conway-markdown/conway-markdown/compare/v2.4.0...v2.4.1
-[v2.4.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.3.0...v2.4.0
-[v2.3.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.2...v2.3.0
-[v2.2.2]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.1...v2.2.2
-[v2.2.1]: https://github.com/conway-markdown/conway-markdown/compare/v2.2.0...v2.2.1
-[v2.2.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.1.0...v2.2.0
-[v2.1.0]: https://github.com/conway-markdown/conway-markdown/compare/v2.0.1...v2.1.0
-[v2.0.1]: https://github.com/conway-markdown/conway-markdown/compare/v2.0.0...v2.0.1
-[v2.0.0]: https://github.com/conway-markdown/conway-markdown/compare/v1.0.0...v2.0.0
-[v1.0.0]: https://github.com/conway-markdown/conway-markdown/releases/tag/v1.0.0
+[Unreleased]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.4.1...HEAD
+[v2.4.1]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.4.0...v2.4.1
+[v2.4.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.3.0...v2.4.0
+[v2.3.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.2.2...v2.3.0
+[v2.2.2]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.2.1...v2.2.2
+[v2.2.1]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.2.0...v2.2.1
+[v2.2.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.1.0...v2.2.0
+[v2.1.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.0.1...v2.1.0
+[v2.0.1]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.0.0...v2.0.1
+[v2.0.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v1.0.0...v2.0.0
+[v1.0.0]:
+  https://github.com/conway-markdown/conway-markdown/releases/tag/v1.0.0
