@@ -6,14 +6,11 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Changed
-
 - Improved changelog source formatting
+- Removed Added/Changed headings from changelog
 
 
 ## [v2.4.1] (2021-07-11)
-
-### Changed
 
 - Disallowed angle brackets in direct-style URLs.
   
@@ -43,14 +40,10 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [v2.4.0] (2021-06-06)
 
-### Added
-
-- Direct-style links (called 'autolinks' in CommonMark).
+- Added direct-style links (called 'autolinks' in CommonMark).
 
 
 ## [v2.3.0] (2021-05-13)
-
-### Changed
 
 - Made placeholder storage reuse placeholders for duplicate markup.
   
@@ -69,16 +62,12 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [v2.2.2] (2021-05-11)
 
-### Changed
-
 - Fixed license year out of date
 - Improved README description
 - Standardised name as 'Conway-Markdown' (hyphenated instead of possessive)
 
 
 ## [v2.2.1] (2021-03-09)
-
-### Changed
 
 - Fixed missing mentions of omittable curly brackets
   for empty attribute specifications
@@ -87,10 +76,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [v2.2.0] (2021-03-09)
 
-### Added
-
-- Optional attribute specification for inline-style images
-- Optional attribute specification for inline-style links
+- Added optional attribute specification for inline-style images
+- Added optional attribute specification for inline-style links
 
 ````cmd
 ![<ALT>]{<attribute specification>}(<src> <title>)
@@ -100,15 +87,11 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [v2.1.0] (2021-01-31)
 
-### Added
-
-- Full form `<NAME>=<VALUE>` for attribute specifications.
-- Short form `h<HEIGHT>` for height attribute.
+- Added full form `<NAME>=<VALUE>` for attribute specifications.
+- Added short form `h<HEIGHT>` for height attribute.
 
 
 ## [v2.0.1] (2021-01-01)
-
-### Changed
 
 - Fixed list item processing by requiring attribute specification
   or whitespace after the list item delimiter.
@@ -125,12 +108,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [v2.0.0] (2020-12-07)
 
-### Added
-
-- Special value `\-` for attribute omission.
-
-### Changed
-
+- Added special value `\-` for attribute omission.
 - For link and image attributes,
   the empty-string escape `\/` now provides an empty attribute
   instead of omitting it.
@@ -139,6 +117,7 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 ## [v1.0.0] (2020-09-02)
 
 - Initial release.
+
 
 [Unreleased]:
   https://github.com/conway-markdown/conway-markdown/compare/v2.4.1...HEAD
