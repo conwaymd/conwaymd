@@ -6,6 +6,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- Added derived property `%cmd-name-file`
+
 
 ## [v3.0.0] Relative inclusions (2021-07-19)
 
