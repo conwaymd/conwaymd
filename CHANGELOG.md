@@ -6,6 +6,9 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- [Breaking] Changed inclusions file path reckoning:
+  - File names beginning with `/` are reckoned relative to the terminal
+  - File names not beginning with `/` are reckoned relative to the CMD file
 - Improved changelog source formatting
 - Removed Added/Changed headings from changelog
 - Added release summaries to changelog headings

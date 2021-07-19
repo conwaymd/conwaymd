@@ -1247,6 +1247,9 @@ def process_inclusions(placeholder_storage, cmd_name, markup):
   {+ <FILE NAME> +}
   
   Includes the content of the file <FILE NAME>.
+  If <FILE NAME> begins with a slash,
+  it is reckoned relative to the current directory of the terminal;
+  otherwise it is reckoned relative to the current CMD file.
   For <FILE NAME> containing one or more consecutive plus signs
   followed by a closing curly bracket,
   use a longer run of plus signs in the delimiters.
@@ -1281,13 +1284,23 @@ def process_inclusion_match(placeholder_storage, cmd_name, match_object):
   file_name = match_object.group('file_name')
   file_name = strip_whitespace(file_name)
   
+  if file_name[0] == '/':
+    file_name_relative_to_terminal = file_name = file_name[1:]
+    root = 'terminal'
+  else:
+    file_name_relative_to_terminal = os.path.join(
+      os.path.dirname(cmd_name),
+      file_name
+    )
+    root = 'CMD file'
+  
   try:
-    with open(file_name, 'r', encoding='utf-8') as file:
+    with open(file_name_relative_to_terminal, 'r', encoding='utf-8') as file:
       content = file.read()
   except FileNotFoundError as file_not_found_error:
     match_string = match_object.group()
     error_message = join_staggered(2,
-      f'Inclusion file `{file_name}` not found:',
+      f'Inclusion file `{file_name}` (relative to {root}) not found:',
         str(file_not_found_error),
       'CMD file:',
         f'{cmd_name}.cmd',
