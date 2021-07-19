@@ -6,6 +6,9 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+
+## [v3.1.0] CMD name without directory (2021-07-20)
+
 - Added derived property `%cmd-name-file`
 
 
@@ -129,7 +132,9 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v3.0.0...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v3.1.0...HEAD
+[v3.1.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v3.0.0...v3.1.0
 [v3.0.0]:
   https://github.com/conway-markdown/conway-markdown/compare/v2.4.1...v3.0.0
 [v2.4.1]:
