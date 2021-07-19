@@ -6,6 +6,9 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+
+## [v3.0.0] Relative inclusions (2021-07-19)
+
 - [Breaking] Changed inclusions file path reckoning:
   - File names beginning with `/` are reckoned relative to the terminal
   - File names not beginning with `/` are reckoned relative to the CMD file
@@ -124,7 +127,9 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v2.4.1...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v3.0.0...HEAD
+[v3.0.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v2.4.1...v3.0.0
 [v2.4.1]:
   https://github.com/conway-markdown/conway-markdown/compare/v2.4.0...v2.4.1
 [v2.4.0]:
