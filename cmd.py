@@ -305,9 +305,8 @@ def parse_attribute_specification(attribute_specification):
       leading_character = attribute_form[0]
       if leading_character in ATTRIBUTE_NAME_FROM_LEADING_CHARACTER:
         attribute_form_is_recognised = True
-        attribute_name = (
+        attribute_name = \
           ATTRIBUTE_NAME_FROM_LEADING_CHARACTER[leading_character]
-        )
         attribute_value = attribute_form[1:]
         if attribute_value[:1] == '=':
           attribute_value = attribute_value[1:]
@@ -351,9 +350,8 @@ def build_html_attributes(placeholder_storage, attribute_dictionary):
     )
     
     if not omit_attribute:
-      attribute_value = escape_html_attribute_value(
-        placeholder_storage, attribute_value
-      )
+      attribute_value = \
+        escape_html_attribute_value(placeholder_storage, attribute_value)
       attributes += f' {attribute_name}="{attribute_value}"'
   
   return attributes
@@ -375,9 +373,8 @@ def replace_by_ordinary_dictionary(
     
     replacement = dictionary[pattern]
     if placeholder_storage is not None:
-      replacement = (
+      replacement = \
         placeholder_storage.create_placeholder_store_markup(replacement)
-      )
     
     string = re.sub(
       re.escape(pattern),
@@ -481,18 +478,16 @@ class PlaceholderStorage:
     self.inverse_dictionary = {}
     self.counter = 0
     
-    self.PLACEHOLDER_MARKER_PLACEHOLDER_STRING = (
+    self.PLACEHOLDER_MARKER_PLACEHOLDER_STRING = \
       self.create_placeholder_store_markup(self.PLACEHOLDER_MARKER)
-    )
   
   def create_placeholder(self):
     """
     Create a placeholder string for the current counter value.
     """
     
-    placeholder_string = (
+    placeholder_string = \
       f'{self.PLACEHOLDER_MARKER}{self.counter}{self.PLACEHOLDER_MARKER}'
-    )
     
     return placeholder_string
   
@@ -597,9 +592,8 @@ class PropertyStorage:
     
     property_string = f'%{property_name}'
     property_markup = self.dictionary[property_string]
-    property_markup = (
+    property_markup = \
       self.replace_property_strings_with_markup(property_markup)
-    )
     
     return property_markup
   
@@ -773,9 +767,8 @@ class ReferenceStorage:
     label = label.lower()
     label = strip_whitespace(label)
     
-    attribute_dictionary = parse_attribute_specification(
-      attribute_specification
-    )
+    attribute_dictionary = \
+      parse_attribute_specification(attribute_specification)
     
     attribute_dictionary["address"] = address
     attribute_dictionary["title"] = title
@@ -953,12 +946,9 @@ def process_display_code_match(placeholder_storage, match_object):
   if enabled_whitespace_flag:
     content = process_whitespace(content)
   
-  display_code = (
-    f'<pre{attributes}><code>{content}</code></pre>'
-  )
-  display_code = (
+  display_code = f'<pre{attributes}><code>{content}</code></pre>'
+  display_code = \
     placeholder_storage.create_placeholder_store_markup(display_code)
-  )
   
   return display_code
 
@@ -1028,9 +1018,8 @@ def process_inline_code_match(placeholder_storage, match_object):
     content = process_whitespace(content)
   
   inline_code = f'<code>{content}</code>'
-  inline_code = (
+  inline_code = \
     placeholder_storage.create_placeholder_store_markup(inline_code)
-  )
   
   return inline_code
 
@@ -1161,9 +1150,8 @@ def process_display_maths_match(placeholder_storage, match_object):
     content = process_whitespace(content)
   
   display_maths = f'<div{attributes}>{content}</div>'
-  display_maths = (
+  display_maths = \
     placeholder_storage.create_placeholder_store_markup(display_maths)
-  )
   
   return display_maths
 
@@ -1228,9 +1216,8 @@ def process_inline_maths_match(placeholder_storage, match_object):
     content = process_whitespace(content)
   
   inline_maths = f'<span class="js-maths">{content}</span>'
-  inline_maths = (
+  inline_maths = \
     placeholder_storage.create_placeholder_store_markup(inline_maths)
-  )
   
   return inline_maths
 
@@ -1731,12 +1718,10 @@ def process_preamble_match(
   
   # Derived property %html-lang-attribute
   lang = property_storage.get_property_markup('lang')
-  html_lang_attribute = build_html_attributes(
-    placeholder_storage, {'lang': lang}
-  )
-  property_storage.store_property_markup(
-    'html-lang-attribute', html_lang_attribute
-  )
+  html_lang_attribute = \
+    build_html_attributes(placeholder_storage, {'lang': lang})
+  property_storage\
+    .store_property_markup('html-lang-attribute', html_lang_attribute)
   
   # Derived property %meta-element-author
   author = property_storage.get_property_markup('author')
@@ -1746,9 +1731,8 @@ def process_preamble_match(
     meta_element_author = ''
   else:
     meta_element_author = f'<meta name="author" content="{author}">'
-  property_storage.store_property_markup(
-    'meta-element-author', meta_element_author
-  )
+  property_storage\
+    .store_property_markup('meta-element-author', meta_element_author)
   
   # Derived property %meta-element-description
   description = property_storage.get_property_markup('description')
@@ -1757,12 +1741,13 @@ def process_preamble_match(
   if description == '':
     meta_element_description = ''
   else:
-    meta_element_description = (
+    meta_element_description = \
       f'<meta name="description" content="{description}">'
+  property_storage\
+    .store_property_markup(
+      'meta-element-description',
+      meta_element_description
     )
-  property_storage.store_property_markup(
-    'meta-element-description', meta_element_description
-  )
   
   # Derived property %meta-element-viewport
   viewport = property_storage.get_property_markup('viewport')
@@ -1771,9 +1756,8 @@ def process_preamble_match(
     meta_element_viewport = ''
   else:
     meta_element_viewport = f'<meta name="viewport" content="{viewport}">'
-  property_storage.store_property_markup(
-    'meta-element-viewport', meta_element_viewport
-  )
+  property_storage\
+    .store_property_markup('meta-element-viewport', meta_element_viewport)
   
   # Derived property %title-element
   title_suffix = property_storage.get_property_markup('title-suffix')
@@ -1789,9 +1773,8 @@ def process_preamble_match(
     style_element = ''
   else:
     style_element = f'<style>{css}</style>'
-  property_storage.store_property_markup(
-    'style-element', style_element
-  )
+  property_storage\
+    .store_property_markup('style-element', style_element)
   
   # Derived property %body-onload-attribute
   onload_js = property_storage.get_property_markup('onload-js')
@@ -1800,32 +1783,28 @@ def process_preamble_match(
     body_onload_attribute = ''
   else:
     body_onload_attribute = f' onload="{onload_js}"'
-  property_storage.store_property_markup(
-    'body-onload-attribute', body_onload_attribute
-  )
+  property_storage\
+    .store_property_markup('body-onload-attribute', body_onload_attribute)
   
   # Derived property %year-created
   date_created = property_storage.get_property_markup('date-created')
   year_created = date_created[:4]
-  property_storage.store_property_markup(
-    'year-created', year_created
-  )
+  property_storage\
+    .store_property_markup('year-created', year_created)
   
   # Derived property %year-modified
   date_modified = property_storage.get_property_markup('date-modified')
   year_modified = date_modified[:4]
-  property_storage.store_property_markup(
-    'year-modified', year_modified
-  )
+  property_storage\
+    .store_property_markup('year-modified', year_modified)
   
   # Derived property %year-modified-next
   try:
     year_modified_next = f'{int(year_modified) + 1}'
   except ValueError:
     year_modified_next = '????'
-  property_storage.store_property_markup(
-    'year-modified-next', year_modified_next
-  )
+  property_storage\
+    .store_property_markup('year-modified-next', year_modified_next)
   
   # Derived property %footer-element
   year_range = year_created
@@ -1838,9 +1817,8 @@ def process_preamble_match(
     author_markup = ''
   else:
     author_markup = f'~{author}'
-  footer_copyright_remark = (
+  footer_copyright_remark = \
     property_storage.get_property_markup('footer-copyright-remark')
-  )
   if footer_copyright_remark == '':
     footer_copyright_remark_markup = ''
   else:
@@ -1859,33 +1837,23 @@ def process_preamble_match(
       {footer_remark_markup}
     </footer>
   '''
-  property_storage.store_property_markup(
-    'footer-element', footer_element
-  )
+  property_storage.store_property_markup('footer-element', footer_element)
   
   # Derived property %cmd-name
-  property_storage.store_property_markup(
-    'cmd-name', cmd_name
-  )
+  property_storage.store_property_markup('cmd-name', cmd_name)
   
   # Derived property %cmd-name-file
   cmd_name_file = re.sub(r'\A.*/', '', cmd_name)
-  property_storage.store_property_markup(
-    'cmd-name-file', cmd_name_file
-  )
+  property_storage.store_property_markup('cmd-name-file', cmd_name_file)
   
   # Derived property %url
   url = f'{cmd_name}.html'
   url = re.sub(r'(?:\A|(?<=/))index[.]html\Z', '', url)
-  property_storage.store_property_markup(
-    'url', url
-  )
+  property_storage.store_property_markup('url', url)
   
   # Derived property %clean-url
   clean_url = re.sub(r'[.]html\Z', '', url)
-  property_storage.store_property_markup(
-    'clean-url', clean_url
-  )
+  property_storage.store_property_markup('clean-url', clean_url)
   
   return ''
 
@@ -2058,9 +2026,7 @@ def process_block_match(placeholder_storage, match_object):
   if block_is_list:
     content = process_list_items(placeholder_storage, content)
   
-  block = (
-    f'<{tag_name}{attributes}>\n{content}</{tag_name}>'
-  )
+  block = f'<{tag_name}{attributes}>\n{content}</{tag_name}>'
   
   return block
 
@@ -2530,9 +2496,12 @@ def process_escapes(placeholder_storage, markup):
   whilst everything else is protected.
   """
   
-  markup = replace_by_ordinary_dictionary(
-    ESCAPE_REPLACEMENT_DICTIONARY, markup, placeholder_storage
-  )
+  markup = \
+    replace_by_ordinary_dictionary(
+      ESCAPE_REPLACEMENT_DICTIONARY,
+      markup,
+      placeholder_storage
+    )
   
   markup = re.sub(r'\\\+', '<br>', markup)
   
@@ -2641,9 +2610,14 @@ def process_reference_definition_match(
   address = match_object.group('address')
   title = match_object.group('title')
   
-  reference_storage.store_definition_attribute_dictionary(
-    placeholder_storage, label, attribute_specification, address, title
-  )
+  reference_storage\
+    .store_definition_attribute_dictionary(
+      placeholder_storage,
+      label,
+      attribute_specification,
+      address,
+      title
+    )
   
   return ''
 
@@ -2739,10 +2713,12 @@ def process_images(placeholder_storage, reference_storage, markup):
         \]
       ) ?
     ''',
-    functools.partial(process_reference_image_match,
-      placeholder_storage,
-      reference_storage
-    ),
+    functools\
+      .partial(
+        process_reference_image_match,
+        placeholder_storage,
+        reference_storage
+      ),
     markup,
     flags=REGEX_FLAGS
   )
@@ -2766,9 +2742,8 @@ def process_inline_image_match(placeholder_storage, match_object):
   }
   
   attribute_specification = match_object.group('attribute_specification')
-  specification_attribute_dictionary = (
+  specification_attribute_dictionary = \
     parse_attribute_specification(attribute_specification)
-  )
   
   attribute_dictionary = {
     **match_attribute_dictionary,
@@ -2801,9 +2776,8 @@ def process_reference_image_match(
   if label is None or strip_whitespace(label) == '':
     label = alt
   
-  definition_attribute_dictionary = (
+  definition_attribute_dictionary = \
     reference_storage.get_definition_attribute_dictionary(label)
-  )
   if definition_attribute_dictionary is None:
     match_string = match_object.group()
     return match_string
@@ -2989,9 +2963,8 @@ def process_direct_link_match(placeholder_storage, match_object):
   match_attribute_dictionary = {'href': href}
   
   attribute_specification = match_object.group('attribute_specification')
-  specification_attribute_dictionary = (
+  specification_attribute_dictionary = \
     parse_attribute_specification(attribute_specification)
-  )
   
   attribute_dictionary = {
     **match_attribute_dictionary,
@@ -3024,9 +2997,8 @@ def process_inline_link_match(placeholder_storage, match_object):
   }
   
   attribute_specification = match_object.group('attribute_specification')
-  specification_attribute_dictionary = (
+  specification_attribute_dictionary = \
     parse_attribute_specification(attribute_specification)
-  )
   
   attribute_dictionary = {
     **match_attribute_dictionary,
@@ -3060,9 +3032,8 @@ def process_reference_link_match(
   if label is None or strip_whitespace(label) == '':
     label = content
   
-  definition_attribute_dictionary = (
+  definition_attribute_dictionary = \
     reference_storage.get_definition_attribute_dictionary(label)
-  )
   if definition_attribute_dictionary is None:
     match_string = match_object.group()
     return match_string
@@ -3151,9 +3122,8 @@ def process_inline_semantics(placeholder_storage, markup):
   
   while markup_has_changed:
     
-    new_markup = process_inline_semantics_single_pass(
-      placeholder_storage, markup
-    )
+    new_markup = \
+      process_inline_semantics_single_pass(placeholder_storage, markup)
     
     if new_markup == markup:
       markup_has_changed = False
@@ -3200,9 +3170,7 @@ def process_inline_semantics_single_pass(placeholder_storage, markup):
       (?<! [\s] | [|] )
       (?P=delimiter)
     ''',
-    functools.partial(process_inline_semantic_match,
-      placeholder_storage
-    ),
+    functools.partial(process_inline_semantic_match, placeholder_storage),
     markup,
     flags=REGEX_FLAGS
   )

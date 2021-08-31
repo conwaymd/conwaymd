@@ -6,6 +6,8 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- Improved continuation style in cmd.py
+
 
 ## [v3.1.0] CMD name without directory (2021-07-20)
 
