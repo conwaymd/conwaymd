@@ -10,6 +10,7 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 
 
 import argparse
+import os
 import re
 import sys
 
@@ -26,6 +27,10 @@ def cmd_to_html(cmd):
   html = cmd # TODO: implement conversion properly
   
   return html
+
+
+def is_cmd_file(file_name):
+  return file_name.endswith('.cmd')
 
 
 def extract_cmd_name(cmd_file_name_argument):
@@ -111,10 +116,12 @@ def main():
   if cmd_file_name_argument != '':
     generate_html_file(cmd_file_name_argument, uses_command_line_argument=True)
     return
-  
-  cmd_file_name_list = [] # TODO: implement this properly
-  for cmd_file_name in cmd_file_name_list:
-    generate_html_file(cmd_file_name, uses_command_line_argument=False)
+  else:
+    for path, _, file_names in os.walk(os.curdir):
+      for file_name in file_names:
+        if is_cmd_file(file_name):
+          cmd_file_name = os.path.join(path, file_name)
+          generate_html_file(cmd_file_name, uses_command_line_argument=False)
 
 
 if __name__ == '__main__':

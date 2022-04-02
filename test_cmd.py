@@ -15,6 +15,13 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  def test_is_cmd_file(self):
+    self.assertTrue(cmd.is_cmd_file("file.cmd"))
+    self.assertTrue(cmd.is_cmd_file(".cmd"))
+    self.assertFalse(cmd.is_cmd_file("file/cmd"))
+    self.assertFalse(cmd.is_cmd_file("file."))
+    self.assertFalse(cmd.is_cmd_file("file"))
+  
   def test_to_normalised_name(self):
     
     self.assertEqual(cmd.extract_cmd_name('file.cmd'), 'file')
