@@ -27,8 +27,8 @@ it will not be turned into a proper Python package.
    $ cmd [file.cmd]
    ```
 
-   - `file` and `file.` are acceptable abbreviations for `file.cmd`.
-   - Omit `file.cmd` to convert all CMD files under the current directory.
+   - Abbreviate `file.cmd` as `file` or `file.` for increased productivity.
+   - Omit `file.cmd` to convert all CMD files under the working directory.
 
 
 ## Features
