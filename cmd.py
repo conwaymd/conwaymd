@@ -16,7 +16,9 @@ def generate_html_file(cmd_file_name):
   return # TODO: implement this properly
 
 
-DESCRIPTION = 'Convert Conway-Markdown (CMD) to HTML.'
+DESCRIPTION = '''
+  Convert Conway-Markdown (CMD) to HTML.
+'''
 CMD_FILE_NAME_HELP = '''
   Name of CMD file to be converted.
   Abbreviate as `file` or `file.` for increased productivity.
