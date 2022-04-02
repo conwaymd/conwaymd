@@ -10,6 +10,21 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 
 
 import argparse
+import re
+
+
+def to_normalised_name(cmd_file_name):
+  """
+  Normalise a CMD file name.
+  
+  The CMD file name received from the command line parser
+  can be of the form `name.cmd`, `name.`, or `name`.
+  Here we normalise it to `name`.
+  """
+  
+  cmd_name = re.sub(r'\.(cmd)?\Z', '', cmd_file_name)
+  
+  return cmd_name
 
 
 def generate_html_file(cmd_file_name):
