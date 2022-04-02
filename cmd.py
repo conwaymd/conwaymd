@@ -14,7 +14,18 @@ import re
 import sys
 
 
+GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
+
+
+def cmd_to_html(cmd):
+  """
+  Convert CMD to HTML.
+  """
+  
+  html = cmd # TODO: implement conversion properly
+  
+  return html
 
 
 def extract_cmd_name(cmd_file_name_argument):
@@ -56,7 +67,16 @@ def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
               )
       raise FileNotFoundError(error_message) from file_not_found_error
   
-  return # TODO: implement this properly
+  html = cmd_to_html(cmd)
+  
+  html_file_name = f'{cmd_name}.html'
+  try:
+    with open(html_file_name, 'w', encoding='utf-8') as html_file:
+      html_file.write(html)
+      print(f'success: wrote to `{html_file_name}`')
+  except IOError:
+    print(f'error: cannot write to `{html_file_name}`')
+    sys.exit(GENERIC_ERROR_EXIT_CODE)
 
 
 DESCRIPTION = '''
