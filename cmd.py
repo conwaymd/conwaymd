@@ -17,41 +17,41 @@ import sys
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
-def to_normalised_name(cmd_file_name):
+def extract_cmd_name(cmd_file_name_argument):
   """
-  Normalise a CMD file name.
+  Extract name-without-extension from a CMD file name argument.
   
-  The CMD file name received from the command line parser
-  can be of the form `name.cmd`, `name.`, or `name`.
-  Here we normalise it to `name`.
+  The argument received from the command line can be either
+  `{cmd_name}.cmd`, `{cmd_name}.`, or `{cmd_name}`.
+  If no argument is received from the command line,
+  we loop through the file names, which are `{cmd_name}.cmd`.
+  In all cases we want `{cmd_name}`.
   """
   
-  normalised_cmd_name = re.sub(r'\.(cmd)?\Z', '', cmd_file_name)
-  
-  return normalised_cmd_name
+  return re.sub(r'\.(cmd)?\Z', '', cmd_file_name_argument)
 
 
-def generate_html_file(cmd_file_name, is_direct_command_line_call):
+def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
   
-  normalised_cmd_name = to_normalised_name(cmd_file_name)
-  normalised_cmd_file_name = f'{normalised_cmd_name}.cmd'
+  cmd_name = extract_cmd_name(cmd_file_name_argument)
+  cmd_file_name = f'{cmd_name}.cmd'
   try:
-    with open(normalised_cmd_file_name, 'r', encoding='utf-8') as cmd_file:
+    with open(cmd_file_name, 'r', encoding='utf-8') as cmd_file:
       cmd = cmd_file.read()
   except FileNotFoundError as file_not_found_error:
-    if is_direct_command_line_call:
+    if uses_command_line_argument:
       error_message = \
               (
                 'error: '
-                f'argument `{cmd_file_name}`: '
-                f'file `{normalised_cmd_file_name}` not found'
+                f'argument `{cmd_file_name_argument}`: '
+                f'file `{cmd_file_name}` not found'
               )
       print(error_message)
       sys.exit(COMMAND_LINE_ERROR_EXIT_CODE)
     else:
       error_message = \
               (
-                f'file `{normalised_cmd_file_name}` not found '
+                f'file `{cmd_file_name}` not found '
                 f'for `{cmd_file_name}` in cmd_file_name_list'
               )
       raise FileNotFoundError(error_message) from file_not_found_error
@@ -73,7 +73,7 @@ def parse_command_line_arguments():
   
   argument_parser = argparse.ArgumentParser(description=DESCRIPTION)
   argument_parser.add_argument(
-    'cmd_file_name',
+    'cmd_file_name_argument',
     default='',
     help=CMD_FILE_NAME_HELP,
     metavar='file.cmd',
@@ -86,15 +86,15 @@ def parse_command_line_arguments():
 def main():
   
   parsed_arguments = parse_command_line_arguments()
-  cmd_file_name = parsed_arguments.cmd_file_name
+  cmd_file_name_argument = parsed_arguments.cmd_file_name_argument
   
-  if cmd_file_name != '':
-    generate_html_file(cmd_file_name, is_direct_command_line_call=True)
+  if cmd_file_name_argument != '':
+    generate_html_file(cmd_file_name_argument, uses_command_line_argument=True)
     return
   
   cmd_file_name_list = [] # TODO: implement this properly
   for cmd_file_name in cmd_file_name_list:
-    generate_html_file(cmd_file_name, is_direct_command_line_call=False)
+    generate_html_file(cmd_file_name, uses_command_line_argument=False)
 
 
 if __name__ == '__main__':

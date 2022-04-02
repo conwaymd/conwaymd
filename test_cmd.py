@@ -17,9 +17,9 @@ class TestCmd(unittest.TestCase):
   
   def test_to_normalised_name(self):
     
-    self.assertEqual(cmd.to_normalised_name('file.cmd'), 'file')
-    self.assertEqual(cmd.to_normalised_name('file.'), 'file')
-    self.assertEqual(cmd.to_normalised_name('file'), 'file')
+    self.assertEqual(cmd.extract_cmd_name('file.cmd'), 'file')
+    self.assertEqual(cmd.extract_cmd_name('file.'), 'file')
+    self.assertEqual(cmd.extract_cmd_name('file'), 'file')
 
 
 if __name__ == '__main__':
