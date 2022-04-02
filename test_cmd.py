@@ -27,6 +27,13 @@ class TestCmd(unittest.TestCase):
     self.assertEqual(cmd.extract_cmd_name('file.cmd'), 'file')
     self.assertEqual(cmd.extract_cmd_name('file.'), 'file')
     self.assertEqual(cmd.extract_cmd_name('file'), 'file')
+    
+    self.assertEqual(cmd.extract_cmd_name('./file.cmd'), 'file')
+    self.assertEqual(cmd.extract_cmd_name('./file.'), 'file')
+    self.assertEqual(cmd.extract_cmd_name('./file'), 'file')
+    
+    self.assertEqual(cmd.extract_cmd_name(r'a\b\file'), 'a/b/file')
+    self.assertEqual(cmd.extract_cmd_name(r'.\dir\file.cmd'), 'dir/file')
 
 
 if __name__ == '__main__':

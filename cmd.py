@@ -38,13 +38,21 @@ def extract_cmd_name(cmd_file_name_argument):
   Extract name-without-extension from a CMD file name argument.
   
   The argument received from the command line can be either
-  `{cmd_name}.cmd`, `{cmd_name}.`, or `{cmd_name}`.
-  If no argument is received from the command line,
-  we loop through the file names, which are `{cmd_name}.cmd`.
-  In all cases we want `{cmd_name}`.
+  `{cmd_name}.cmd`, `{cmd_name}.`, or `{cmd_name}`,
+  or even `./{cmd_name}.cmd` if the user is being dumb.
+  If no argument be received from the command line,
+  we loop through the file names, which are `./{cmd_name}.cmd`.
+  If the operating system be Windows,
+  the directory separators will be backslashes
+  instead of forward slashes (as in URLs).
+  In all cases we want `{cmd_name}` with forward slashes.
   """
   
-  return re.sub(r'\.(cmd)?\Z', '', cmd_file_name_argument)
+  cmd_file_name_argument = re.sub(r'\\', '/', cmd_file_name_argument)
+  cmd_file_name_argument = re.sub(r'\A[.][/]', '', cmd_file_name_argument)
+  cmd_name = re.sub(r'[.](cmd)?\Z', '', cmd_file_name_argument)
+  
+  return cmd_name
 
 
 def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
@@ -117,7 +125,7 @@ def main():
     generate_html_file(cmd_file_name_argument, uses_command_line_argument=True)
     return
   else:
-    for path, _, file_names in os.walk(os.curdir):
+    for path, _, file_names in os.walk('./'):
       for file_name in file_names:
         if is_cmd_file(file_name):
           cmd_file_name = os.path.join(path, file_name)
