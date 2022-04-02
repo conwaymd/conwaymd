@@ -38,7 +38,7 @@ def generate_html_file(cmd_file_name, is_direct_command_line_call):
   
   try:
     with open(normalised_cmd_name, 'r', encoding='utf-8') as cmd_file:
-      cmd_file_content = cmd_file.read()
+      cmd = cmd_file.read()
   except FileNotFoundError as file_not_found_error:
     if is_direct_command_line_call:
       error_message = \
