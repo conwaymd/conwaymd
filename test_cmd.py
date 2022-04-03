@@ -15,6 +15,25 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  def test_none_to_empty_string(self):
+    self.assertEqual(cmd.none_to_empty_string(''), '')
+    self.assertEqual(cmd.none_to_empty_string(None), '')
+    self.assertEqual(cmd.none_to_empty_string('xyz'), 'xyz')
+  
+  def test_extract_rules_and_content(self):
+    self.assertEqual(cmd.extract_rules_and_content(''), ('', ''))
+    self.assertEqual(cmd.extract_rules_and_content('abc'), ('', 'abc'))
+    self.assertEqual(cmd.extract_rules_and_content('%%%abc'), ('', '%%%abc'))
+    self.assertEqual(cmd.extract_rules_and_content('abc%%%'), ('', 'abc%%%'))
+    self.assertEqual(cmd.extract_rules_and_content('%%%\nabc'), ('', 'abc'))
+    self.assertEqual(cmd.extract_rules_and_content('X%%\nY'), ('', 'X%%\nY'))
+    self.assertEqual(
+      cmd.extract_rules_and_content(
+        'This be the preamble.\nEven two lines of preamble.\n%%%%%\nYea.\n'
+      ),
+      ('This be the preamble.\nEven two lines of preamble.\n', 'Yea.\n')
+    )
+  
   def test_is_cmd_file(self):
     self.assertTrue(cmd.is_cmd_file('file.cmd'))
     self.assertTrue(cmd.is_cmd_file('.cmd'))

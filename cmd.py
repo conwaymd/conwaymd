@@ -19,12 +19,50 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
+def none_to_empty_string(string):
+  
+  if string is not None:
+    return string
+  
+  return ''
+
+
+def extract_rules_and_content(cmd):
+  """
+  Extract local rules and main content from CMD file content.
+  
+  The delimiter is the first occurrence of 3-or-more percent signs
+  on its own line.
+  """
+  
+  match_object = \
+          re.fullmatch(
+            r'''
+              (?:
+                (?P<local_rules> [\s\S]*? )
+                (?P<delimiter> ^[%]{3,}$ )
+                \n
+              ) ?
+              (?P<main_content> [\s\S]* )
+            ''',
+            cmd,
+            flags=re.MULTILINE | re.VERBOSE,
+          )
+  
+  local_rules = none_to_empty_string(match_object.group('local_rules'))
+  main_content = match_object.group('main_content')
+  
+  return (local_rules, main_content)
+
+
 def cmd_to_html(cmd):
   """
   Convert CMD to HTML.
   """
   
-  html = cmd # TODO: implement conversion properly
+  local_rules, main_content = extract_rules_and_content(cmd)
+  
+  html = main_content # TODO: implement conversion properly
   
   return html
 
