@@ -40,7 +40,7 @@ def extract_rules_and_content(cmd):
             r'''
               (?:
                 (?P<local_rules> [\s\S]*? )
-                (?P<delimiter> ^[%]{3,}$ )
+                (?P<delimiter> ^ [%]{3,} )
                 \n
               ) ?
               (?P<main_content> [\s\S]* )
