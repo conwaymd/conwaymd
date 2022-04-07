@@ -31,8 +31,15 @@ def extract_rules_and_content(cmd):
   """
   Extract local rules and main content from CMD file content.
   
-  The delimiter is the first occurrence of 3-or-more percent signs
-  on its own line.
+  «delimiter» shall be 3-or-more percent signs on its own line.
+  If the CMD file content is free of «delimiter»,
+  all of it shall be parsed as «main_content».
+  If the CMD file content contains «delimiter»,
+  it shall be parsed as
+          «local_rules»
+          «delimiter»
+          «main_content»
+  according to the first occurrence of «delimiter».
   """
   
   match_object = \
