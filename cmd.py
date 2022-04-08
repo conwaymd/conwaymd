@@ -150,6 +150,8 @@ class ExtensibleFenceReplacement:
               extensible_delimiter_character,
               extensible_delimiter_min_count
             )
+    extensible_delimiter_closing_regex = \
+            to_extensible_delimiter_closing_regex()
     closing_delimiter_regex = re.escape(self._closing_delimiter)
     
     return ''.join(
@@ -158,6 +160,7 @@ class ExtensibleFenceReplacement:
         flags_regex,
         opening_delimiter_regex,
         extensible_delimiter_opening_regex,
+        extensible_delimiter_closing_regex,
         closing_delimiter_regex,
       ]
     )
@@ -204,6 +207,10 @@ def to_extensible_delimiter_opening_regex(
   repetition_regex = f'{{{extensible_delimiter_min_count},}}'
   
   return f'(?P<extensible_delimiter> {character_regex}{repetition_regex} )'
+
+
+def to_extensible_delimiter_closing_regex():
+  return '(?P=extensible_delimiter)'
 
 
 def none_to_empty_string(string):
