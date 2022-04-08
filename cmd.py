@@ -94,8 +94,11 @@ class ExtensibleFenceReplacement:
     
     # Properties computed on validate
     self._syntax_type_is_block = None
+    self._has_flags = None
     self._has_attribute_specifications = None
+    self._has_empty_attribute_specifications = None
     self._regex_pattern = None
+    self._substitute_function = None
   
   def set_replacement_order(self, replacement_order):
     self._replacement_order = replacement_order
@@ -136,13 +139,17 @@ class ExtensibleFenceReplacement:
     
     self._syntax_type_is_block = \
             self._syntax_type == 'BLOCK'
+    self._has_flags = len(self._allowed_flags) > 0
     self._has_attribute_specifications = \
             self._attribute_specifications != 'NONE'
+    self._has_empty_attribute_specifications = \
+            self._attribute_specifications == 'EMPTY'
     self._regex_pattern = \
             self._build_regex_pattern(
               extensible_delimiter_character,
               extensible_delimiter_min_count
             )
+    self._substitute_function = self._build_substitute_function()
   
   def _build_regex_pattern(
     self,
@@ -152,7 +159,7 @@ class ExtensibleFenceReplacement:
     
     block_anchoring_regex = \
             to_block_anchoring_regex(self._syntax_type_is_block)
-    flags_regex = to_flags_regex(self._allowed_flags)
+    flags_regex = to_flags_regex(self._allowed_flags, self._has_flags)
     opening_delimiter_regex = re.escape(self._opening_delimiter)
     extensible_delimiter_opening_regex = \
             to_extensible_delimiter_opening_regex(
@@ -182,6 +189,44 @@ class ExtensibleFenceReplacement:
         closing_delimiter_regex,
       ]
     )
+  
+  def _build_substitute_function(self):
+    
+    def substitute_function(match_object):
+      
+      enabled_flag_settings = set()
+      if self._has_flags:
+        flags = get_group('flags', match_object)
+        for flag_letter, flag_setting in self._allowed_flags.items():
+          if flag_letter in flags:
+            enabled_flag_settings.add(flag_setting)
+      
+      if self._has_attribute_specifications:
+        matched_attribute_specifications = \
+                get_group('attribute_specifications', match_object)
+        if self._has_empty_attribute_specifications:
+          attribute_specifications = ''
+        else:
+          attribute_specifications = self._attribute_specifications
+        attributes_sequence = \
+                to_attributes_sequence(
+                  ' '.join(
+                    [
+                      attribute_specifications,
+                      matched_attribute_specifications,
+                    ]
+                  )
+                )
+      else:
+        attributes_sequence = ''
+      
+      content = get_group('content', match_object)
+      # TODO: content replacements
+      
+      # TODO: tag name
+      return f'<tag{attributes_sequence}>{content}</tag>'
+    
+    return substitute_function
 
 
 def factorise_repeated_character(string):
@@ -195,6 +240,21 @@ def factorise_repeated_character(string):
   return first_character, string_length
 
 
+def to_attributes_sequence(attribute_specifications):
+  # TODO: implement properly
+  #         «name»="«value_with_whitespace»"
+  #         «name»=«value»
+  #         #«id»
+  #         .«class»
+  #         l«lang»
+  #         r«rowspan»
+  #         c«colspan»
+  #         w«width»
+  #         h«height»
+  #         s«style»
+  return attribute_specifications
+
+
 def to_block_anchoring_regex(syntax_type_is_block):
   
   if syntax_type_is_block:
@@ -203,9 +263,9 @@ def to_block_anchoring_regex(syntax_type_is_block):
   return ''
 
 
-def to_flags_regex(allowed_flags):
+def to_flags_regex(allowed_flags, has_flags):
   
-  if len(allowed_flags) == 0:
+  if not has_flags:
     return ''
   
   flag_letters = \

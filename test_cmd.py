@@ -33,14 +33,15 @@ class TestCmd(unittest.TestCase):
     )
   
   def test_to_flags_regex(self):
-    self.assertEqual(cmd.to_flags_regex({}), '')
+    self.assertEqual(cmd.to_flags_regex({}, False), '')
     self.assertEqual(
       cmd.to_flags_regex(
         {
           'u': 'KEEP_HTML_UNESCAPED',
           'w': 'REDUCE_WHITESPACE',
           'i': 'KEEP_INDENTED',
-        }
+        },
+        True,
       ),
       '(?P<flags> [uwi]* )'
     )
