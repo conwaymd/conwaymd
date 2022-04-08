@@ -14,6 +14,24 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  def test_factorise_repeated_string(self):
+    self.assertEqual(
+      cmd.factorise_repeated_string('$$$$$$'),
+      ('$', 6)
+    )
+    self.assertEqual(
+      cmd.factorise_repeated_string('````'),
+      ('`', 4)
+    )
+    self.assertRaises(
+      cmd.NotRepeatedStringException,
+      cmd.factorise_repeated_string, '$$$$$$````'
+    )
+    self.assertRaises(
+      cmd.NotRepeatedStringException,
+      cmd.factorise_repeated_string, 'ThisStringIsNotACharacterRepeated'
+    )
+  
   def test_to_flags_regex(self):
     self.assertEqual(cmd.to_flags_regex({}), '')
     self.assertEqual(

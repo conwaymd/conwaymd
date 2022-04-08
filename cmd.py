@@ -37,6 +37,10 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
+class NotRepeatedStringException(Exception):
+  pass
+
+
 class MissingAttributeException(Exception):
   
   def __init__(self, missing_attribute):
@@ -118,15 +122,11 @@ class ExtensibleFenceReplacement:
     if self._extensible_delimiter is None:
       raise MissingAttributeException('extensible_delimiter')
     
-    extensible_delimiter = self._extensible_delimiter
-    extensible_delimiter_character = extensible_delimiter[0]
-    extensible_delimiter_min_count = len(extensible_delimiter)
-    if (
-      extensible_delimiter
-        !=
-      extensible_delimiter_character * extensible_delimiter_min_count
-    ):
-      raise ExtensibleDelimiterException(extensible_delimiter)
+    try:
+      extensible_delimiter_character, extensible_delimiter_min_count = \
+        factorise_repeated_string(self._extensible_delimiter)
+    except NotRepeatedStringException:
+      raise ExtensibleDelimiterException(self._extensible_delimiter)
     
     self._regex = \
             self.build_regex(
@@ -159,6 +159,17 @@ class ExtensibleFenceReplacement:
         closing_delimiter_regex,
       ]
     )
+
+
+def factorise_repeated_string(string):
+  
+  first_character = string[0]
+  string_length = len(string)
+  
+  if string != first_character * string_length:
+    raise NotRepeatedStringException
+  
+  return first_character, string_length
 
 
 def to_block_anchoring_regex(syntax_type):
