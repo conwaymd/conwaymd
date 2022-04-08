@@ -67,53 +67,53 @@ class ExtensibleFenceReplacement:
   """
   
   def __init__(self, id_):
-    self.id_ = id_
-    self.replacement_order = 'NONE'
-    self.syntax_type = None
-    self.allows_flags = {}
-    self.opening_delimiter = ''
-    self.extensible_delimiter = None
-    self.attribute_specifications = 'NONE'
-    self.content_replacements = []
-    self.closing_delimiter = ''
+    self._id = id_
+    self._replacement_order = 'NONE'
+    self._syntax_type = None
+    self._allows_flags = {}
+    self._opening_delimiter = ''
+    self._extensible_delimiter = None
+    self._attribute_specifications = 'NONE'
+    self._content_replacements = []
+    self._closing_delimiter = ''
   
   def set_replacement_order(self, replacement_order):
-    self.replacement_order = replacement_order
+    self._replacement_order = replacement_order
   
   def set_syntax_type(self, syntax_type):
-    self.syntax_type = syntax_type
+    self._syntax_type = syntax_type
   
   def set_allowed_flags(self, flag_setting_from_letter):
-    self.allows_flags = flag_setting_from_letter
+    self._allows_flags = flag_setting_from_letter
   
   def set_opening_delimiter(self, opening_delimiter):
-    self.opening_delimiter = opening_delimiter
+    self._opening_delimiter = opening_delimiter
   
   def set_extensible_delimiter(self, extensible_delimiter):
-    self.extensible_delimiter = extensible_delimiter
+    self._extensible_delimiter = extensible_delimiter
   
   def set_attribute_specifications(self, attribute_specifications):
-    self.attribute_specifications = attribute_specifications
+    self._attribute_specifications = attribute_specifications
   
   def set_content_replacements(self, content_replacements):
-    self.content_replacements = content_replacements
+    self._content_replacements = content_replacements
   
   def set_closing_delimiter(self, closing_delimiter):
-    self.closing_delimiter = closing_delimiter
+    self._closing_delimiter = closing_delimiter
   
   def is_valid(self):
     return all(
       attribute is not None
         for attribute in (
-          self.id_,
-          self.replacement_order,
-          self.syntax_type,
-          self.allows_flags,
-          self.opening_delimiter,
-          self.extensible_delimiter,
-          self.attribute_specifications,
-          self.content_replacements,
-          self.closing_delimiter,
+          self._id,
+          self._replacement_order,
+          self._syntax_type,
+          self._allows_flags,
+          self._opening_delimiter,
+          self._extensible_delimiter,
+          self._attribute_specifications,
+          self._content_replacements,
+          self._closing_delimiter,
         )
     )
 
