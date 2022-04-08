@@ -37,6 +37,15 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
+class MissingAttributeException(Exception):
+  
+  def __init__(self, missing_attribute):
+    self._missing_attribute = missing_attribute
+  
+  def get_missing_attribute(self):
+    return self._missing_attribute
+
+
 class ExtensibleFenceReplacement:
   """
   A generalised extensible-fence-style replacement rule.
