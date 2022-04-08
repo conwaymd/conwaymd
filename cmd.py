@@ -37,13 +37,13 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
-class ExtensibleFenceReplacementRule:
+class ExtensibleFenceReplacement:
   """
   A generalised extensible-fence-style replacement rule.
   
   Inspired by the repeatable backticks of John Gruber's Markdown.
   CMD replacement rule syntax:
-          ExtensibleFenceReplacementRule: #«id»
+          ExtensibleFenceReplacement: #«id»
           - replacement-order: ROOT | BEFORE #«id» | AFTER #«id» | (def) NONE
           - syntax-type: DISPLAY | INLINE
           - allowed-flags:
