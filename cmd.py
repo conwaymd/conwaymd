@@ -83,18 +83,20 @@ class ExtensibleFenceReplacement:
     
     # Attributes to be specified in CMD replacement rule syntax
     self._id = id_
-    self._replacement_order = 'NONE'
-    self._syntax_type = None
-    self._allowed_flags = {}
-    self._opening_delimiter = ''
-    self._extensible_delimiter = None
-    self._attribute_specifications = 'NONE'
-    self._content_replacements = []
-    self._closing_delimiter = ''
+    self._replacement_order = None
+    self._syntax_type = None # (mandatory)
+    self._allowed_flags = None
+    self._opening_delimiter = None
+    self._extensible_delimiter = None # (mandatory)
+    self._attribute_specifications = None
+    self._content_replacements = None
+    self._closing_delimiter = None
     
     # Properties computed on validate
     self._syntax_type_is_block = None
     self._has_flags = None
+    self._extensible_delimiter_character = None
+    self._extensible_delimiter_min_count = None
     self._has_attribute_specifications = None
     self._has_empty_attribute_specifications = None
     self._regex_pattern = None
@@ -128,34 +130,39 @@ class ExtensibleFenceReplacement:
     
     if self._syntax_type is None:
       raise MissingAttributeException('syntax_type')
+    self._syntax_type_is_block = self._syntax_type == 'BLOCK'
+    
+    if self._allowed_flags is None:
+      self._allowed_flags = {}
+    self._has_flags = len(self._allowed_flags) > 0
+    
+    if self._opening_delimiter is None:
+      self._opening_delimiter = ''
+    
     if self._extensible_delimiter is None:
       raise MissingAttributeException('extensible_delimiter')
-    
     try:
-      extensible_delimiter_character, extensible_delimiter_min_count = \
-              factorise_repeated_character(self._extensible_delimiter)
+      self._extensible_delimiter_character, \
+      self._extensible_delimiter_min_count, \
+            = factorise_repeated_character(self._extensible_delimiter)
     except NotCharacterRepeatedException:
       raise ExtensibleDelimiterException(self._extensible_delimiter)
     
-    self._syntax_type_is_block = \
-            self._syntax_type == 'BLOCK'
-    self._has_flags = len(self._allowed_flags) > 0
-    self._has_attribute_specifications = \
-            self._attribute_specifications != 'NONE'
-    self._has_empty_attribute_specifications = \
-            self._attribute_specifications == 'EMPTY'
-    self._regex_pattern = \
-            self._build_regex_pattern(
-              extensible_delimiter_character,
-              extensible_delimiter_min_count
-            )
+    if self._attribute_specifications == 'NONE':
+      self._attribute_specifications = None
+    if self._attribute_specifications == 'EMPTY':
+      self._attribute_specifications = ''
+    
+    if self._content_replacements is None:
+      self._content_replacements = []
+    
+    if self._closing_delimiter is None:
+      self._closing_delimiter = ''
+    
+    self._regex_pattern = self._build_regex_pattern()
     self._substitute_function = self._build_substitute_function()
   
-  def _build_regex_pattern(
-    self,
-    extensible_delimiter_character,
-    extensible_delimiter_min_count,
-  ):
+  def _build_regex_pattern(self):
     
     block_anchoring_regex = \
             to_block_anchoring_regex(self._syntax_type_is_block)
@@ -163,8 +170,8 @@ class ExtensibleFenceReplacement:
     opening_delimiter_regex = re.escape(self._opening_delimiter)
     extensible_delimiter_opening_regex = \
             to_extensible_delimiter_opening_regex(
-              extensible_delimiter_character,
-              extensible_delimiter_min_count,
+              self._extensible_delimiter_character,
+              self._extensible_delimiter_min_count,
             )
     attribute_specifications_regex = \
             to_attribute_specifications_regex(
