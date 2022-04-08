@@ -4,8 +4,26 @@
 # cmd.py
 
 Convert Conway-Markdown (CMD) to HTML.
-
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
+
+## Structure
+
+CMD files are parsed as
+        «replacement_rules»
+        «delimiter»
+        «main_content»
+where «delimiter» is the first occurrence of
+3-or-more percent signs on its own line.
+If the file is free of «delimiter»,
+thw whole file is parsed is parsed as «main_content».
+
+## Replacement rules
+
+TODO
+
+## Main content
+
+TODO
 """
 
 

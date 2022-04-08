@@ -4,7 +4,6 @@
 # test_cmd.py
 
 Perform unit testing for `cmd.py`.
-
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 """
 
