@@ -27,6 +27,12 @@ class TestCmd(unittest.TestCase):
       '(?P<flags> [uwi]* )'
     )
   
+  def test_extensible_delimiter_opening_regex(self):
+    self.assertEqual(
+      cmd.to_extensible_delimiter_opening_regex('$', 5),
+      r'(?P<extensible_delimiter> \${5,} )'
+    )
+  
   def test_none_to_empty_string(self):
     self.assertEqual(cmd.none_to_empty_string(''), '')
     self.assertEqual(cmd.none_to_empty_string(None), '')

@@ -46,6 +46,15 @@ class MissingAttributeException(Exception):
     return self._missing_attribute
 
 
+class ExtensibleDelimiterException(Exception):
+  
+  def __init__(self, extensible_delimiter):
+    self._extensible_delimiter = extensible_delimiter
+  
+  def get_extensible_delimiter(self):
+    return self._extensible_delimiter
+
+
 class ExtensibleFenceReplacement:
   """
   A generalised extensible-fence-style replacement rule.
@@ -76,6 +85,7 @@ class ExtensibleFenceReplacement:
     self._attribute_specifications = 'NONE'
     self._content_replacements = []
     self._closing_delimiter = ''
+    self._regex = None
   
   def set_replacement_order(self, replacement_order):
     self._replacement_order = replacement_order
@@ -102,15 +112,53 @@ class ExtensibleFenceReplacement:
     self._closing_delimiter = closing_delimiter
   
   def validate(self):
+    
     if self._syntax_type is None:
       raise MissingAttributeException('syntax_type')
     if self._extensible_delimiter is None:
       raise MissingAttributeException('extensible_delimiter')
+    
+    extensible_delimiter = self._extensible_delimiter
+    extensible_delimiter_character = extensible_delimiter[0]
+    extensible_delimiter_min_count = len(extensible_delimiter)
+    if (
+      extensible_delimiter
+        !=
+      extensible_delimiter_character * extensible_delimiter_min_count
+    ):
+      raise ExtensibleDelimiterException(extensible_delimiter)
+    
+    self._regex = \
+            self.build_regex(
+              extensible_delimiter_character,
+              extensible_delimiter_min_count
+            )
   
-  def apply(self, string):
+  def build_regex(
+    self,
+    extensible_delimiter_character,
+    extensible_delimiter_min_count,
+  ):
     
     block_anchoring_regex = to_block_anchoring_regex(self._syntax_type)
     flags_regex = to_flags_regex(self._allowed_flags)
+    opening_delimiter_regex = re.escape(self._opening_delimiter)
+    extensible_delimiter_opening_regex = \
+            to_extensible_delimiter_opening_regex(
+              extensible_delimiter_character,
+              extensible_delimiter_min_count
+            )
+    closing_delimiter_regex = re.escape(self._closing_delimiter)
+    
+    return ''.join(
+      [
+        block_anchoring_regex,
+        flags_regex,
+        opening_delimiter_regex,
+        extensible_delimiter_opening_regex,
+        closing_delimiter_regex,
+      ]
+    )
 
 
 def to_block_anchoring_regex(syntax_type):
@@ -132,6 +180,17 @@ def to_flags_regex(allowed_flags):
               for flag_letter in allowed_flags.keys()
           )
   return f'(?P<flags> [{flag_letters}]* )'
+
+
+def to_extensible_delimiter_opening_regex(
+  extensible_delimiter_character,
+  extensible_delimiter_min_count,
+):
+  
+  character_regex = re.escape(extensible_delimiter_character)
+  repetition_regex = f'{{{extensible_delimiter_min_count},}}'
+  
+  return f'(?P<extensible_delimiter> {character_regex}{repetition_regex} )'
 
 
 def none_to_empty_string(string):
