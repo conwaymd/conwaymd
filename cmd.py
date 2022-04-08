@@ -156,6 +156,7 @@ class ExtensibleFenceReplacement:
               has_attribute_specifications,
               type_is_block,
             )
+    content_regex = to_content_regex()
     extensible_delimiter_closing_regex = \
             to_extensible_delimiter_closing_regex()
     closing_delimiter_regex = re.escape(self._closing_delimiter)
@@ -167,6 +168,7 @@ class ExtensibleFenceReplacement:
         opening_delimiter_regex,
         extensible_delimiter_opening_regex,
         attribute_specifications_regex,
+        content_regex,
         extensible_delimiter_closing_regex,
         closing_delimiter_regex,
       ]
@@ -233,6 +235,10 @@ def to_attribute_specifications_regex(
     block_newline_regex = ''
   
   return optional_braced_sequence_regex + block_newline_regex
+
+
+def to_content_regex():
+  return r'(?P<content> [\s\S]*? )'
 
 
 def to_extensible_delimiter_closing_regex():
