@@ -141,6 +141,7 @@ class ExtensibleFenceReplacement:
   ):
     
     type_is_block = self._syntax_type == 'BLOCK'
+    has_attribute_specifications = self._attribute_specifications != 'NONE'
     
     block_anchoring_regex = to_block_anchoring_regex(type_is_block)
     flags_regex = to_flags_regex(self._allowed_flags)
@@ -148,7 +149,12 @@ class ExtensibleFenceReplacement:
     extensible_delimiter_opening_regex = \
             to_extensible_delimiter_opening_regex(
               extensible_delimiter_character,
-              extensible_delimiter_min_count
+              extensible_delimiter_min_count,
+            )
+    attribute_specifications_regex = \
+            to_attribute_specifications_regex(
+              has_attribute_specifications,
+              type_is_block,
             )
     extensible_delimiter_closing_regex = \
             to_extensible_delimiter_closing_regex()
@@ -160,6 +166,7 @@ class ExtensibleFenceReplacement:
         flags_regex,
         opening_delimiter_regex,
         extensible_delimiter_opening_regex,
+        attribute_specifications_regex,
         extensible_delimiter_closing_regex,
         closing_delimiter_regex,
       ]
@@ -207,6 +214,25 @@ def to_extensible_delimiter_opening_regex(
   repetition_regex = f'{{{extensible_delimiter_min_count},}}'
   
   return f'(?P<extensible_delimiter> {character_regex}{repetition_regex} )'
+
+
+def to_attribute_specifications_regex(
+  has_attribute_specifications,
+  type_is_block,
+):
+  
+  if has_attribute_specifications:
+    optional_braced_sequence_regex = \
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+  else:
+    optional_braced_sequence_regex = ''
+  
+  if type_is_block:
+    block_newline_regex = r'\n'
+  else:
+    block_newline_regex = ''
+  
+  return optional_braced_sequence_regex + block_newline_regex
 
 
 def to_extensible_delimiter_closing_regex():
