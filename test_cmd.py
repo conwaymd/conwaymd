@@ -33,6 +33,12 @@ class TestCmd(unittest.TestCase):
       ),
       ('This be the preamble.\nEven two lines of preamble.\n', 'Yea.\n')
     )
+    self.assertEqual(
+      cmd.extract_rules_and_content(
+        'ABC\n%%%\n123\n%%%%%%%\nXYZ'
+      ),
+      ('ABC\n', '123\n%%%%%%%\nXYZ')
+    )
   
   def test_is_cmd_file(self):
     self.assertTrue(cmd.is_cmd_file('file.cmd'))
