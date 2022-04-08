@@ -98,7 +98,6 @@ class ExtensibleFenceReplacement:
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
     self._has_attribute_specifications = None
-    self._has_empty_attribute_specifications = None
     self._regex_pattern = None
     self._substitute_function = None
   
@@ -209,21 +208,18 @@ class ExtensibleFenceReplacement:
             enabled_flag_settings.add(flag_setting)
       
       if self._has_attribute_specifications:
+        default_attribute_specifications = self._attribute_specifications
         matched_attribute_specifications = \
                 get_group('attribute_specifications', match_object)
-        if self._has_empty_attribute_specifications:
-          attribute_specifications = ''
-        else:
-          attribute_specifications = self._attribute_specifications
-        attributes_sequence = \
-                to_attributes_sequence(
-                  ' '.join(
-                    [
-                      attribute_specifications,
-                      matched_attribute_specifications,
-                    ]
-                  )
+        attribute_specifications = \
+                ' '.join(
+                  [
+                    default_attribute_specifications,
+                    matched_attribute_specifications,
+                  ]
                 )
+        attributes_sequence = \
+                to_attributes_sequence(attribute_specifications)
       else:
         attributes_sequence = ''
       
