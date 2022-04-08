@@ -80,6 +80,8 @@ class ExtensibleFenceReplacement:
   """
   
   def __init__(self, id_):
+    
+    # Attributes to be specified in CMD replacement rule syntax
     self._id = id_
     self._replacement_order = 'NONE'
     self._syntax_type = None
@@ -89,6 +91,10 @@ class ExtensibleFenceReplacement:
     self._attribute_specifications = 'NONE'
     self._content_replacements = []
     self._closing_delimiter = ''
+    
+    # Properties computed on validate
+    self._syntax_type_is_block = None
+    self._has_attribute_specifications = None
     self._regex = None
   
   def set_replacement_order(self, replacement_order):
@@ -128,6 +134,10 @@ class ExtensibleFenceReplacement:
     except NotCharacterRepeatedException:
       raise ExtensibleDelimiterException(self._extensible_delimiter)
     
+    self._syntax_type_is_block = \
+            self._syntax_type == 'BLOCK'
+    self._has_attribute_specifications = \
+            self._attribute_specifications != 'NONE'
     self._regex = \
             self.build_regex(
               extensible_delimiter_character,
@@ -140,10 +150,8 @@ class ExtensibleFenceReplacement:
     extensible_delimiter_min_count,
   ):
     
-    type_is_block = self._syntax_type == 'BLOCK'
-    has_attribute_specifications = self._attribute_specifications != 'NONE'
-    
-    block_anchoring_regex = to_block_anchoring_regex(type_is_block)
+    block_anchoring_regex = \
+            to_block_anchoring_regex(self._syntax_type_is_block)
     flags_regex = to_flags_regex(self._allowed_flags)
     opening_delimiter_regex = re.escape(self._opening_delimiter)
     extensible_delimiter_opening_regex = \
@@ -153,8 +161,8 @@ class ExtensibleFenceReplacement:
             )
     attribute_specifications_regex = \
             to_attribute_specifications_regex(
-              has_attribute_specifications,
-              type_is_block,
+              self._has_attribute_specifications,
+              self._syntax_type_is_block,
             )
     content_regex = to_content_regex()
     extensible_delimiter_closing_regex = \
@@ -187,9 +195,9 @@ def factorise_repeated_character(string):
   return first_character, string_length
 
 
-def to_block_anchoring_regex(type_is_block):
+def to_block_anchoring_regex(syntax_type_is_block):
   
-  if type_is_block:
+  if syntax_type_is_block:
     return r'^[ \t]*'
   
   return ''
@@ -221,7 +229,7 @@ def to_extensible_delimiter_opening_regex(
 
 def to_attribute_specifications_regex(
   has_attribute_specifications,
-  type_is_block,
+  syntax_type_is_block,
 ):
   
   if has_attribute_specifications:
@@ -230,7 +238,7 @@ def to_attribute_specifications_regex(
   else:
     optional_braced_sequence_regex = ''
   
-  if type_is_block:
+  if syntax_type_is_block:
     block_newline_regex = r'\n'
   else:
     block_newline_regex = ''
