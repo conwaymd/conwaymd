@@ -37,6 +37,28 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
+class ExtensibleFenceReplacementRule:
+  """
+  A generalised extensible-fence-style replacement rule.
+  
+  Inspired by the repeatable backticks of John Gruber's Markdown.
+  CMD replacement rule syntax:
+          ExtensibleFenceReplacementRule: #«id»
+          - order: ROOT | BEFORE #«id» | AFTER #«id» | NONE
+          - type: DISPLAY | INLINE
+          [- flags:
+            [- u: KEEP_HTML_UNESCAPED]
+            [- w: REDUCE_WHITESPACE]
+            [- i: KEEP_INDENTED]
+          ]
+          - opening-delimiter: «string»
+          - extensible-delimiter: «character_repeated»
+          - attribute-specifications: NONE | EMPTY | «string»
+          [- content-replacements: #«id» [...]]
+          - closing-delimiter: «string»
+  """
+
+
 def none_to_empty_string(string):
   
   if string is not None:
