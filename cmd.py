@@ -95,7 +95,7 @@ class ExtensibleFenceReplacement:
     # Properties computed on validate
     self._syntax_type_is_block = None
     self._has_attribute_specifications = None
-    self._regex = None
+    self._regex_pattern = None
   
   def set_replacement_order(self, replacement_order):
     self._replacement_order = replacement_order
@@ -138,13 +138,13 @@ class ExtensibleFenceReplacement:
             self._syntax_type == 'BLOCK'
     self._has_attribute_specifications = \
             self._attribute_specifications != 'NONE'
-    self._regex = \
-            self._build_regex(
+    self._regex_pattern = \
+            self._build_regex_pattern(
               extensible_delimiter_character,
               extensible_delimiter_min_count
             )
   
-  def _build_regex(
+  def _build_regex_pattern(
     self,
     extensible_delimiter_character,
     extensible_delimiter_min_count,
