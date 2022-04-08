@@ -79,7 +79,7 @@ def cmd_to_html(cmd):
   Convert CMD to HTML.
   """
   
-  local_rules, main_content = extract_rules_and_content(cmd)
+  replacement_rules, main_content = extract_rules_and_content(cmd)
   
   html = main_content # TODO: implement conversion properly
   
