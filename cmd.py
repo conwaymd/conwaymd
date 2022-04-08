@@ -139,12 +139,12 @@ class ExtensibleFenceReplacement:
     self._has_attribute_specifications = \
             self._attribute_specifications != 'NONE'
     self._regex = \
-            self.build_regex(
+            self._build_regex(
               extensible_delimiter_character,
               extensible_delimiter_min_count
             )
   
-  def build_regex(
+  def _build_regex(
     self,
     extensible_delimiter_character,
     extensible_delimiter_min_count,
