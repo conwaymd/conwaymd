@@ -169,6 +169,7 @@ class ExtensibleFenceReplacement:
         extensible_delimiter_opening_regex,
         attribute_specifications_regex,
         content_regex,
+        block_anchoring_regex,
         extensible_delimiter_closing_regex,
         closing_delimiter_regex,
       ]
