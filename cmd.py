@@ -140,7 +140,9 @@ class ExtensibleFenceReplacement:
     extensible_delimiter_min_count,
   ):
     
-    block_anchoring_regex = to_block_anchoring_regex(self._syntax_type)
+    type_is_block = self._syntax_type == 'BLOCK'
+    
+    block_anchoring_regex = to_block_anchoring_regex(type_is_block)
     flags_regex = to_flags_regex(self._allowed_flags)
     opening_delimiter_regex = re.escape(self._opening_delimiter)
     extensible_delimiter_opening_regex = \
@@ -172,9 +174,9 @@ def factorise_repeated_character(string):
   return first_character, string_length
 
 
-def to_block_anchoring_regex(syntax_type):
+def to_block_anchoring_regex(type_is_block):
   
-  if syntax_type == 'BLOCK':
+  if type_is_block:
     return r'^[ \t]*'
   
   return ''
