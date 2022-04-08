@@ -70,7 +70,7 @@ class ExtensibleFenceReplacement:
     self._id = id_
     self._replacement_order = 'NONE'
     self._syntax_type = None
-    self._allows_flags = {}
+    self._allowed_flags = {}
     self._opening_delimiter = ''
     self._extensible_delimiter = None
     self._attribute_specifications = 'NONE'
@@ -84,7 +84,7 @@ class ExtensibleFenceReplacement:
     self._syntax_type = syntax_type
   
   def set_allowed_flags(self, flag_setting_from_letter):
-    self._allows_flags = flag_setting_from_letter
+    self._allowed_flags = flag_setting_from_letter
   
   def set_opening_delimiter(self, opening_delimiter):
     self._opening_delimiter = opening_delimiter
@@ -106,6 +106,32 @@ class ExtensibleFenceReplacement:
       raise MissingAttributeException('syntax_type')
     if self._extensible_delimiter is None:
       raise MissingAttributeException('extensible_delimiter')
+  
+  def apply(self, string):
+    
+    block_anchoring_regex = to_block_anchoring_regex(self._syntax_type)
+    flags_regex = to_flags_regex(self._allowed_flags)
+
+
+def to_block_anchoring_regex(syntax_type):
+  
+  if syntax_type == 'BLOCK':
+    return r'^[ \t]*'
+  
+  return ''
+
+
+def to_flags_regex(allowed_flags):
+  
+  if len(allowed_flags) == 0:
+    return ''
+  
+  flag_letters = \
+          ''.join(
+            re.escape(flag_letter)
+              for flag_letter in allowed_flags.keys()
+          )
+  return f'(?P<flags> [{flag_letters}]* )'
 
 
 def none_to_empty_string(string):

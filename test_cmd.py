@@ -14,6 +14,19 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  def test_to_flags_regex(self):
+    self.assertEqual(cmd.to_flags_regex({}), '')
+    self.assertEqual(
+      cmd.to_flags_regex(
+        {
+          'u': 'KEEP_HTML_UNESCAPED',
+          'w': 'REDUCE_WHITESPACE',
+          'i': 'KEEP_INDENTED',
+        }
+      ),
+      '(?P<flags> [uwi]* )'
+    )
+  
   def test_none_to_empty_string(self):
     self.assertEqual(cmd.none_to_empty_string(''), '')
     self.assertEqual(cmd.none_to_empty_string(None), '')
