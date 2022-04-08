@@ -44,17 +44,17 @@ class ExtensibleFenceReplacement:
   Inspired by the repeatable backticks of John Gruber's Markdown.
   CMD replacement rule syntax:
           ExtensibleFenceReplacement: #«id»
-          - replacement-order: ROOT | BEFORE #«id» | AFTER #«id» | (def) NONE
-          - syntax-type: DISPLAY | INLINE
-          - allowed-flags:
+          - replacement_order: ROOT | BEFORE #«id» | AFTER #«id» | (def) NONE
+          - syntax_type: DISPLAY | INLINE
+          - allowed_flags:
             - «letter»: KEEP_HTML_UNESCAPED | REDUCE_WHITESPACE | KEEP_INDENTED
             [...]
             (def «none»)
-          - opening-delimiter: «string» (def «empty»)
-          - extensible-delimiter: «character_repeated»
-          - attribute-specifications: (def) NONE | EMPTY | «string»
-          - content-replacements: #«id» [...] (def «none»)
-          - closing-delimiter: «string» (def «empty»)
+          - opening_delimiter: «string» (def «empty»)
+          - extensible_delimiter: «character_repeated»
+          - attribute_specifications: (def) NONE | EMPTY | «string»
+          - content_replacements: #«id» [...] (def «none»)
+          - closing_delimiter: «string» (def «empty»)
   """
   
   def __init__(self, id_):
