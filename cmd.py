@@ -101,21 +101,11 @@ class ExtensibleFenceReplacement:
   def set_closing_delimiter(self, closing_delimiter):
     self._closing_delimiter = closing_delimiter
   
-  def is_valid(self):
-    return all(
-      attribute is not None
-        for attribute in (
-          self._id,
-          self._replacement_order,
-          self._syntax_type,
-          self._allows_flags,
-          self._opening_delimiter,
-          self._extensible_delimiter,
-          self._attribute_specifications,
-          self._content_replacements,
-          self._closing_delimiter,
-        )
-    )
+  def validate(self):
+    if self._syntax_type is None:
+      raise MissingAttributeException('syntax_type')
+    if self._extensible_delimiter is None:
+      raise MissingAttributeException('extensible_delimiter')
 
 
 def none_to_empty_string(string):
