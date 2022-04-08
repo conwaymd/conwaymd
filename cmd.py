@@ -37,7 +37,7 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
-class NotRepeatedStringException(Exception):
+class NotCharacterRepeatedException(Exception):
   pass
 
 
@@ -124,8 +124,8 @@ class ExtensibleFenceReplacement:
     
     try:
       extensible_delimiter_character, extensible_delimiter_min_count = \
-        factorise_repeated_string(self._extensible_delimiter)
-    except NotRepeatedStringException:
+              factorise_repeated_character(self._extensible_delimiter)
+    except NotCharacterRepeatedException:
       raise ExtensibleDelimiterException(self._extensible_delimiter)
     
     self._regex = \
@@ -161,13 +161,13 @@ class ExtensibleFenceReplacement:
     )
 
 
-def factorise_repeated_string(string):
+def factorise_repeated_character(string):
   
   first_character = string[0]
   string_length = len(string)
   
   if string != first_character * string_length:
-    raise NotRepeatedStringException
+    raise NotCharacterRepeatedException
   
   return first_character, string_length
 
