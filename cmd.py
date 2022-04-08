@@ -27,6 +27,18 @@ def none_to_empty_string(string):
   return ''
 
 
+def get_group(group_name, match_object):
+  """
+  Retrieve as string a named capture group from a match object.
+  
+  Ensures the result is not None.
+  """
+  
+  string = match_object.group(group_name)
+  
+  return none_to_empty_string(string)
+
+
 def extract_rules_and_content(cmd):
   """
   Extract replacement rules and main content from CMD file content.
@@ -56,8 +68,8 @@ def extract_rules_and_content(cmd):
             flags=re.MULTILINE | re.VERBOSE,
           )
   
-  replacement_rules = none_to_empty_string(match_object.group('replacement_rules'))
-  main_content = match_object.group('main_content')
+  replacement_rules = get_group('replacement_rules', match_object)
+  main_content = get_group('main_content', match_object)
   
   return (replacement_rules, main_content)
 
