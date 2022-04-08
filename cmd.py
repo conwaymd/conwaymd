@@ -29,14 +29,14 @@ def none_to_empty_string(string):
 
 def extract_rules_and_content(cmd):
   """
-  Extract local rules and main content from CMD file content.
+  Extract replacement rules and main content from CMD file content.
   
   «delimiter» shall be 3-or-more percent signs on its own line.
   If the CMD file content is free of «delimiter»,
   all of it shall be parsed as «main_content».
   If the CMD file content contains «delimiter»,
   it shall be parsed as
-          «local_rules»
+          «replacement_rules»
           «delimiter»
           «main_content»
   according to the first occurrence of «delimiter».
@@ -46,7 +46,7 @@ def extract_rules_and_content(cmd):
           re.fullmatch(
             r'''
               (?:
-                (?P<local_rules> [\s\S]*? )
+                (?P<replacement_rules> [\s\S]*? )
                 (?P<delimiter> ^ [%]{3,} )
                 \n
               ) ?
@@ -56,10 +56,10 @@ def extract_rules_and_content(cmd):
             flags=re.MULTILINE | re.VERBOSE,
           )
   
-  local_rules = none_to_empty_string(match_object.group('local_rules'))
+  replacement_rules = none_to_empty_string(match_object.group('replacement_rules'))
   main_content = match_object.group('main_content')
   
-  return (local_rules, main_content)
+  return (replacement_rules, main_content)
 
 
 def cmd_to_html(cmd):
