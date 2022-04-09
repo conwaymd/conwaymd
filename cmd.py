@@ -285,19 +285,97 @@ def factorise_repeated_character(string):
   return first_character, string_length
 
 
+ATTRIBUTE_NAME_FROM_ABBREVIATION = \
+        {
+          '#': 'id',
+          '.': 'class',
+          'l': 'lang',
+          'r': 'rowspan',
+          'c': 'colspan',
+          'w': 'width',
+          'h': 'height',
+          's': 'style',
+        }
+TO_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
+        r'''
+          (?:
+            (?P<name> [^\s=]+ ) =
+                    (?:
+                      "(?P<quoted_value> [\s\S]*? )"
+                        |
+                      (?P<bare_value> [\S]* )
+                    )
+              |
+            [#] (?P<id_> [^\s"]+ )
+              |
+            [.] (?P<class_> [^\s"]+ )
+              |
+            [r] (?P<rowspan> [0-9]+ )
+              |
+            [c] (?P<colspan> [0-9]+ )
+              |
+            [w] (?P<width> [0-9]+ )
+              |
+            [h] (?P<height> [0-9]+ )
+          )
+          [\s]*
+        '''
+
+
+def to_attributes_sequence_substitute_function(match_object):
+  
+  name = get_group('name', match_object)
+  if name != '':
+    
+    try:
+      name = ATTRIBUTE_NAME_FROM_ABBREVIATION[name]
+    except KeyError:
+      pass
+    
+    quoted_value = get_group('quoted_value', match_object)
+    bare_value = get_group('bare_value', match_object)
+    if quoted_value != '':
+      value = quoted_value
+    else:
+      value = bare_value
+    
+    return f' {name}="{value}"'
+  
+  id_ = get_group('id_', match_object)
+  if id_ != '':
+    return f' id="{id_}"'
+  
+  class_ = get_group('class_', match_object)
+  if class_ != '':
+    return f' class="{class_}"'
+  
+  rowspan = get_group('rowspan', match_object)
+  if rowspan != '':
+    return f' rowspan={rowspan}'
+  
+  colspan = get_group('colspan', match_object)
+  if colspan != '':
+    return f' colspan={colspan}'
+  
+  width = get_group('width', match_object)
+  if width != '':
+    return f' width={width}'
+  
+  height = get_group('height', match_object)
+  if height != '':
+    return f' height={height}'
+  
+  return match_object.group()
+
+
 def to_attributes_sequence(attribute_specifications):
-  # TODO: implement properly
-  #         «name»="«value_with_whitespace»"
-  #         «name»=«value»
-  #         #«id»
-  #         .«class»
-  #         l«lang»
-  #         r«rowspan»
-  #         c«colspan»
-  #         w«width»
-  #         h«height»
-  #         s«style»
-  return attribute_specifications
+  
+  return re.sub(
+    TO_ATTRIBUTES_SEQUENCE_REGEX_PATTERN,
+    to_attributes_sequence_substitute_function,
+    attribute_specifications,
+    flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+  )
 
 
 def to_block_anchoring_regex(syntax_type_is_block):

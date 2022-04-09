@@ -73,6 +73,24 @@ class TestCmd(unittest.TestCase):
       cmd.factorise_repeated_character, 'ThisStringIsNotACharacterRepeated'
     )
   
+  def test_to_attributes_sequence(self):
+    self.assertEqual(
+      cmd.to_attributes_sequence(''),
+      ''
+    )
+    self.assertEqual(
+      cmd.to_attributes_sequence('name="quoted value" name=bare-value'),
+      ' name="quoted value" name="bare-value"'
+    )
+    self.assertEqual(
+      cmd.to_attributes_sequence('#=top .=good    l=en    r=3    c=2'),
+      ' id="top" class="good" lang="en" rowspan="3" colspan="2"'
+    )
+    self.assertEqual(
+      cmd.to_attributes_sequence('w="320" h=16 s="font-weight: bold"'),
+      ' width="320" height="16" style="font-weight: bold"'
+    )
+  
   def test_to_flags_regex(self):
     self.assertEqual(cmd.to_flags_regex({}, False), '')
     self.assertEqual(
