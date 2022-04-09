@@ -99,7 +99,6 @@ class ExtensibleFenceReplacement:
     self._has_flags = None
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
-    self._has_attribute_specifications = None
     self._regex_pattern = None
     self._substitute_function = None
   
@@ -174,7 +173,7 @@ class ExtensibleFenceReplacement:
               self._opening_delimiter,
               self._extensible_delimiter_character,
               self._extensible_delimiter_min_count,
-              self._has_attribute_specifications,
+              self._attribute_specifications,
               self._closing_delimiter,
             )
     self._substitute_function = self._build_substitute_function()
@@ -187,7 +186,7 @@ class ExtensibleFenceReplacement:
     opening_delimiter,
     extensible_delimiter_character,
     extensible_delimiter_min_count,
-    has_attribute_specifications,
+    attribute_specifications,
     closing_delimiter,
   ):
     
@@ -202,7 +201,7 @@ class ExtensibleFenceReplacement:
             )
     attribute_specifications_regex = \
             to_attribute_specifications_regex(
-              has_attribute_specifications,
+              attribute_specifications,
               syntax_is_block,
             )
     content_regex = to_content_regex()
@@ -235,7 +234,7 @@ class ExtensibleFenceReplacement:
           if flag_letter in flags:
             enabled_flag_settings.add(flag_setting)
       
-      if self._has_attribute_specifications:
+      if self._attribute_specifications is not None:
         default_attribute_specifications = self._attribute_specifications
         matched_attribute_specifications = \
                 get_group('attribute_specifications', match_object)
@@ -320,11 +319,11 @@ def to_extensible_delimiter_opening_regex(
 
 
 def to_attribute_specifications_regex(
-  has_attribute_specifications,
+  attribute_specifications,
   syntax_type_is_block,
 ):
   
-  if has_attribute_specifications:
+  if attribute_specifications is not None:
     optional_braced_sequence_regex = \
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
   else:
