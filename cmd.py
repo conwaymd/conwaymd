@@ -265,7 +265,25 @@ class ReplacementMaster:
   def is_comment(line):
     return line.startswith('#')
   
+  @staticmethod
+  def compute_class_declaration_match(line):
+    return re.fullmatch(
+      r'''
+        (?P<class_name> [A-Za-z]+ ) [:]
+        [\s]+
+        [#] (?P<id_> [a-z-]+ )
+      ''',
+      line,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  def commit(self, replacement):
+    # TODO: validate, update fields
+    pass
+  
   def legislate(self, replacement_rules):
+    
+    replacement = None
     
     for line_number, line in replacement_rules.splitlines():
       
@@ -274,6 +292,15 @@ class ReplacementMaster:
       
       if ReplacementMaster.is_comment(line):
         continue
+      
+      class_declaration_match = \
+              ReplacementMaster.compute_class_declaration_match(line)
+      if class_declaration_match is not None:
+        
+        if replacement is not None:
+          self.commit(replacement)
+        
+        # TODO: parse match
       
       # TODO: other cases
     
