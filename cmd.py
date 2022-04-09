@@ -567,8 +567,8 @@ def extract_rules_and_content(cmd):
   return (replacement_rules, main_content)
 
 
-STANDARD_REPLACEMENT_RULES = \
-r'''# STANDARD_REPLACEMENT_RULES
+STANDARD_RULES = \
+r'''# STANDARD_RULES
 
 OrdinaryReplacement: #escape-html
 - & --> &amp;
@@ -613,7 +613,7 @@ def cmd_to_html(cmd, cmd_file_name=None):
   replacement_rules, main_content = extract_rules_and_content(cmd)
   
   replacement_master = ReplacementMaster()
-  replacement_master.legislate(STANDARD_REPLACEMENT_RULES, 'STANDARD_REPLACEMENT_RULES')
+  replacement_master.legislate(STANDARD_RULES, 'STANDARD_RULES')
   replacement_master.legislate(replacement_rules, cmd_file_name)
   html = replacement_master.execute(main_content)
   
