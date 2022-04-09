@@ -317,7 +317,8 @@ class ReplacementMaster:
     class_name = None
     replacement = None
     
-    for line_number, line in enumerate(replacement_rules.splitlines()):
+    for line_number, line \
+    in enumerate(replacement_rules.splitlines(), start=1):
       
       if ReplacementMaster.is_whitespace_only(line):
         continue
