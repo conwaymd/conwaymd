@@ -176,7 +176,12 @@ class ExtensibleFenceReplacement:
               self._attribute_specifications,
               self._closing_delimiter,
             )
-    self._substitute_function = self._build_substitute_function()
+    self._substitute_function = \
+            self.build_substitute_function(
+              self._allowed_flags,
+              self._has_flags,
+              self._attribute_specifications,
+            )
   
   @staticmethod
   def build_regex_pattern(
@@ -223,30 +228,31 @@ class ExtensibleFenceReplacement:
       ]
     )
   
-  def _build_substitute_function(self):
+  @staticmethod
+  def build_substitute_function(
+    allowed_flags,
+    has_flags,
+    attribute_specifications,
+  ):
     
     def substitute_function(match_object):
       
       enabled_flag_settings = set()
-      if self._has_flags:
+      if has_flags:
         flags = get_group('flags', match_object)
-        for flag_letter, flag_setting in self._allowed_flags.items():
+        for flag_letter, flag_setting in allowed_flags.items():
           if flag_letter in flags:
             enabled_flag_settings.add(flag_setting)
       
-      if self._attribute_specifications is not None:
-        default_attribute_specifications = self._attribute_specifications
+      if attribute_specifications is not None:
         matched_attribute_specifications = \
                 get_group('attribute_specifications', match_object)
-        attribute_specifications = \
+        combined_attribute_specifications = \
                 ' '.join(
-                  [
-                    default_attribute_specifications,
-                    matched_attribute_specifications,
-                  ]
+                  [attribute_specifications, matched_attribute_specifications]
                 )
         attributes_sequence = \
-                to_attributes_sequence(attribute_specifications)
+                to_attributes_sequence(combined_attribute_specifications)
       else:
         attributes_sequence = ''
       
