@@ -77,7 +77,7 @@ class ExtensibleFenceReplacement:
           - attribute_specifications: (def) NONE | EMPTY | «string»
           - content_replacements: #«id» [...] (def «none»)
           - closing_delimiter: «string» (def «empty»)
-          - tag_name: «name» (def «empty»)
+          - tag_name: (def) NONE | «name»
   """
   
   def __init__(self, id_):
@@ -162,8 +162,8 @@ class ExtensibleFenceReplacement:
     if self._closing_delimiter is None:
       self._closing_delimiter = ''
     
-    if self._tag_name is None:
-      self._tag_name = ''
+    if self._tag_name == 'NONE' or self._tag_name == '':
+      self._tag_name = None
     
     self._regex_pattern = \
             self.build_regex_pattern(
@@ -269,7 +269,7 @@ class ExtensibleFenceReplacement:
       content = get_group('content', match_object)
       # TODO: content replacements
       
-      if tag_name == '':
+      if tag_name is None:
         return content
       else:
         return f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
