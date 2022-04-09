@@ -274,6 +274,24 @@ class ExtensibleFenceReplacement:
     return substitute_function
 
 
+class ReplacementMaster:
+  
+  def __init__(self):
+    self._replacement_from_id = {}
+    self._replacement_queue = []
+  
+  def legislate(self, replacement_rules):
+    # TODO: implement properly
+    return
+  
+  def execute(self, string):
+    
+    for replacement in self._replacement_queue:
+      string = replacement.apply(string)
+    
+    return string
+
+
 def factorise_repeated_character(string):
   
   first_character = string[0]
@@ -496,6 +514,27 @@ def extract_rules_and_content(cmd):
   return (replacement_rules, main_content)
 
 
+STANDARD_REPLACEMENT_RULES = \
+'''\
+ExtensibleFenceReplacement: #literals
+- replacement_order: ROOT
+- syntax_type: INLINE
+- allowed_flags:
+  - u: KEEP_HTML_UNESCAPED
+  - w: REDUCE_WHITESPACE
+  - i: KEEP_INDENTED
+- opening_delimiter: <
+- extensible_delimiter: `
+- attribute_specifications: NONE
+- content_replacements:
+    #escape-html
+    #reduce-whitespace
+    #de-indent
+    #placeholder-protect
+- closing_delimiter: >
+'''
+
+
 def cmd_to_html(cmd):
   """
   Convert CMD to HTML.
@@ -503,7 +542,10 @@ def cmd_to_html(cmd):
   
   replacement_rules, main_content = extract_rules_and_content(cmd)
   
-  html = main_content # TODO: implement conversion properly
+  replacement_master = ReplacementMaster()
+  replacement_master.legislate(STANDARD_REPLACEMENT_RULES)
+  replacement_master.legislate(replacement_rules)
+  html = replacement_master.execute(main_content)
   
   return html
 
