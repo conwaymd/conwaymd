@@ -183,6 +183,14 @@ class ExtensibleFenceReplacement:
               self._attribute_specifications,
             )
   
+  def apply(self, string):
+    return re.sub(
+      self._regex_pattern,
+      self._substitute_function,
+      string,
+      flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+    )
+  
   @staticmethod
   def build_regex_pattern(
     syntax_is_block,
