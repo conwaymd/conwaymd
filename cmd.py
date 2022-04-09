@@ -70,13 +70,13 @@ class ExtensibleFenceReplacement:
   ````
   ExtensibleFenceReplacement: #«id»
   - replacement_order: ROOT | BEFORE #«id» | AFTER #«id» | (def) NONE
-  - syntax_type: DISPLAY | INLINE
+  - syntax_type: DISPLAY | INLINE (mandatory)
   - allowed_flags:
     - «letter»: KEEP_HTML_UNESCAPED | REDUCE_WHITESPACE | KEEP_INDENTED
     [...]
     (def «none»)
   - opening_delimiter: «string» (def «empty»)
-  - extensible_delimiter: «character_repeated»
+  - extensible_delimiter: «character_repeated» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
   - content_replacements: #«id» [...] (def «none»)
   - closing_delimiter: «string» (def «empty»)
@@ -89,10 +89,10 @@ class ExtensibleFenceReplacement:
     # Attributes to be specified in CMD replacement rule syntax
     self._id = id_
     self._replacement_order = None
-    self._syntax_type = None # (mandatory)
+    self._syntax_type = None
     self._allowed_flags = None
     self._opening_delimiter = None
-    self._extensible_delimiter = None # (mandatory)
+    self._extensible_delimiter = None
     self._attribute_specifications = None
     self._content_replacements = None
     self._closing_delimiter = None
