@@ -140,7 +140,7 @@ class ExtensibleFenceReplacement:
       raise MissingAttributeException('extensible_delimiter')
     
     self._regex_pattern = \
-            self.build_regex_pattern(
+            ExtensibleFenceReplacement.build_regex_pattern(
               self._syntax_type_is_block,
               self._flag_setting_from_letter,
               self._has_flags,
@@ -151,7 +151,7 @@ class ExtensibleFenceReplacement:
               self._closing_delimiter,
             )
     self._substitute_function = \
-            self.build_substitute_function(
+            ExtensibleFenceReplacement.build_substitute_function(
               self._flag_setting_from_letter,
               self._has_flags,
               self._attribute_specifications,
