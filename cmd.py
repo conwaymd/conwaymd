@@ -301,6 +301,7 @@ class ReplacementMaster:
         f'{source_file}, line `{line_number}`: '
         f'missing attribute `{missing_attribute}` for {class_name}'
       )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     id_ = replacement.get_id()
     self._replacement_from_id[id_] = replacement
