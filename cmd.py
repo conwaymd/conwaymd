@@ -9,9 +9,11 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 ## Structure
 
 CMD files are parsed as
-        «replacement_rules»
-        «delimiter»
-        «main_content»
+````
+«replacement_rules»
+«delimiter»
+«main_content»
+````
 where «delimiter» is the first occurrence of
 3-or-more percent signs on its own line.
 If the file is free of «delimiter»,
@@ -65,19 +67,21 @@ class ExtensibleFenceReplacement:
   
   Inspired by the repeatable backticks of John Gruber's Markdown.
   CMD replacement rule syntax:
-          ExtensibleFenceReplacement: #«id»
-          - replacement_order: ROOT | BEFORE #«id» | AFTER #«id» | (def) NONE
-          - syntax_type: DISPLAY | INLINE
-          - allowed_flags:
-            - «letter»: KEEP_HTML_UNESCAPED | REDUCE_WHITESPACE | KEEP_INDENTED
-            [...]
-            (def «none»)
-          - opening_delimiter: «string» (def «empty»)
-          - extensible_delimiter: «character_repeated»
-          - attribute_specifications: (def) NONE | EMPTY | «string»
-          - content_replacements: #«id» [...] (def «none»)
-          - closing_delimiter: «string» (def «empty»)
-          - tag_name: (def) NONE | «name»
+  ````
+  ExtensibleFenceReplacement: #«id»
+  - replacement_order: ROOT | BEFORE #«id» | AFTER #«id» | (def) NONE
+  - syntax_type: DISPLAY | INLINE
+  - allowed_flags:
+    - «letter»: KEEP_HTML_UNESCAPED | REDUCE_WHITESPACE | KEEP_INDENTED
+    [...]
+    (def «none»)
+  - opening_delimiter: «string» (def «empty»)
+  - extensible_delimiter: «character_repeated»
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  - content_replacements: #«id» [...] (def «none»)
+  - closing_delimiter: «string» (def «empty»)
+  - tag_name: (def) NONE | «name»
+  ````
   """
   
   def __init__(self, id_):
