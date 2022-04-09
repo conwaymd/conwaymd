@@ -87,8 +87,12 @@ class TestCmd(unittest.TestCase):
       ''
     )
     self.assertEqual(
-      cmd.to_attributes_sequence('   \n name=value\n    boolean   boolean='),
-      ' name="value" boolean boolean'
+      cmd.to_attributes_sequence('   \n name=value\n    '),
+      ' name="value"'
+    )
+    self.assertEqual(
+      cmd.to_attributes_sequence(' empty1="" empty2=  boolean'),
+      ' empty1="" empty2="" boolean'
     )
     self.assertEqual(
       cmd.to_attributes_sequence('name="quoted value" name=bare-value'),

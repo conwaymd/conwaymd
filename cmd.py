@@ -339,10 +339,7 @@ def to_attributes_sequence_substitute_function(match_object):
     bare_value = get_group('bare_value', match_object)
     value = quoted_value + bare_value # at most one will be non-empty
     
-    if value == '': # boolean attribute
-      return f' {name}'
-    else:
-      return f' {name}="{value}"'
+    return f' {name}="{value}"'
   
   id_ = get_group('id_', match_object)
   if id_ != '':
