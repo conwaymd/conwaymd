@@ -75,42 +75,42 @@ class TestCmd(unittest.TestCase):
   
   def test_to_attributes_sequence(self):
     self.assertEqual(
-      cmd.to_attributes_sequence(''),
+      cmd.build_attributes_sequence(''),
       ''
     )
     self.assertEqual(
-      cmd.to_attributes_sequence('  '),
+      cmd.build_attributes_sequence('  '),
       ''
     )
     self.assertEqual(
-      cmd.to_attributes_sequence('\t'),
+      cmd.build_attributes_sequence('\t'),
       ''
     )
     self.assertEqual(
-      cmd.to_attributes_sequence('   \n name=value\n    '),
+      cmd.build_attributes_sequence('   \n name=value\n    '),
       ' name="value"'
     )
     self.assertEqual(
-      cmd.to_attributes_sequence(' empty1="" empty2=  boolean'),
+      cmd.build_attributes_sequence(' empty1="" empty2=  boolean'),
       ' empty1="" empty2="" boolean'
     )
     self.assertEqual(
-      cmd.to_attributes_sequence('name="quoted value" name=bare-value'),
+      cmd.build_attributes_sequence('name="quoted value" name=bare-value'),
       ' name="quoted value" name="bare-value"'
     )
     self.assertEqual(
-      cmd.to_attributes_sequence('#=top .=good    l=en    r=3    c=2'),
+      cmd.build_attributes_sequence('#=top .=good    l=en    r=3    c=2'),
       ' id="top" class="good" lang="en" rowspan="3" colspan="2"'
     )
     self.assertEqual(
-      cmd.to_attributes_sequence('w="320" h=16 s="font-weight: bold"'),
+      cmd.build_attributes_sequence('w="320" h=16 s="font-weight: bold"'),
       ' width="320" height="16" style="font-weight: bold"'
     )
   
   def test_to_flags_regex(self):
-    self.assertEqual(cmd.to_flags_regex({}, False), '')
+    self.assertEqual(cmd.build_flags_regex({}, False), '')
     self.assertEqual(
-      cmd.to_flags_regex(
+      cmd.build_flags_regex(
         {
           'u': 'KEEP_HTML_UNESCAPED',
           'w': 'REDUCE_WHITESPACE',
@@ -123,7 +123,7 @@ class TestCmd(unittest.TestCase):
   
   def test_extensible_delimiter_opening_regex(self):
     self.assertEqual(
-      cmd.to_extensible_delimiter_opening_regex('$', 5),
+      cmd.build_extensible_delimiter_opening_regex('$', 5),
       r'(?P<extensible_delimiter> \${5,} )'
     )
   

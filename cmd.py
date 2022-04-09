@@ -205,22 +205,22 @@ class ExtensibleFenceReplacement:
   ):
     
     block_anchoring_regex = \
-            to_block_anchoring_regex(syntax_is_block)
-    flags_regex = to_flags_regex(allowed_flags, has_flags)
+            build_block_anchoring_regex(syntax_is_block)
+    flags_regex = build_flags_regex(allowed_flags, has_flags)
     opening_delimiter_regex = re.escape(opening_delimiter)
     extensible_delimiter_opening_regex = \
-            to_extensible_delimiter_opening_regex(
+            build_extensible_delimiter_opening_regex(
               extensible_delimiter_character,
               extensible_delimiter_min_count,
             )
     attribute_specifications_regex = \
-            to_attribute_specifications_regex(
+            build_attribute_specifications_regex(
               attribute_specifications,
               syntax_is_block,
             )
-    content_regex = to_content_regex()
+    content_regex = build_content_regex()
     extensible_delimiter_closing_regex = \
-            to_extensible_delimiter_closing_regex()
+            build_extensible_delimiter_closing_regex()
     closing_delimiter_regex = re.escape(closing_delimiter)
     
     return ''.join(
@@ -262,7 +262,7 @@ class ExtensibleFenceReplacement:
                   [attribute_specifications, matched_attribute_specifications]
                 )
         attributes_sequence = \
-                to_attributes_sequence(combined_attribute_specifications)
+                build_attributes_sequence(combined_attribute_specifications)
       else:
         attributes_sequence = ''
       
@@ -317,7 +317,7 @@ ATTRIBUTE_NAME_FROM_ABBREVIATION = \
           'h': 'height',
           's': 'style',
         }
-TO_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
+BUILD_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
         r'''
           [\s]*
           (?:
@@ -346,7 +346,7 @@ TO_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
         '''
 
 
-def to_attributes_sequence_substitute_function(match):
+def build_attributes_sequence_substitute_function(match):
   
   name = get_group('name', match)
   if name != '':
@@ -393,17 +393,17 @@ def to_attributes_sequence_substitute_function(match):
   return ''
 
 
-def to_attributes_sequence(attribute_specifications):
+def build_attributes_sequence(attribute_specifications):
   
   return re.sub(
-    TO_ATTRIBUTES_SEQUENCE_REGEX_PATTERN,
-    to_attributes_sequence_substitute_function,
+    BUILD_ATTRIBUTES_SEQUENCE_REGEX_PATTERN,
+    build_attributes_sequence_substitute_function,
     attribute_specifications,
     flags=re.ASCII | re.MULTILINE | re.VERBOSE,
   )
 
 
-def to_block_anchoring_regex(syntax_type_is_block):
+def build_block_anchoring_regex(syntax_type_is_block):
   
   if syntax_type_is_block:
     return r'^[^\S\n]*'
@@ -411,7 +411,7 @@ def to_block_anchoring_regex(syntax_type_is_block):
   return ''
 
 
-def to_flags_regex(allowed_flags, has_flags):
+def build_flags_regex(allowed_flags, has_flags):
   
   if not has_flags:
     return ''
@@ -424,7 +424,7 @@ def to_flags_regex(allowed_flags, has_flags):
   return f'(?P<flags> [{flag_letters}]* )'
 
 
-def to_extensible_delimiter_opening_regex(
+def build_extensible_delimiter_opening_regex(
   extensible_delimiter_character,
   extensible_delimiter_min_count,
 ):
@@ -435,7 +435,7 @@ def to_extensible_delimiter_opening_regex(
   return f'(?P<extensible_delimiter> {character_regex}{repetition_regex} )'
 
 
-def to_attribute_specifications_regex(
+def build_attribute_specifications_regex(
   attribute_specifications,
   syntax_type_is_block,
 ):
@@ -454,11 +454,11 @@ def to_attribute_specifications_regex(
   return optional_braced_sequence_regex + block_newline_regex
 
 
-def to_content_regex():
+def build_content_regex():
   return r'(?P<content> [\s\S]*? )'
 
 
-def to_extensible_delimiter_closing_regex():
+def build_extensible_delimiter_closing_regex():
   return '(?P=extensible_delimiter)'
 
 
