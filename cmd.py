@@ -528,7 +528,6 @@ ExtensibleFenceReplacement: #literals
   - i: KEEP_INDENTED
 - opening_delimiter: <
 - extensible_delimiter: `
-- attribute_specifications: NONE
 - content_replacements:
     #escape-html
     #reduce-whitespace
