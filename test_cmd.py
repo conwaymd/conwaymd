@@ -14,6 +14,47 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  def test_extensible_fence_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.ExtensibleFenceReplacement.build_regex_pattern(
+        syntax_is_block=False,
+        allowed_flags={'u': 'KEEP_HTML_UNESCAPED', 'i': 'KEEP_INDENTED'},
+        has_flags=True,
+        opening_delimiter='{',
+        extensible_delimiter_character='+',
+        extensible_delimiter_min_count=2,
+        has_attribute_specifications=False,
+        closing_delimiter='}',
+      ),
+      '(?P<flags> [ui]* )'
+      r'\{'
+      r'(?P<extensible_delimiter> \+{2,} )'
+      r'(?P<content> [\s\S]*? )'
+      '(?P=extensible_delimiter)'
+      r'\}'
+    )
+    
+    self.assertEqual(
+      cmd.ExtensibleFenceReplacement.build_regex_pattern(
+        syntax_is_block=True,
+        allowed_flags={},
+        has_flags=False,
+        opening_delimiter='',
+        extensible_delimiter_character='$',
+        extensible_delimiter_min_count=4,
+        has_attribute_specifications=True,
+        closing_delimiter='',
+      ),
+      r'^[ \t]*'
+      r'(?P<extensible_delimiter> \${4,} )'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+      r'\n'
+      r'(?P<content> [\s\S]*? )'
+      r'^[ \t]*'
+      '(?P=extensible_delimiter)'
+    )
+  
   def test_factorise_repeated_character(self):
     self.assertEqual(
       cmd.factorise_repeated_character('$$$$$$'),

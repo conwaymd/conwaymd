@@ -166,29 +166,49 @@ class ExtensibleFenceReplacement:
     if self._tag_name is None:
       raise MissingAttributeException('tag_name')
     
-    self._regex_pattern = self._build_regex_pattern()
-    self._substitute_function = self._build_substitute_function()
-  
-  def _build_regex_pattern(self):
-    
-    block_anchoring_regex = \
-            to_block_anchoring_regex(self._syntax_type_is_block)
-    flags_regex = to_flags_regex(self._allowed_flags, self._has_flags)
-    opening_delimiter_regex = re.escape(self._opening_delimiter)
-    extensible_delimiter_opening_regex = \
-            to_extensible_delimiter_opening_regex(
+    self._regex_pattern = \
+            self.build_regex_pattern(
+              self._syntax_type_is_block,
+              self._allowed_flags,
+              self._has_flags,
+              self._opening_delimiter,
               self._extensible_delimiter_character,
               self._extensible_delimiter_min_count,
+              self._has_attribute_specifications,
+              self._closing_delimiter,
+            )
+    self._substitute_function = self._build_substitute_function()
+  
+  @staticmethod
+  def build_regex_pattern(
+    syntax_is_block,
+    allowed_flags,
+    has_flags,
+    opening_delimiter,
+    extensible_delimiter_character,
+    extensible_delimiter_min_count,
+    has_attribute_specifications,
+    closing_delimiter,
+  ):
+    
+    block_anchoring_regex = \
+            to_block_anchoring_regex(syntax_is_block)
+    flags_regex = to_flags_regex(allowed_flags, has_flags)
+    opening_delimiter_regex = re.escape(opening_delimiter)
+    extensible_delimiter_opening_regex = \
+            to_extensible_delimiter_opening_regex(
+              extensible_delimiter_character,
+              extensible_delimiter_min_count,
             )
     attribute_specifications_regex = \
             to_attribute_specifications_regex(
-              self._has_attribute_specifications,
-              self._syntax_type_is_block,
+              has_attribute_specifications,
+              syntax_is_block,
             )
     content_regex = to_content_regex()
     extensible_delimiter_closing_regex = \
             to_extensible_delimiter_closing_regex()
-    closing_delimiter_regex = re.escape(self._closing_delimiter)
+    closing_delimiter_regex = re.escape(closing_delimiter)
     
     return ''.join(
       [
