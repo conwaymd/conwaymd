@@ -257,8 +257,19 @@ class ReplacementMaster:
     self._replacement_from_id = {}
     self._replacement_queue = []
   
+  @staticmethod
+  def is_whitespace_only(line):
+    return re.fullmatch(r'[\s]*', line, flags=re.ASCII)
+  
   def legislate(self, replacement_rules):
-    # TODO: implement properly
+    
+    for line_number, line in replacement_rules.splitlines():
+      
+      if ReplacementMaster.is_whitespace_only(line):
+        continue
+      
+      # TODO: other cases
+    
     return
   
   def execute(self, string):
