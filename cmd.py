@@ -43,15 +43,6 @@ class NotCharacterRepeatedException(Exception):
   pass
 
 
-class DuplicateAttributeException(Exception):
-  
-  def __init__(self, duplicate_attribute):
-    self._duplicate_attribute = duplicate_attribute
-  
-  def get_duplicate_attribute(self):
-    return self._duplicate_attribute
-
-
 class MissingAttributeException(Exception):
   
   def __init__(self, missing_attribute):
@@ -69,38 +60,35 @@ class ExtensibleFenceReplacement:
   CMD replacement rule syntax:
   ````
   ExtensibleFenceReplacement: #«id»
-  - replacement_order: ROOT | BEFORE #«id» | AFTER #«id» | (def) NONE
+  - replacement_order: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - syntax_type: DISPLAY | INLINE (mandatory)
   - allowed_flags:
-    - «letter»: KEEP_HTML_UNESCAPED | REDUCE_WHITESPACE | KEEP_INDENTED
-    [...]
-    (def «none»)
-  - opening_delimiter: «string» (def «empty»)
+      (def) NONE
+        |
+      «letter»=KEEP_HTML_UNESCAPED | REDUCE_WHITESPACE | KEEP_INDENTED [...]
+  - opening_delimiter: (def) NONE | «string»
   - extensible_delimiter: «character_repeated» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
-  - content_replacements: #«id» [...] (def «none»)
-  - closing_delimiter: «string» (def «empty»)
+  - content_replacements: (def) NONE | #«id» [...]
+  - closing_delimiter: (def) NONE | «string»
   - tag_name: (def) NONE | «name»
   ````
   """
   
   def __init__(self, id_):
     
-    if id_ is None:
-      raise TypeError('id_ cannot be None')
-    
     self._id = id_
-    self._replacement_order_keyword = None
+    self._replacement_order_keyword = 'NONE'
     self._replacement_order_reference_id = None
     self._syntax_type_is_block = None
-    self._allowed_flags = None
-    self._has_flags = None
-    self._opening_delimiter = None
+    self._flag_setting_from_letter = {}
+    self._has_flags = False
+    self._opening_delimiter = ''
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
     self._attribute_specifications = None
-    self._content_replacement_id_list = None
-    self._closing_delimiter = None
+    self._content_replacement_id_list = []
+    self._closing_delimiter = ''
     self._tag_name = None
     self._regex_pattern = None
     self._substitute_function = None
@@ -110,49 +98,17 @@ class ExtensibleFenceReplacement:
     replacement_order_keyword,
     replacement_order_reference_id,
   ):
-    
-    if self._replacement_order_keyword is not None:
-      raise DuplicateAttributeException('replacement_order')
-    
-    if replacement_order_keyword is None:
-      raise TypeError('order_keyword cannot be None')
-    if replacement_order_reference_id is None:
-      raise TypeError('order_reference_id cannot be None')
-    
     self._replacement_order_keyword = replacement_order_keyword
     self._replacement_order_reference_id = replacement_order_reference_id
   
   def set_syntax_type(self, syntax_type_is_block):
-    
-    if self._syntax_type_is_block is not None:
-      raise DuplicateAttributeException('syntax_type')
-    
-    if syntax_type_is_block is None:
-      raise TypeError('syntax_type cannot be None')
-    
     self._syntax_type_is_block = syntax_type_is_block
   
-  def set_allowed_flags(self, allowed_flags, has_flags):
-    
-    if self._allowed_flags is not None:
-      raise DuplicateAttributeException('allowed_flags')
-    
-    if allowed_flags is None:
-      raise TypeError('allowed_flags cannot be None')
-    if has_flags is None:
-      raise TypeError('has_flags cannot be None')
-    
-    self._allowed_flags = allowed_flags
+  def set_allowed_flags(self, flag_setting_from_letter, has_flags):
+    self._flag_setting_from_letter = flag_setting_from_letter
     self._has_flags = has_flags
   
   def set_opening_delimiter(self, opening_delimiter):
-    
-    if self._opening_delimiter is not None:
-      raise DuplicateAttributeException('opening_delimiter')
-    
-    if opening_delimiter is None:
-      raise TypeError('opening_delimiter cannot be None')
-    
     self._opening_delimiter = opening_delimiter
   
   def set_extensible_delimiter(
@@ -160,56 +116,19 @@ class ExtensibleFenceReplacement:
     extensible_delimiter_character,
     extensible_delimiter_min_count,
   ):
-    
-    if self._extensible_delimiter_character is not None:
-      raise DuplicateAttributeException('extensible_delimiter')
-    
-    if extensible_delimiter_character is None:
-      raise TypeError('extensible_delimiter_character cannot be None')
-    if extensible_delimiter_min_count is None:
-      raise TypeError('extensible_delimiter_min_count cannot be None')
-
     self._extensible_delimiter_character = extensible_delimiter_character
     self._extensible_delimiter_min_count = extensible_delimiter_min_count
   
   def set_attribute_specifications(self, attribute_specifications):
-    
-    if self._attribute_specifications is not None:
-      raise DuplicateAttributeException('attribute_specifications')
-    
-    if attribute_specifications is None:
-      raise TypeError('attribute_specifications cannot be None')
-    
     self._attribute_specifications = attribute_specifications
   
   def set_content_replacements(self, content_replacement_id_list):
-    
-    if self._content_replacement_id_list is not None:
-      raise DuplicateAttributeException('content_replacements')
-    
-    if content_replacement_id_list is None:
-      raise TypeError('content_replacement_id_list cannot be None')
-    
     self._content_replacement_id_list = content_replacement_id_list
   
   def set_closing_delimiter(self, closing_delimiter):
-    
-    if self._closing_delimiter is not None:
-      raise DuplicateAttributeException('closing_delimiter')
-    
-    if closing_delimiter is None:
-      raise TypeError('closing_delimiter cannot be None')
-    
     self._closing_delimiter = closing_delimiter
   
   def set_tag_name(self, tag_name):
-    
-    if self._tag_name is not None:
-      raise DuplicateAttributeException('tag_name')
-    
-    if tag_name is None:
-      raise TypeError('tag_name cannot be None')
-    
     self._tag_name = tag_name
   
   def validate(self):
@@ -223,7 +142,7 @@ class ExtensibleFenceReplacement:
     self._regex_pattern = \
             self.build_regex_pattern(
               self._syntax_type_is_block,
-              self._allowed_flags,
+              self._flag_setting_from_letter,
               self._has_flags,
               self._opening_delimiter,
               self._extensible_delimiter_character,
@@ -233,7 +152,7 @@ class ExtensibleFenceReplacement:
             )
     self._substitute_function = \
             self.build_substitute_function(
-              self._allowed_flags,
+              self._flag_setting_from_letter,
               self._has_flags,
               self._attribute_specifications,
               self._tag_name,
@@ -250,7 +169,7 @@ class ExtensibleFenceReplacement:
   @staticmethod
   def build_regex_pattern(
     syntax_is_block,
-    allowed_flags,
+    flag_setting_from_letter,
     has_flags,
     opening_delimiter,
     extensible_delimiter_character,
@@ -261,7 +180,7 @@ class ExtensibleFenceReplacement:
     
     block_anchoring_regex = \
             build_block_anchoring_regex(syntax_is_block)
-    flags_regex = build_flags_regex(allowed_flags, has_flags)
+    flags_regex = build_flags_regex(flag_setting_from_letter, has_flags)
     opening_delimiter_regex = re.escape(opening_delimiter)
     extensible_delimiter_opening_regex = \
             build_extensible_delimiter_opening_regex(
@@ -294,7 +213,7 @@ class ExtensibleFenceReplacement:
   
   @staticmethod
   def build_substitute_function(
-    allowed_flags,
+    flag_setting_from_letter,
     has_flags,
     attribute_specifications,
     tag_name,
@@ -305,7 +224,7 @@ class ExtensibleFenceReplacement:
       enabled_flag_settings = set()
       if has_flags:
         flags = get_group('flags', match)
-        for flag_letter, flag_setting in allowed_flags.items():
+        for flag_letter, flag_setting in flag_setting_from_letter.items():
           if flag_letter in flags:
             enabled_flag_settings.add(flag_setting)
       
