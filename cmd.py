@@ -610,9 +610,9 @@ ExtensibleFenceReplacement: #literals
 - replacement_order: ROOT
 - syntax_type: INLINE
 - allowed_flags:
-  - u: KEEP_HTML_UNESCAPED
-  - w: REDUCE_WHITESPACE
-  - i: KEEP_INDENTED
+    u=KEEP_HTML_UNESCAPED
+    w=REDUCE_WHITESPACE
+    i=KEEP_INDENTED
 - opening_delimiter: <
 - extensible_delimiter: `
 - content_replacements:
