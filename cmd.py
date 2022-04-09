@@ -317,7 +317,7 @@ TO_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
             [w] (?P<width> [0-9]+ )
               |
             [h] (?P<height> [0-9]+ )
-          )
+          ) ?
           [\s]*
         '''
 
@@ -365,7 +365,7 @@ def to_attributes_sequence_substitute_function(match_object):
   if height != '':
     return f' height={height}'
   
-  return match_object.group()
+  return ''
 
 
 def to_attributes_sequence(attribute_specifications):

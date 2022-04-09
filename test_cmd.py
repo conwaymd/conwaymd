@@ -79,6 +79,14 @@ class TestCmd(unittest.TestCase):
       ''
     )
     self.assertEqual(
+      cmd.to_attributes_sequence('  '),
+      ''
+    )
+    self.assertEqual(
+      cmd.to_attributes_sequence('\t'),
+      ''
+    )
+    self.assertEqual(
       cmd.to_attributes_sequence('name="quoted value" name=bare-value'),
       ' name="quoted value" name="bare-value"'
     )
