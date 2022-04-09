@@ -518,7 +518,24 @@ def extract_rules_and_content(cmd):
 
 
 STANDARD_REPLACEMENT_RULES = \
-'''\
+r'''# STANDARD_REPLACEMENT_RULES
+
+OrdinaryReplacement: #escape-html
+- & --> &amp;
+- < --> &lt;
+- > --> &gt;
+
+RegexReplacement: #trim-whitespace
+- \A[\s]+ | [\s]+\Z  -->
+
+RegexReplacement: #reduce-whitespace
+- [\n]+  -->  \n
+- [\s]+(?=<br>)  -->
+
+DeIndentReplacement: #de-indent
+
+PlaceholderReplacement: #placeholder-protect
+
 ExtensibleFenceReplacement: #literals
 - replacement_order: ROOT
 - syntax_type: INLINE
@@ -530,6 +547,7 @@ ExtensibleFenceReplacement: #literals
 - extensible_delimiter: `
 - content_replacements:
     #escape-html
+    #trim-whitespace
     #reduce-whitespace
     #de-indent
     #placeholder-protect
