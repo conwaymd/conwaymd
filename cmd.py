@@ -605,13 +605,11 @@ def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
       cmd = cmd_file.read()
   except FileNotFoundError as file_not_found_error:
     if uses_command_line_argument:
-      error_message = \
-              (
-                'error: '
-                f'argument `{cmd_file_name_argument}`: '
-                f'file `{cmd_file_name}` not found'
-              )
-      print(error_message)
+      print(
+        'error: '
+        f'argument `{cmd_file_name_argument}`: '
+        f'file `{cmd_file_name}` not found'
+      )
       sys.exit(COMMAND_LINE_ERROR_EXIT_CODE)
     else:
       error_message = \
