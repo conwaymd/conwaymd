@@ -314,8 +314,8 @@ class ReplacementMaster:
   
   def legislate(self, replacement_rules, source_file):
     
-    replacement = None
     class_name = None
+    replacement = None
     
     for line_number, line in replacement_rules.splitlines():
       
@@ -332,7 +332,26 @@ class ReplacementMaster:
         if replacement is not None:
           self.commit(replacement, source_file, line_number, class_name)
         
-        # TODO: parse match
+        class_name = get_group('class_name', class_declaration_match)
+        id_ = get_group('id_', class_declaration_match)
+        
+        if class_name == 'ExtensibleFenceReplacement':
+          replacement = ExtensibleFenceReplacement(id_)
+        else:
+          print(
+            'error: '
+            f'{source_file}, line `{line_number}`: '
+            f'unrecognised replacement class `{class_name}`'
+          )
+          sys.exit(GENERIC_ERROR_EXIT_CODE)
+        
+        if id_ in self._replacement_from_id:
+          print(
+            'error: '
+            f'{source_file}, line `{line_number}`: '
+            f'replacement already declared with id `{id_}'
+          )
+          sys.exit(GENERIC_ERROR_EXIT_CODE)
       
       # TODO: other cases
     
