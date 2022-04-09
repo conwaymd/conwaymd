@@ -298,6 +298,7 @@ ATTRIBUTE_NAME_FROM_ABBREVIATION = \
         }
 TO_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
         r'''
+          [\s]*
           (?:
             (?P<name> [^\s=]+ ) =
                     (?:
