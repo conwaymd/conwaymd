@@ -614,7 +614,7 @@ def cmd_to_html(cmd, cmd_file_name=None):
   
   replacement_master = ReplacementMaster()
   replacement_master.legislate(STANDARD_RULES, 'STANDARD_RULES')
-  replacement_master.legislate(replacement_rules, cmd_file_name)
+  replacement_master.legislate(replacement_rules, f'`{cmd_file_name}`')
   html = replacement_master.execute(main_content)
   
   return html
