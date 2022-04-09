@@ -406,7 +406,7 @@ def to_attributes_sequence(attribute_specifications):
 def to_block_anchoring_regex(syntax_type_is_block):
   
   if syntax_type_is_block:
-    return r'^[ \t]*'
+    return r'^[^\S\n]*'
   
   return ''
 

@@ -46,12 +46,12 @@ class TestCmd(unittest.TestCase):
         attribute_specifications='',
         closing_delimiter='',
       ),
-      r'^[ \t]*'
+      r'^[^\S\n]*'
       r'(?P<extensible_delimiter> \${4,} )'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
       r'\n'
       r'(?P<content> [\s\S]*? )'
-      r'^[ \t]*'
+      r'^[^\S\n]*'
       '(?P=extensible_delimiter)'
     )
   
