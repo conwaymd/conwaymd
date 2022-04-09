@@ -318,6 +318,8 @@ TO_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
             [w] (?P<width> [0-9]+ )
               |
             [h] (?P<height> [0-9]+ )
+              |
+            (?P<boolean_attribute> [\S]+ )
           ) ?
           [\s]*
         '''
@@ -335,12 +337,12 @@ def to_attributes_sequence_substitute_function(match_object):
     
     quoted_value = get_group('quoted_value', match_object)
     bare_value = get_group('bare_value', match_object)
-    if quoted_value != '':
-      value = quoted_value
-    else:
-      value = bare_value
+    value = quoted_value + bare_value # at most one will be non-empty
     
-    return f' {name}="{value}"'
+    if value == '': # boolean attribute
+      return f' {name}'
+    else:
+      return f' {name}="{value}"'
   
   id_ = get_group('id_', match_object)
   if id_ != '':
@@ -365,6 +367,10 @@ def to_attributes_sequence_substitute_function(match_object):
   height = get_group('height', match_object)
   if height != '':
     return f' height={height}'
+  
+  boolean_attribute = get_group('boolean_attribute', match_object)
+  if boolean_attribute != '':
+    return f' {boolean_attribute}'
   
   return ''
 
