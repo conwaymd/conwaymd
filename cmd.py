@@ -261,11 +261,18 @@ class ReplacementMaster:
   def is_whitespace_only(line):
     return re.fullmatch(r'[\s]*', line, flags=re.ASCII)
   
+  @staticmethod
+  def is_comment(line):
+    return line.startswith('#')
+  
   def legislate(self, replacement_rules):
     
     for line_number, line in replacement_rules.splitlines():
       
       if ReplacementMaster.is_whitespace_only(line):
+        continue
+      
+      if ReplacementMaster.is_comment(line):
         continue
       
       # TODO: other cases
