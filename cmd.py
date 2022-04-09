@@ -78,7 +78,7 @@ class ExtensibleFenceReplacement:
   def __init__(self, id_):
     
     self._id = id_
-    self._replacement_order_keyword = 'NONE'
+    self._replacement_order_type = None
     self._replacement_order_reference_id = None
     self._syntax_type_is_block = None
     self._flag_setting_from_letter = {}
@@ -95,10 +95,10 @@ class ExtensibleFenceReplacement:
   
   def set_replacement_order(
     self,
-    replacement_order_keyword,
+    replacement_order_type,
     replacement_order_reference_id,
   ):
-    self._replacement_order_keyword = replacement_order_keyword
+    self._replacement_order_type = replacement_order_type
     self._replacement_order_reference_id = replacement_order_reference_id
   
   def set_syntax_type(self, syntax_type_is_block):
