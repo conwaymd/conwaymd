@@ -245,18 +245,18 @@ class ExtensibleFenceReplacement:
     tag_name,
   ):
     
-    def substitute_function(match_object):
+    def substitute_function(match):
       
       enabled_flag_settings = set()
       if has_flags:
-        flags = get_group('flags', match_object)
+        flags = get_group('flags', match)
         for flag_letter, flag_setting in allowed_flags.items():
           if flag_letter in flags:
             enabled_flag_settings.add(flag_setting)
       
       if attribute_specifications is not None:
         matched_attribute_specifications = \
-                get_group('attribute_specifications', match_object)
+                get_group('attribute_specifications', match)
         combined_attribute_specifications = \
                 ' '.join(
                   [attribute_specifications, matched_attribute_specifications]
@@ -266,7 +266,7 @@ class ExtensibleFenceReplacement:
       else:
         attributes_sequence = ''
       
-      content = get_group('content', match_object)
+      content = get_group('content', match)
       # TODO: content replacements
       
       if tag_name is None:
@@ -346,9 +346,9 @@ TO_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
         '''
 
 
-def to_attributes_sequence_substitute_function(match_object):
+def to_attributes_sequence_substitute_function(match):
   
-  name = get_group('name', match_object)
+  name = get_group('name', match)
   if name != '':
     
     try:
@@ -356,37 +356,37 @@ def to_attributes_sequence_substitute_function(match_object):
     except KeyError:
       pass
     
-    quoted_value = get_group('quoted_value', match_object)
-    bare_value = get_group('bare_value', match_object)
+    quoted_value = get_group('quoted_value', match)
+    bare_value = get_group('bare_value', match)
     value = quoted_value + bare_value # at most one will be non-empty
     
     return f' {name}="{value}"'
   
-  id_ = get_group('id_', match_object)
+  id_ = get_group('id_', match)
   if id_ != '':
     return f' id="{id_}"'
   
-  class_ = get_group('class_', match_object)
+  class_ = get_group('class_', match)
   if class_ != '':
     return f' class="{class_}"'
   
-  rowspan = get_group('rowspan', match_object)
+  rowspan = get_group('rowspan', match)
   if rowspan != '':
     return f' rowspan={rowspan}'
   
-  colspan = get_group('colspan', match_object)
+  colspan = get_group('colspan', match)
   if colspan != '':
     return f' colspan={colspan}'
   
-  width = get_group('width', match_object)
+  width = get_group('width', match)
   if width != '':
     return f' width={width}'
   
-  height = get_group('height', match_object)
+  height = get_group('height', match)
   if height != '':
     return f' height={height}'
   
-  boolean_attribute = get_group('boolean_attribute', match_object)
+  boolean_attribute = get_group('boolean_attribute', match)
   if boolean_attribute != '':
     return f' {boolean_attribute}'
   
@@ -470,14 +470,14 @@ def none_to_empty_string(string):
   return ''
 
 
-def get_group(group_name, match_object):
+def get_group(group_name, match):
   """
   Retrieve as string a named capture group from a match object.
   
   Ensures the result is not None.
   """
   
-  string = match_object.group(group_name)
+  string = match.group(group_name)
   
   return none_to_empty_string(string)
 
@@ -497,7 +497,7 @@ def extract_rules_and_content(cmd):
   according to the first occurrence of «delimiter».
   """
   
-  match_object = \
+  match = \
           re.fullmatch(
             r'''
               (?:
@@ -511,8 +511,8 @@ def extract_rules_and_content(cmd):
             flags=re.MULTILINE | re.VERBOSE,
           )
   
-  replacement_rules = get_group('replacement_rules', match_object)
-  main_content = get_group('main_content', match_object)
+  replacement_rules = get_group('replacement_rules', match)
+  main_content = get_group('main_content', match)
   
   return (replacement_rules, main_content)
 
