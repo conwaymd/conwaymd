@@ -52,6 +52,10 @@ class MissingAttributeException(Exception):
     return self._missing_attribute
 
 
+class RootReplacementAlreadyExistsException(Exception):
+  pass
+
+
 class ExtensibleFenceReplacement:
   """
   A generalised extensible-fence-style replacement rule.
@@ -93,6 +97,9 @@ class ExtensibleFenceReplacement:
     self._regex_pattern = None
     self._substitute_function = None
   
+  def get_id(self):
+    return self._id
+  
   def set_replacement_order(
     self,
     replacement_order_type,
@@ -100,6 +107,12 @@ class ExtensibleFenceReplacement:
   ):
     self._replacement_order_type = replacement_order_type
     self._replacement_order_reference_id = replacement_order_reference_id
+  
+  def get_replacement_order_type(self):
+    return self._replacement_order_type
+  
+  def get_replacement_order_reference_id(self):
+    return self._replacement_order_reference_id
   
   def set_syntax_type(self, syntax_type_is_block):
     self._syntax_type_is_block = syntax_type_is_block
@@ -277,13 +290,31 @@ class ReplacementMaster:
       flags=re.ASCII | re.VERBOSE,
     )
   
-  def commit(self, replacement):
-    # TODO: validate, update fields
-    pass
+  def commit(self, replacement, source_file, line_number, class_name):
+    
+    try:
+      replacement.validate()
+    except MissingAttributeException as exception:
+      missing_attribute = exception.get_missing_attribute()
+      print(
+        'error: '
+        f'{source_file}, line `{line_number}`: '
+        f'missing attribute `{missing_attribute}` for {class_name}'
+      )
+    
+    id_ = replacement.get_id()
+    self._replacement_from_id[id_] = replacement
+    
+    replacement_order_type = replacement.get_replacement_order_type()
+    if replacement_order_type is None:
+      return
+    
+    # TODO: insert replacement at appropriate spot in queue
   
-  def legislate(self, replacement_rules):
+  def legislate(self, replacement_rules, source_file):
     
     replacement = None
+    class_name = None
     
     for line_number, line in replacement_rules.splitlines():
       
@@ -298,7 +329,7 @@ class ReplacementMaster:
       if class_declaration_match is not None:
         
         if replacement is not None:
-          self.commit(replacement)
+          self.commit(replacement, source_file, line_number, class_name)
         
         # TODO: parse match
       
@@ -574,7 +605,7 @@ ExtensibleFenceReplacement: #literals
 '''
 
 
-def cmd_to_html(cmd):
+def cmd_to_html(cmd, cmd_file_name=None):
   """
   Convert CMD to HTML.
   """
@@ -582,8 +613,8 @@ def cmd_to_html(cmd):
   replacement_rules, main_content = extract_rules_and_content(cmd)
   
   replacement_master = ReplacementMaster()
-  replacement_master.legislate(STANDARD_REPLACEMENT_RULES)
-  replacement_master.legislate(replacement_rules)
+  replacement_master.legislate(STANDARD_REPLACEMENT_RULES, 'STANDARD_REPLACEMENT_RULES')
+  replacement_master.legislate(replacement_rules, cmd_file_name)
   html = replacement_master.execute(main_content)
   
   return html
@@ -638,7 +669,7 @@ def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
               )
       raise FileNotFoundError(error_message) from file_not_found_error
   
-  html = cmd_to_html(cmd)
+  html = cmd_to_html(cmd, cmd_file_name)
   
   html_file_name = f'{cmd_name}.html'
   try:
