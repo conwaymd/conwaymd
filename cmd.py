@@ -308,7 +308,7 @@ class ReplacementMaster:
       missing_attribute = exception.get_missing_attribute()
       print(
         'error: '
-        f'{source_file} line {line_number}: '
+        f'{source_file}, line {line_number}: '
         f'missing attribute `{missing_attribute}` for {class_name}'
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
@@ -324,7 +324,7 @@ class ReplacementMaster:
       if self._root_replacement_id is not None:
         print(
           'error: '
-          f'{source_file} line {line_number}: '
+          f'{source_file}, line {line_number}: '
           f'root replacement already declared (#{self._root_replacement_id})'
         )
         sys.exit(GENERIC_ERROR_EXIT_CODE)
@@ -358,7 +358,7 @@ class ReplacementMaster:
     else:
       print(
         'error: '
-        f'{source_file} line {line_number}: '
+        f'{source_file}, line {line_number}: '
         f'unrecognised replacement class `{class_name}`'
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
@@ -366,7 +366,7 @@ class ReplacementMaster:
     if id_ in self._replacement_from_id:
       print(
         'error: '
-        f'{source_file} line {line_number}: '
+        f'{source_file}, line {line_number}: '
         f'replacement already declared with id `{id_}'
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
