@@ -476,6 +476,7 @@ class ReplacementMaster:
     replacement,
     attribute_name,
     attribute_value,
+    substitution,
     source_file,
     line_number,
   ):
@@ -559,6 +560,7 @@ class ReplacementMaster:
                     replacement,
                     attribute_name,
                     attribute_value,
+                    substitution,
                     source_file,
                     line_number
                   )
@@ -582,6 +584,7 @@ class ReplacementMaster:
                     replacement,
                     attribute_name,
                     attribute_value,
+                    substitution,
                     source_file,
                     line_number
                   )
@@ -611,6 +614,7 @@ class ReplacementMaster:
                     replacement,
                     attribute_name,
                     attribute_value,
+                    substitution,
                     source_file,
                     line_number
                   )
@@ -634,6 +638,7 @@ class ReplacementMaster:
                     replacement,
                     attribute_name,
                     attribute_value,
+                    substitution,
                     source_file,
                     line_number
                   )
@@ -651,6 +656,7 @@ class ReplacementMaster:
         replacement,
         attribute_name,
         attribute_value,
+        substitution,
         source_file,
         line_number
       )
