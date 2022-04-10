@@ -284,7 +284,7 @@ class ReplacementMaster:
   
   Terminology:
   - Replacement class declarations are _committed_.
-  - Replacement attribute declarations are _staged_.
+  - Replacement attribute/pattern-substitute declarations are _staged_.
   
   ## `execute` ##
   
@@ -382,6 +382,33 @@ class ReplacementMaster:
             none_to_empty_string(attribute_value) + partial_attribute_value
     
     return attribute_name, attribute_value
+  
+  @staticmethod
+  def compute_pattern_substitute_declaration_match(line):
+    return re.fullmatch(
+      r'''
+        [*][ ] (?P<partial_pattern_substitute> [\s\S]* )
+      ''',
+      line,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def process_pattern_substitute_declaration_line(
+    pattern_substitute_declaration_match,
+    pattern_substitute,
+  ):
+    
+    partial_pattern_substitute = \
+            get_group(
+              'partial_pattern_substitute',
+              pattern_substitute_declaration_match,
+            )
+    pattern_substitute = (
+      none_to_empty_string(pattern_substitute) + partial_pattern_substitute
+    )
+    
+    return pattern_substitute
   
   @staticmethod
   def compute_replacement_order_match(attribute_value):
