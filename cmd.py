@@ -302,6 +302,13 @@ class ReplacementMaster:
     self._replacement_queue = []
   
   @staticmethod
+  def build_line_range_string(start, end):
+    if start == end:
+      return f'line {start}'
+    else:
+      return f'lines {start} to {end}'
+  
+  @staticmethod
   def is_whitespace_only(line):
     return re.fullmatch(r'[\s]*', line, flags=re.ASCII)
   
@@ -454,15 +461,21 @@ class ReplacementMaster:
     replacement,
     attribute_value,
     source_file,
+    line_number_range_start,
     line_number,
   ):
     
     replacement_order_match = \
             ReplacementMaster.compute_replacement_order_match(attribute_value)
     if replacement_order_match is None:
+      line_number_range = \
+            ReplacementMaster.build_line_range_string(
+              line_number_range_start,
+              line_number,
+            )
       print(
         'error: '
-        f'{source_file} line {line_number}: '
+        f'{source_file}, {line_number_range}: '
         f'invalid value `{attribute_value}` for attribute `replacement_order`'
       )
     
@@ -478,6 +491,7 @@ class ReplacementMaster:
     attribute_value,
     substitution,
     source_file,
+    line_number_range_start,
     line_number,
   ):
     
@@ -486,6 +500,7 @@ class ReplacementMaster:
         replacement,
         attribute_value,
         source_file,
+        line_number_range_start,
         line_number,
       )
     
@@ -547,6 +562,7 @@ class ReplacementMaster:
     attribute_name = None
     attribute_value = None
     substitution = None
+    line_number_range_start = None
     line_number = 0
     
     for line_number, line \
@@ -562,6 +578,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     source_file,
+                    line_number_range_start,
                     line_number,
                   )
         if replacement is not None:
@@ -586,6 +603,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     source_file,
+                    line_number_range_start,
                     line_number,
                   )
         if replacement is not None:
@@ -616,6 +634,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     source_file,
+                    line_number_range_start,
                     line_number,
                   )
         attribute_name, attribute_value = \
@@ -640,6 +659,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     source_file,
+                    line_number_range_start,
                     line_number,
                   )
         substitution = \
@@ -658,6 +678,7 @@ class ReplacementMaster:
         attribute_value,
         substitution,
         source_file,
+        line_number_range_start,
         line_number,
       )
     if replacement is not None:
