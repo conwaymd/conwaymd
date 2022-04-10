@@ -311,7 +311,7 @@ class ReplacementMaster:
       flags=re.ASCII | re.VERBOSE,
     )
   
-  def process_class_declaration(
+  def process_class_declaration_line(
     self,
     class_declaration_match,
     source_file,
@@ -542,7 +542,7 @@ class ReplacementMaster:
                     class_name,
                   )
         class_name, replacement = \
-                self.process_class_declaration(
+                self.process_class_declaration_line(
                   class_declaration_match,
                   source_file,
                   line_number,
