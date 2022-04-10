@@ -545,6 +545,7 @@ class ReplacementMaster:
       
       # TODO: other cases
     
+    # At end of file
     if attribute_name is not None:
       self.stage(
         attribute_name,
