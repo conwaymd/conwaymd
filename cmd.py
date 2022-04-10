@@ -402,8 +402,8 @@ class ReplacementMaster:
       replacement,
     )
   
+  @staticmethod
   def stage(
-    self,
     attribute_name,
     attribute_value,
     replacement,
@@ -484,7 +484,7 @@ class ReplacementMaster:
       if ReplacementMaster.is_whitespace_only(line):
         if attribute_name is not None:
           attribute_name, attribute_value = \
-                  self.stage(
+                  ReplacementMaster.stage(
                     attribute_name,
                     attribute_value,
                     replacement,
@@ -504,7 +504,7 @@ class ReplacementMaster:
       if ReplacementMaster.is_comment(line):
         if attribute_name is not None:
           attribute_name, attribute_value = \
-                  self.stage(
+                  ReplacementMaster.stage(
                     attribute_name,
                     attribute_value,
                     replacement,
@@ -526,7 +526,7 @@ class ReplacementMaster:
       if class_declaration_match is not None:
         if attribute_name is not None:
           attribute_name, attribute_value = \
-                  self.stage(
+                  ReplacementMaster.stage(
                     attribute_name,
                     attribute_value,
                     replacement,
@@ -553,7 +553,7 @@ class ReplacementMaster:
     
     # At end of file
     if attribute_name is not None:
-      self.stage(
+      ReplacementMaster.stage(
         attribute_name,
         attribute_value,
         replacement,
