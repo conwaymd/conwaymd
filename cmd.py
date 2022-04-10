@@ -466,6 +466,7 @@ class ReplacementMaster:
       self._replacement_queue.insert(insertion_index, replacement)
     
     return None, None, None, None
+    # to update class_name, replacement, attribute_name, attribute_value
   
   def legislate(self, replacement_rules, source_file):
     
