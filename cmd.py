@@ -473,9 +473,9 @@ class ReplacementMaster:
   
   @staticmethod
   def stage(
+    replacement,
     attribute_name,
     attribute_value,
-    replacement,
     source_file,
     line_number,
   ):
@@ -556,9 +556,9 @@ class ReplacementMaster:
         if attribute_name is not None:
           attribute_name, attribute_value, substitution = \
                   ReplacementMaster.stage(
+                    replacement,
                     attribute_name,
                     attribute_value,
-                    replacement,
                     source_file,
                     line_number
                   )
@@ -579,9 +579,9 @@ class ReplacementMaster:
         if attribute_name is not None:
           attribute_name, attribute_value, substitution = \
                   ReplacementMaster.stage(
+                    replacement,
                     attribute_name,
                     attribute_value,
-                    replacement,
                     source_file,
                     line_number
                   )
@@ -608,9 +608,9 @@ class ReplacementMaster:
         if attribute_name is not None:
           attribute_name, attribute_value, substitution = \
                   ReplacementMaster.stage(
+                    replacement,
                     attribute_name,
                     attribute_value,
-                    replacement,
                     source_file,
                     line_number
                   )
@@ -631,9 +631,9 @@ class ReplacementMaster:
         if attribute_name is not None:
           attribute_name, attribute_value, substitution = \
                   ReplacementMaster.stage(
+                    replacement,
                     attribute_name,
                     attribute_value,
-                    replacement,
                     source_file,
                     line_number
                   )
@@ -648,9 +648,9 @@ class ReplacementMaster:
     # At end of file
     if attribute_name is not None:
       ReplacementMaster.stage(
+        replacement,
         attribute_name,
         attribute_value,
-        replacement,
         source_file,
         line_number
       )
