@@ -268,11 +268,22 @@ class ReplacementMaster:
   """
   Object governing the parsing and application of replacement rules.
   
-  Parsing is done by `legislate`. Terminology is as follows:
+  ## `legislate` ##
+  
+  Parse CMD replacement rule syntax. Lines are either:
+  (1) whitespace-only,
+  (2) comments (beginning with `#`),
+  (3) class declarations (of the form `«ClassName»: #«id»`),
+  (4) attribute declarations (beginning with `- `), or
+  (5) attribute continuations (beginning with whitespace).
+  
+  Terminology:
   - Replacement class declarations are _committed_.
   - Replacement attribute declarations are _staged_.
   
-  Application is done by `execute`.
+  ## `execute` ##
+  
+  Applies the legislated replacements.
   """
   
   def __init__(self):
@@ -299,6 +310,10 @@ class ReplacementMaster:
       line,
       flags=re.ASCII | re.VERBOSE,
     )
+  
+  def stage(self, attribute_name, attribute_value, replacement):
+    # TODO: implement properly
+    return
   
   def commit(self, replacement, source_file, line_number, class_name):
     
@@ -377,17 +392,23 @@ class ReplacementMaster:
     
     class_name = None
     replacement = None
+    attribute_name = None
+    attribute_value = None
     line_number = 0
     
     for line_number, line \
     in enumerate(replacement_rules.splitlines(), start=1):
       
       if ReplacementMaster.is_whitespace_only(line):
+        if attribute_name is not None:
+          self.stage(attribute_name, attribute_value, replacement)
         if replacement is not None:
           self.commit(replacement, source_file, line_number, class_name)
         continue
       
       if ReplacementMaster.is_comment(line):
+        if attribute_name is not None:
+          self.stage(attribute_name, attribute_value, replacement)
         if replacement is not None:
           self.commit(replacement, source_file, line_number, class_name)
         continue
@@ -395,6 +416,8 @@ class ReplacementMaster:
       class_declaration_match = \
               ReplacementMaster.compute_class_declaration_match(line)
       if class_declaration_match is not None:
+        if attribute_name is not None:
+          self.stage(attribute_name, attribute_value, replacement)
         if replacement is not None:
           self.commit(replacement, source_file, line_number, class_name)
         class_name, replacement = \
@@ -407,6 +430,8 @@ class ReplacementMaster:
       
       # TODO: other cases
     
+    if attribute_name is not None:
+      self.stage(attribute_name, attribute_value, replacement)
     if replacement is not None:
       self.commit(replacement, source_file, line_number + 1, class_name)
   
