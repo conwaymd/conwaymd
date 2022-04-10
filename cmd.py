@@ -335,7 +335,7 @@ class ReplacementMaster:
       print(
         'error: '
         f'{source_file}, line {line_number}: '
-        f'replacement already declared with id `{id_}'
+        f'replacement already declared with id `{id_}`'
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
