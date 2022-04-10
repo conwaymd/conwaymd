@@ -265,6 +265,15 @@ class ExtensibleFenceReplacement:
 
 
 class ReplacementMaster:
+  """
+  Object governing the parsing and application of replacement rules.
+  
+  Parsing is done by `legislate`. Terminology is as follows:
+  - Replacement class declarations are _committed_.
+  - Replacement attribute declarations are _staged_.
+  
+  Application is done by `execute`.
+  """
   
   def __init__(self):
     self._replacement_from_id = {}
