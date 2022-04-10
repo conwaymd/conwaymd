@@ -451,8 +451,8 @@ class ReplacementMaster:
   
   @staticmethod
   def stage_replacement_order(
-    attribute_value,
     replacement,
+    attribute_value,
     source_file,
     line_number,
   ):
@@ -482,8 +482,8 @@ class ReplacementMaster:
     
     if attribute_name == 'replacement_order':
       ReplacementMaster.stage_replacement_order(
-        attribute_value,
         replacement,
+        attribute_value,
         source_file,
         line_number,
       )
