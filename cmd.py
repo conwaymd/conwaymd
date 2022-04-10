@@ -389,31 +389,26 @@ class ReplacementMaster:
     return attribute_name, attribute_value
   
   @staticmethod
-  def compute_pattern_substitute_declaration_match(line):
+  def compute_substitution_declaration_match(line):
     return re.fullmatch(
       r'''
-        [*][ ] (?P<partial_pattern_substitute> [\s\S]* )
+        [*][ ] (?P<partial_substitution> [\s\S]* )
       ''',
       line,
       flags=re.ASCII | re.VERBOSE,
     )
   
   @staticmethod
-  def process_pattern_substitute_declaration_line(
-    pattern_substitute_declaration_match,
-    pattern_substitute,
+  def process_substitution_declaration_line(
+    substitution_declaration_match,
+    substitution,
   ):
     
-    partial_pattern_substitute = \
-            get_group(
-              'partial_pattern_substitute',
-              pattern_substitute_declaration_match,
-            )
-    pattern_substitute = (
-      none_to_empty_string(pattern_substitute) + partial_pattern_substitute
-    )
+    partial_substitution = \
+            get_group('partial_substitution', substitution_declaration_match)
+    substitution = none_to_empty_string(substitution) + partial_substitution
     
-    return pattern_substitute
+    return substitution
   
   @staticmethod
   def compute_replacement_order_match(attribute_value):
