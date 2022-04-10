@@ -495,7 +495,7 @@ class ReplacementMaster:
     return None, None, None
     # attribute_name, attribute_value, substitution
   
-  def commit(self, replacement, source_file, line_number, class_name):
+  def commit(self, class_name, replacement, source_file, line_number):
     
     try:
       replacement.validate()
@@ -566,10 +566,10 @@ class ReplacementMaster:
           class_name, replacement, \
           attribute_name, attribute_value, substitution = \
                   self.commit(
+                    class_name,
                     replacement,
                     source_file,
                     line_number,
-                    class_name,
                   )
         continue
       
@@ -589,10 +589,10 @@ class ReplacementMaster:
           class_name, replacement, \
           attribute_name, attribute_value, substitution = \
                   self.commit(
+                    class_name,
                     replacement,
                     source_file,
                     line_number,
-                    class_name,
                   )
         class_name, replacement = \
                 self.process_class_declaration_line(
@@ -655,7 +655,7 @@ class ReplacementMaster:
         line_number
       )
     if replacement is not None:
-      self.commit(replacement, source_file, line_number + 1, class_name)
+      self.commit(class_name, replacement, source_file, line_number + 1)
   
   def execute(self, string):
     
