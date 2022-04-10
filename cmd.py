@@ -79,6 +79,10 @@ class ExtensibleFenceReplacement:
   ````
   """
   
+  ATTRIBUTE_NAMES = [
+    'replacement_order',
+  ]
+  
   def __init__(self, id_):
     
     self._id = id_
@@ -274,8 +278,9 @@ class ReplacementMaster:
   (1) whitespace-only,
   (2) comments (beginning with `#`),
   (3) class declarations (of the form `«ClassName»: #«id»`),
-  (4) attribute declarations (beginning with `- `), or
-  (5) attribute continuations (beginning with whitespace).
+  (4) attribute declarations (beginning with `- `),
+  (5) pattern-substitute declarations (beginning with `* `), or
+  (6) continuations (beginning with whitespace).
   
   Terminology:
   - Replacement class declarations are _committed_.
@@ -340,6 +345,43 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     return class_name, replacement
+  
+  @staticmethod
+  def compute_attribute_declaration_match(line):
+    return re.fullmatch(
+      r'''
+        [-][ ] (?P<attribute_name> [a-z_]+ ) [:]
+        (?P<partial_attribute_value> [\s\S]* )
+      ''',
+      line,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def process_attribute_declaration_line(
+    attribute_declaration_match,
+    class_name,
+    replacement,
+    attribute_value,
+    source_file,
+    line_number,
+  ):
+    
+    attribute_name = get_group('attribute_name', attribute_declaration_match)
+    if attribute_name not in replacement.ATTRIBUTE_NAMES:
+      print(
+        'error: '
+        f'{source_file}, line {line_number}: '
+        f'unrecognised attribute `{attribute_name}` for `{class_name}`'
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    partial_attribute_value = \
+            get_group('partial_attribute_value', attribute_declaration_match)
+    attribute_value = \
+            none_to_empty_string(attribute_value) + partial_attribute_value
+    
+    return attribute_name, attribute_value
   
   @staticmethod
   def compute_replacement_order_match(attribute_value):
@@ -544,6 +586,29 @@ class ReplacementMaster:
         class_name, replacement = \
                 self.process_class_declaration_line(
                   class_declaration_match,
+                  source_file,
+                  line_number,
+                )
+        continue
+      
+      attribute_declaration_match = \
+              ReplacementMaster.compute_attribute_declaration_match(line)
+      if attribute_declaration_match is not None:
+        if attribute_name is not None:
+          attribute_name, attribute_value = \
+                  ReplacementMaster.stage(
+                    attribute_name,
+                    attribute_value,
+                    replacement,
+                    source_file,
+                    line_number
+                  )
+        attribute_name, attribute_value = \
+                ReplacementMaster.process_attribute_declaration_line(
+                  attribute_declaration_match,
+                  class_name,
+                  replacement,
+                  attribute_value,
                   source_file,
                   line_number,
                 )
