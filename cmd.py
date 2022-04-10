@@ -625,6 +625,24 @@ class ReplacementMaster:
                 )
         continue
       
+      substitution_declaration_match = \
+              ReplacementMaster.compute_substitution_declaration_match(line)
+      if substitution_declaration_match is not None:
+        if attribute_name is not None:
+          attribute_name, attribute_value, substitution = \
+                  ReplacementMaster.stage(
+                    attribute_name,
+                    attribute_value,
+                    replacement,
+                    source_file,
+                    line_number
+                  )
+        substitution = \
+                ReplacementMaster.process_substitution_declaration_line(
+                  substitution_declaration_match,
+                  substitution
+                )
+      
       # TODO: other cases
     
     # At end of file
