@@ -413,13 +413,16 @@ class ReplacementMaster:
   def process_substitution_declaration_line(
     substitution_declaration_match,
     substitution,
+    line_number,
   ):
     
     partial_substitution = \
             get_group('partial_substitution', substitution_declaration_match)
     substitution = none_to_empty_string(substitution) + partial_substitution
     
-    return substitution
+    line_number_range_start = line_number
+    
+    return substitution, line_number_range_start
   
   @staticmethod
   def compute_replacement_order_match(attribute_value):
@@ -679,10 +682,11 @@ class ReplacementMaster:
                     line_number_range_start,
                     line_number,
                   )
-        substitution = \
+        substitution, line_number_range_start = \
                 ReplacementMaster.process_substitution_declaration_line(
                   substitution_declaration_match,
                   substitution,
+                  line_number,
                 )
       
       # TODO: other cases
