@@ -356,7 +356,9 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    return class_name, replacement
+    line_number_range_start = line_number
+    
+    return class_name, replacement, line_number_range_start
   
   @staticmethod
   def compute_attribute_declaration_match(line):
@@ -626,7 +628,7 @@ class ReplacementMaster:
                     source_file,
                     line_number,
                   )
-        class_name, replacement = \
+        class_name, replacement, line_number_range_start = \
                 self.process_class_declaration_line(
                   class_declaration_match,
                   source_file,
