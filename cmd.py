@@ -591,22 +591,6 @@ def extract_rules_and_content(cmd):
 STANDARD_RULES = \
 r'''# STANDARD_RULES
 
-OrdinaryReplacement: #escape-html
-- & --> &amp;
-- < --> &lt;
-- > --> &gt;
-
-RegexReplacement: #trim-whitespace
-- \A[\s]+ | [\s]+\Z  -->
-
-RegexReplacement: #reduce-whitespace
-- [\n]+  -->  \n
-- [\s]+(?=<br>)  -->
-
-DeIndentReplacement: #de-indent
-
-PlaceholderReplacement: #placeholder-protect
-
 ExtensibleFenceReplacement: #literals
 - replacement_order: ROOT
 - syntax_type: INLINE
