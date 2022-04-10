@@ -274,17 +274,22 @@ class ReplacementMaster:
   
   ## `legislate` ##
   
-  Parse CMD replacement rule syntax. Lines are either:
+  Parse CMD replacement rule syntax. A line can be either:
   (1) whitespace-only,
-  (2) comments (beginning with `#`),
-  (3) class declarations (of the form `«ClassName»: #«id»`),
-  (4) attribute declarations (beginning with `- `),
-  (5) pattern-substitute declarations (beginning with `* `), or
-  (6) continuations (beginning with whitespace).
+  (2) a comment (beginning with `#`),
+  (3) the start of a class declaration (of the form `«ClassName»: #«id»`),
+  (4) the start of an attribute declaration (beginning with `- `),
+  (5) the start of a substitution declaration (beginning with `* `), or
+  (6) a continuation (beginning with whitespace).
+  An attribute declaration is of the form `- «name»: «value»`.
+  A substitution declaration is of the form `* «pattern» --> «substitute»`,
+  where the number of hyphens in the delimiter `-->`
+  may be arbitrarily increased if «pattern» happens to contain
+  a run of hyphens followed by a closing angle-bracket.
   
   Terminology:
-  - Replacement class declarations are _committed_.
-  - Replacement attribute/pattern-substitute declarations are _staged_.
+  - Class declarations are _committed_.
+  - Attribute and substitution declarations are _staged_.
   
   ## `execute` ##
   
@@ -492,8 +497,8 @@ class ReplacementMaster:
     # (I think we don't need to check the class_name is right ---
     # that should have already happened before we get to the staging stage)
     
-    return None, None
-    # to update attribute_name, attribute_value
+    return None, None, None
+    # attribute_name, attribute_value, substitution
   
   def commit(self, replacement, source_file, line_number, class_name):
     
@@ -537,7 +542,7 @@ class ReplacementMaster:
       self._replacement_queue.insert(insertion_index, replacement)
     
     return None, None, None, None
-    # to update class_name, replacement, attribute_name, attribute_value
+    # class_name, replacement, attribute_name, attribute_value, substitution
   
   def legislate(self, replacement_rules, source_file):
     
@@ -545,6 +550,7 @@ class ReplacementMaster:
     replacement = None
     attribute_name = None
     attribute_value = None
+    substitution = None
     line_number = 0
     
     for line_number, line \
@@ -552,7 +558,7 @@ class ReplacementMaster:
       
       if ReplacementMaster.is_whitespace_only(line):
         if attribute_name is not None:
-          attribute_name, attribute_value = \
+          attribute_name, attribute_value, substitution = \
                   ReplacementMaster.stage(
                     attribute_name,
                     attribute_value,
@@ -572,7 +578,7 @@ class ReplacementMaster:
       
       if ReplacementMaster.is_comment(line):
         if attribute_name is not None:
-          attribute_name, attribute_value = \
+          attribute_name, attribute_value, substitution = \
                   ReplacementMaster.stage(
                     attribute_name,
                     attribute_value,
@@ -594,7 +600,7 @@ class ReplacementMaster:
               ReplacementMaster.compute_class_declaration_match(line)
       if class_declaration_match is not None:
         if attribute_name is not None:
-          attribute_name, attribute_value = \
+          attribute_name, attribute_value, substitution = \
                   ReplacementMaster.stage(
                     attribute_name,
                     attribute_value,
@@ -622,7 +628,7 @@ class ReplacementMaster:
               ReplacementMaster.compute_attribute_declaration_match(line)
       if attribute_declaration_match is not None:
         if attribute_name is not None:
-          attribute_name, attribute_value = \
+          attribute_name, attribute_value, substitution = \
                   ReplacementMaster.stage(
                     attribute_name,
                     attribute_value,
