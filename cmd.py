@@ -338,6 +338,7 @@ class ReplacementMaster:
     
     class_name = None
     replacement = None
+    line_number = 0
     
     for line_number, line \
     in enumerate(replacement_rules.splitlines(), start=1):
@@ -382,7 +383,8 @@ class ReplacementMaster:
       
       # TODO: other cases
     
-    return
+    if replacement is not None:
+      self.commit(replacement, source_file, line_number + 1, class_name)
   
   def execute(self, string):
     
