@@ -353,7 +353,7 @@ class ReplacementMaster:
         f'unrecognised replacement class `{class_name}`'
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
-
+    
     if id_ in self._replacement_from_id:
       print(
         'error: '
