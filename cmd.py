@@ -418,11 +418,13 @@ class ReplacementMaster:
         source_file,
         line_number,
       )
-      return
     
     # TODO: implement other cases
     # (I think we don't need to check the class_name is right ---
     # that should have already happened before we get to the staging stage)
+    
+    return None, None
+    # to update attribute_name, attribute_value
   
   def commit(self, replacement, source_file, line_number, class_name):
     
@@ -481,13 +483,14 @@ class ReplacementMaster:
       
       if ReplacementMaster.is_whitespace_only(line):
         if attribute_name is not None:
-          self.stage(
-            attribute_name,
-            attribute_value,
-            replacement,
-            source_file,
-            line_number
-          )
+          attribute_name, attribute_value = \
+                  self.stage(
+                    attribute_name,
+                    attribute_value,
+                    replacement,
+                    source_file,
+                    line_number
+                  )
         if replacement is not None:
           class_name, replacement, attribute_name, attribute_value = \
                   self.commit(
@@ -500,13 +503,14 @@ class ReplacementMaster:
       
       if ReplacementMaster.is_comment(line):
         if attribute_name is not None:
-          self.stage(
-            attribute_name,
-            attribute_value,
-            replacement,
-            source_file,
-            line_number
-          )
+          attribute_name, attribute_value = \
+                  self.stage(
+                    attribute_name,
+                    attribute_value,
+                    replacement,
+                    source_file,
+                    line_number
+                  )
         if replacement is not None:
           class_name, replacement, attribute_name, attribute_value = \
                   self.commit(
@@ -521,13 +525,14 @@ class ReplacementMaster:
               ReplacementMaster.compute_class_declaration_match(line)
       if class_declaration_match is not None:
         if attribute_name is not None:
-          self.stage(
-            attribute_name,
-            attribute_value,
-            replacement,
-            source_file,
-            line_number
-          )
+          attribute_name, attribute_value = \
+                  self.stage(
+                    attribute_name,
+                    attribute_value,
+                    replacement,
+                    source_file,
+                    line_number
+                  )
         if replacement is not None:
           class_name, replacement, attribute_name, attribute_value = \
                   self.commit(
