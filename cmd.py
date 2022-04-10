@@ -81,6 +81,7 @@ class ExtensibleFenceReplacement:
   
   ATTRIBUTE_NAMES = [
     'replacement_order',
+    # TODO: other attributes
   ]
   
   def __init__(self, id_):
@@ -502,6 +503,8 @@ class ReplacementMaster:
     line_number,
   ):
     
+    # TODO: staging a substitution
+    
     if attribute_name == 'replacement_order':
       ReplacementMaster.stage_replacement_order(
         replacement,
@@ -511,7 +514,7 @@ class ReplacementMaster:
         line_number,
       )
     
-    # TODO: implement other cases
+    # TODO: implement other attribute name cases
     # (I think we don't need to check the class_name is right ---
     # that should have already happened before we get to the staging stage)
     
@@ -689,7 +692,7 @@ class ReplacementMaster:
                   line_number,
                 )
       
-      # TODO: other cases
+      # TODO: continuation
     
     # At end of file
     if attribute_name is not None:
