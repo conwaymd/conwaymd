@@ -465,7 +465,7 @@ class ReplacementMaster:
         insertion_index = None
       self._replacement_queue.insert(insertion_index, replacement)
     
-    return None, None
+    return None, None, None, None
   
   def legislate(self, replacement_rules, source_file):
     
@@ -488,7 +488,7 @@ class ReplacementMaster:
             line_number
           )
         if replacement is not None:
-          class_name, replacement = \
+          class_name, replacement, attribute_name, attribute_value = \
                   self.commit(
                     replacement,
                     source_file,
@@ -507,7 +507,7 @@ class ReplacementMaster:
             line_number
           )
         if replacement is not None:
-          class_name, replacement = \
+          class_name, replacement, attribute_name, attribute_value = \
                   self.commit(
                     replacement,
                     source_file,
@@ -528,7 +528,13 @@ class ReplacementMaster:
             line_number
           )
         if replacement is not None:
-          self.commit(replacement, source_file, line_number, class_name)
+          class_name, replacement, attribute_name, attribute_value = \
+                  self.commit(
+                    replacement,
+                    source_file,
+                    line_number,
+                    class_name,
+                  )
         class_name, replacement = \
                 self.process_class_declaration(
                   class_declaration_match,
