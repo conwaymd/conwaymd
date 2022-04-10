@@ -343,9 +343,13 @@ class ReplacementMaster:
     in enumerate(replacement_rules.splitlines(), start=1):
       
       if ReplacementMaster.is_whitespace_only(line):
+        if replacement is not None:
+          self.commit(replacement, source_file, line_number, class_name)
         continue
       
       if ReplacementMaster.is_comment(line):
+        if replacement is not None:
+          self.commit(replacement, source_file, line_number, class_name)
         continue
       
       class_declaration_match = \
