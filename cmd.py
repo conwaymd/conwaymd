@@ -442,9 +442,8 @@ class ReplacementMaster:
     
     replacement_order_type = replacement.get_replacement_order_type()
     if replacement_order_type is None:
-      return
-    
-    if replacement_order_type == 'ROOT':
+      pass
+    elif replacement_order_type == 'ROOT':
       if self._root_replacement_id is not None:
         print(
           'error: '
@@ -454,18 +453,19 @@ class ReplacementMaster:
         sys.exit(GENERIC_ERROR_EXIT_CODE)
       self._root_replacement_id = id_
       self._replacement_queue.append(replacement)
-      return
-    
-    reference_id = replacement.get_replacement_order_reference_id()
-    reference_replacement = self._replacement_from_id[reference_id]
-    reference_index = self._replacement_queue.index(reference_replacement)
-    if replacement_order_type == 'BEFORE':
-      insertion_index = reference_index
-    elif replacement_order_type == 'AFTER':
-      insertion_index = reference_index + 1
     else:
-      insertion_index = None
-    self._replacement_queue.insert(insertion_index, replacement)
+      reference_id = replacement.get_replacement_order_reference_id()
+      reference_replacement = self._replacement_from_id[reference_id]
+      reference_index = self._replacement_queue.index(reference_replacement)
+      if replacement_order_type == 'BEFORE':
+        insertion_index = reference_index
+      elif replacement_order_type == 'AFTER':
+        insertion_index = reference_index + 1
+      else:
+        insertion_index = None
+      self._replacement_queue.insert(insertion_index, replacement)
+    
+    return None, None
   
   def legislate(self, replacement_rules, source_file):
     
@@ -488,7 +488,13 @@ class ReplacementMaster:
             line_number
           )
         if replacement is not None:
-          self.commit(replacement, source_file, line_number, class_name)
+          class_name, replacement = \
+                  self.commit(
+                    replacement,
+                    source_file,
+                    line_number,
+                    class_name,
+                  )
         continue
       
       if ReplacementMaster.is_comment(line):
@@ -501,7 +507,13 @@ class ReplacementMaster:
             line_number
           )
         if replacement is not None:
-          self.commit(replacement, source_file, line_number, class_name)
+          class_name, replacement = \
+                  self.commit(
+                    replacement,
+                    source_file,
+                    line_number,
+                    class_name,
+                  )
         continue
       
       class_declaration_match = \
