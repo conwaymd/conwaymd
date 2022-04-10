@@ -268,6 +268,7 @@ class ReplacementMaster:
   
   def __init__(self):
     self._replacement_from_id = {}
+    self._root_replacement_id = None
     self._replacement_queue = []
   
   @staticmethod
@@ -310,7 +311,28 @@ class ReplacementMaster:
     if replacement_order_type is None:
       return
     
-    # TODO: insert replacement at appropriate spot in queue
+    if replacement_order_type == 'ROOT':
+      if self._root_replacement_id is not None:
+        print(
+          'error: '
+          f'{source_file} line {line_number}: '
+          f'root replacement already declared (#{self._root_replacement_id})'
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      self._root_replacement_id = id_
+      self._replacement_queue.append(replacement)
+      return
+    
+    reference_id = replacement.get_replacement_order_reference_id()
+    reference_replacement = self._replacement_from_id[reference_id]
+    reference_index = self._replacement_queue.index(reference_replacement)
+    if replacement_order_type == 'BEFORE':
+      insertion_index = reference_index
+    elif replacement_order_type == 'AFTER':
+      insertion_index = reference_index + 1
+    else:
+      insertion_index = None
+    self._replacement_queue.insert(insertion_index, replacement)
   
   def legislate(self, replacement_rules, source_file):
     
