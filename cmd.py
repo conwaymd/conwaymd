@@ -393,7 +393,9 @@ class ReplacementMaster:
     attribute_value = \
             none_to_empty_string(attribute_value) + partial_attribute_value
     
-    return attribute_name, attribute_value
+    line_number_range_start = line_number
+    
+    return attribute_name, attribute_value, line_number_range_start
   
   @staticmethod
   def compute_substitution_declaration_match(line):
@@ -648,7 +650,7 @@ class ReplacementMaster:
                     line_number_range_start,
                     line_number,
                   )
-        attribute_name, attribute_value = \
+        attribute_name, attribute_value, line_number_range_start = \
                 ReplacementMaster.process_attribute_declaration_line(
                   attribute_declaration_match,
                   class_name,
