@@ -341,9 +341,88 @@ class ReplacementMaster:
     
     return class_name, replacement
   
-  def stage(self, attribute_name, attribute_value, replacement):
-    # TODO: implement properly
-    return
+  @staticmethod
+  def compute_replacement_order_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none> NONE )
+            |
+          (?P<root> ROOT )
+            |
+          (?P<replacement_order_type> BEFORE | AFTER )
+          [ ]
+          [#] (?P<replacement_order_id> [a-z-]+ )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def process_replacement_order(replacement_order_match, replacement):
+    
+    if get_group('none', replacement_order_match) != '':
+      return
+    
+    if get_group('root', replacement_order_match) != '':
+      replacement.set_replacement_order('ROOT', None)
+      return
+    
+    replacement_order_type = \
+            get_group('replacement_order_type', replacement_order_match)
+    replacement_order_id = \
+            get_group('replacement_order_id', replacement_order_match)
+    replacement.set_replacement_order(
+      replacement_order_type,
+      replacement_order_id,
+    )
+  
+  @staticmethod
+  def stage_replacement_order(
+    attribute_value,
+    replacement,
+    source_file,
+    line_number,
+  ):
+    
+    replacement_order_match = \
+            ReplacementMaster.compute_replacement_order_match(attribute_value)
+    if replacement_order_match is None:
+      print(
+        'error: '
+        f'{source_file} line {line_number}: '
+        f'invalid value `{attribute_value}` for attribute `replacement_order`'
+      )
+    
+    ReplacementMaster.process_replacement_order(
+      replacement_order_match,
+      replacement,
+    )
+  
+  def stage(
+    self,
+    attribute_name,
+    attribute_value,
+    replacement,
+    source_file,
+    line_number,
+  ):
+    
+    if attribute_name == 'replacement_order':
+      ReplacementMaster.stage_replacement_order(
+        attribute_value,
+        replacement,
+        source_file,
+        line_number,
+      )
+      return
+    
+    # TODO: implement other cases
+    # (I think we don't need to check the class_name is right ---
+    # that should have already happened before we get to the staging stage)
   
   def commit(self, replacement, source_file, line_number, class_name):
     
@@ -401,14 +480,26 @@ class ReplacementMaster:
       
       if ReplacementMaster.is_whitespace_only(line):
         if attribute_name is not None:
-          self.stage(attribute_name, attribute_value, replacement)
+          self.stage(
+            attribute_name,
+            attribute_value,
+            replacement,
+            source_file,
+            line_number
+          )
         if replacement is not None:
           self.commit(replacement, source_file, line_number, class_name)
         continue
       
       if ReplacementMaster.is_comment(line):
         if attribute_name is not None:
-          self.stage(attribute_name, attribute_value, replacement)
+          self.stage(
+            attribute_name,
+            attribute_value,
+            replacement,
+            source_file,
+            line_number
+          )
         if replacement is not None:
           self.commit(replacement, source_file, line_number, class_name)
         continue
@@ -417,7 +508,13 @@ class ReplacementMaster:
               ReplacementMaster.compute_class_declaration_match(line)
       if class_declaration_match is not None:
         if attribute_name is not None:
-          self.stage(attribute_name, attribute_value, replacement)
+          self.stage(
+            attribute_name,
+            attribute_value,
+            replacement,
+            source_file,
+            line_number
+          )
         if replacement is not None:
           self.commit(replacement, source_file, line_number, class_name)
         class_name, replacement = \
@@ -431,7 +528,13 @@ class ReplacementMaster:
       # TODO: other cases
     
     if attribute_name is not None:
-      self.stage(attribute_name, attribute_value, replacement)
+      self.stage(
+        attribute_name,
+        attribute_value,
+        replacement,
+        source_file,
+        line_number
+      )
     if replacement is not None:
       self.commit(replacement, source_file, line_number + 1, class_name)
   
