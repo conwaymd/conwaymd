@@ -312,10 +312,10 @@ class ReplacementMaster:
     )
   
   def process_class_declaration(
-          self,
-          class_declaration_match,
-          source_file,
-          line_number,
+    self,
+    class_declaration_match,
+    source_file,
+    line_number,
   ):
     
     class_name = get_group('class_name', class_declaration_match)
