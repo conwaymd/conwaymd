@@ -562,7 +562,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     source_file,
-                    line_number
+                    line_number,
                   )
         if replacement is not None:
           class_name, replacement, \
@@ -586,7 +586,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     source_file,
-                    line_number
+                    line_number,
                   )
         if replacement is not None:
           class_name, replacement, \
@@ -616,7 +616,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     source_file,
-                    line_number
+                    line_number,
                   )
         attribute_name, attribute_value = \
                 ReplacementMaster.process_attribute_declaration_line(
@@ -640,12 +640,12 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     source_file,
-                    line_number
+                    line_number,
                   )
         substitution = \
                 ReplacementMaster.process_substitution_declaration_line(
                   substitution_declaration_match,
-                  substitution
+                  substitution,
                 )
       
       # TODO: other cases
@@ -658,7 +658,7 @@ class ReplacementMaster:
         attribute_value,
         substitution,
         source_file,
-        line_number
+        line_number,
       )
     if replacement is not None:
       self.commit(class_name, replacement, source_file, line_number + 1)
