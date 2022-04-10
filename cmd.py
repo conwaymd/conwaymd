@@ -556,27 +556,8 @@ class ReplacementMaster:
     for line_number, line \
     in enumerate(replacement_rules.splitlines(), start=1):
       
-      if ReplacementMaster.is_whitespace_only(line):
-        if attribute_name is not None:
-          attribute_name, attribute_value, substitution = \
-                  ReplacementMaster.stage(
-                    attribute_name,
-                    attribute_value,
-                    replacement,
-                    source_file,
-                    line_number
-                  )
-        if replacement is not None:
-          class_name, replacement, attribute_name, attribute_value = \
-                  self.commit(
-                    replacement,
-                    source_file,
-                    line_number,
-                    class_name,
-                  )
-        continue
-      
-      if ReplacementMaster.is_comment(line):
+      if ReplacementMaster.is_whitespace_only(line) \
+      or ReplacementMaster.is_comment(line):
         if attribute_name is not None:
           attribute_name, attribute_value, substitution = \
                   ReplacementMaster.stage(
