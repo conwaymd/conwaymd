@@ -508,8 +508,8 @@ class ReplacementMaster:
     # (I think we don't need to check the class_name is right ---
     # that should have already happened before we get to the staging stage)
     
-    return None, None, None
-    # attribute_name, attribute_value, substitution
+    return None, None, None, None
+    # attribute_name, attribute_value, substitution, line_number_range_start
   
   def commit(self, class_name, replacement, source_file, line_number):
     
@@ -552,8 +552,9 @@ class ReplacementMaster:
         insertion_index = None
       self._replacement_queue.insert(insertion_index, replacement)
     
-    return None, None, None, None, None
-    # class_name, replacement, attribute_name, attribute_value, substitution
+    return None, None, None, None, None, None
+    # class_name, replacement, attribute_name, attribute_value, substitution,
+    # line_number_range_start
   
   def legislate(self, replacement_rules, source_file):
     
@@ -571,7 +572,9 @@ class ReplacementMaster:
       if ReplacementMaster.is_whitespace_only(line) \
       or ReplacementMaster.is_comment(line):
         if attribute_name is not None:
-          attribute_name, attribute_value, substitution = \
+          attribute_name, attribute_value, \
+          substitution, \
+          line_number_range_start = \
                   ReplacementMaster.stage(
                     replacement,
                     attribute_name,
@@ -583,7 +586,9 @@ class ReplacementMaster:
                   )
         if replacement is not None:
           class_name, replacement, \
-          attribute_name, attribute_value, substitution = \
+          attribute_name, attribute_value, \
+          substitution, \
+          line_number_range_start = \
                   self.commit(
                     class_name,
                     replacement,
@@ -596,7 +601,9 @@ class ReplacementMaster:
               ReplacementMaster.compute_class_declaration_match(line)
       if class_declaration_match is not None:
         if attribute_name is not None:
-          attribute_name, attribute_value, substitution = \
+          attribute_name, attribute_value, \
+          substitution, \
+          line_number_range_start = \
                   ReplacementMaster.stage(
                     replacement,
                     attribute_name,
@@ -608,7 +615,9 @@ class ReplacementMaster:
                   )
         if replacement is not None:
           class_name, replacement, \
-          attribute_name, attribute_value, substitution = \
+          attribute_name, attribute_value, \
+          substitution, \
+          line_number_range_start = \
                   self.commit(
                     class_name,
                     replacement,
@@ -627,7 +636,9 @@ class ReplacementMaster:
               ReplacementMaster.compute_attribute_declaration_match(line)
       if attribute_declaration_match is not None:
         if attribute_name is not None:
-          attribute_name, attribute_value, substitution = \
+          attribute_name, attribute_value, \
+          substitution, \
+          line_number_range_start = \
                   ReplacementMaster.stage(
                     replacement,
                     attribute_name,
@@ -652,7 +663,9 @@ class ReplacementMaster:
               ReplacementMaster.compute_substitution_declaration_match(line)
       if substitution_declaration_match is not None:
         if attribute_name is not None:
-          attribute_name, attribute_value, substitution = \
+          attribute_name, attribute_value, \
+          substitution, \
+          line_number_range_start = \
                   ReplacementMaster.stage(
                     replacement,
                     attribute_name,
