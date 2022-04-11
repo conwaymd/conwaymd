@@ -935,7 +935,7 @@ def extract_rules_and_content(cmd):
   replacement_rules = get_group('replacement_rules', match)
   main_content = get_group('main_content', match)
   
-  return (replacement_rules, main_content)
+  return replacement_rules, main_content
 
 
 STANDARD_RULES = \
