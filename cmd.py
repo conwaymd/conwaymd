@@ -278,10 +278,11 @@ class ReplacementMaster:
   Parse CMD replacement rule syntax. A line can be either:
   (1) whitespace-only,
   (2) a comment (beginning with `#`),
-  (3) the start of a class declaration (of the form `«ClassName»: #«id»`),
-  (4) the start of an attribute declaration (beginning with `- `),
-  (5) the start of a substitution declaration (beginning with `* `), or
-  (6) a continuation (beginning with whitespace).
+  (3) a rules inclusion (of the form `< «rules_file_name»`),
+  (4) the start of a class declaration (of the form `«ClassName»: #«id»`),
+  (5) the start of an attribute declaration (beginning with `- `),
+  (6) the start of a substitution declaration (beginning with `* `), or
+  (7) a continuation (beginning with whitespace).
   An attribute declaration is of the form `- «name»: «value»`.
   A substitution declaration is of the form `* «pattern» --> «substitute»`,
   where the number of hyphens in the delimiter `-->`
@@ -316,6 +317,43 @@ class ReplacementMaster:
   @staticmethod
   def is_comment(line):
     return line.startswith('#')
+  
+  @staticmethod
+  def compute_rules_inclusion_match(line):
+    return re.fullmatch(
+      r'''
+        [<][ ] (?P<rules_file_name> [\S][\s\S]* )
+      ''',
+      line,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  def process_rules_inclusion_line(
+    self,
+    rules_inclusion_match,
+    source_file,
+    line_number,
+  ):
+    
+    rules_file_name = get_group('rules_file_name', rules_inclusion_match)
+    # TODO:
+    #   - logic so that leading slash means 'relative to working directory',
+    #     while leading non-slash means 'relative to the current file'
+    #   - f'`{rules_file}`' with 'relative to working directory'
+    #     or 'relative to {some file}' for error message printing
+    # TODO: check file not already opened lest we have recursion
+    try:
+      with open(rules_file_name, 'r', encoding='utf-8') as rules_file:
+        replacement_rules = rules_file.read()
+    except FileNotFoundError:
+      print(
+        'error: '
+        f'{source_file}, line {line_number}: '
+        f'file `{rules_file_name}` not found'
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    self.legislate(replacement_rules, f'`{rules_file_name}`')
   
   @staticmethod
   def compute_class_declaration_match(line):
@@ -606,6 +644,39 @@ class ReplacementMaster:
                     line_number,
                   )
         continue
+      
+      rules_inclusion_match = \
+              ReplacementMaster.compute_rules_inclusion_match(line)
+      if rules_inclusion_match is not None:
+        if attribute_name is not None:
+          attribute_name, attribute_value, \
+          substitution, \
+          line_number_range_start = \
+                  ReplacementMaster.stage(
+                    replacement,
+                    attribute_name,
+                    attribute_value,
+                    substitution,
+                    source_file,
+                    line_number_range_start,
+                    line_number,
+                  )
+        if replacement is not None:
+          class_name, replacement, \
+          attribute_name, attribute_value, \
+          substitution, \
+          line_number_range_start = \
+                  self.commit(
+                    class_name,
+                    replacement,
+                    source_file,
+                    line_number,
+                  )
+        self.process_rules_inclusion_line(
+          rules_inclusion_match,
+          source_file,
+          line_number,
+        )
       
       class_declaration_match = \
               ReplacementMaster.compute_class_declaration_match(line)
