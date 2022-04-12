@@ -351,7 +351,7 @@ class ReplacementMaster:
         for file_name in self._included_file_names:
           if os.path.samefile(rules_file_name, file_name):
             self._included_file_names.append(rules_file_name)
-            inclusion_recursion = \
+            recursive_inclusion_string = \
                     ' includes '.join(
                       f'`{file_name}`'
                         for file_name in self._included_file_names
@@ -359,7 +359,7 @@ class ReplacementMaster:
             print(
               'error: '
               f'{source_file}, line {line_number}: '
-              f'recursive inclusion: {inclusion_recursion}'
+              f'recursive inclusion: {recursive_inclusion_string}'
             )
             sys.exit(GENERIC_ERROR_EXIT_CODE)
         self._included_file_names.append(rules_file_name)
