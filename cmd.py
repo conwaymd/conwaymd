@@ -298,7 +298,12 @@ class ReplacementMaster:
   Applies the legislated replacements.
   """
   
-  def __init__(self):
+  def __init__(self, cmd_file_name):
+    
+    self._included_file_names = []
+    if cmd_file_name is not None:
+      self._included_file_names.append(cmd_file_name)
+    
     self._replacement_from_id = {}
     self._root_replacement_id = None
     self._replacement_queue = []
@@ -341,9 +346,23 @@ class ReplacementMaster:
     #     while leading non-slash means 'relative to the current file'
     #   - f'`{rules_file}`' with 'relative to working directory'
     #     or 'relative to {some file}' for error message printing
-    # TODO: check file not already opened lest we have recursion
     try:
       with open(rules_file_name, 'r', encoding='utf-8') as rules_file:
+        for file_name in self._included_file_names:
+          if os.path.samefile(rules_file_name, file_name):
+            self._included_file_names.append(rules_file_name)
+            inclusion_recursion = \
+                    ' includes '.join(
+                      f'`{file_name}`'
+                        for file_name in self._included_file_names
+                    )
+            print(
+              'error: '
+              f'{source_file}, line {line_number}: '
+              f'recursive inclusion: {inclusion_recursion}'
+            )
+            sys.exit(GENERIC_ERROR_EXIT_CODE)
+        self._included_file_names.append(rules_file_name)
         replacement_rules = rules_file.read()
     except FileNotFoundError:
       print(
@@ -1038,7 +1057,7 @@ def cmd_to_html(cmd, cmd_file_name=None):
   
   replacement_rules, main_content = extract_rules_and_content(cmd)
   
-  replacement_master = ReplacementMaster()
+  replacement_master = ReplacementMaster(cmd_file_name)
   replacement_master.legislate(STANDARD_RULES, 'STANDARD_RULES')
   replacement_master.legislate(replacement_rules, f'`{cmd_file_name}`')
   html = replacement_master.execute(main_content)
