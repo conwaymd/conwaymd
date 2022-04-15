@@ -1200,12 +1200,10 @@ def build_attributes_sequence(attribute_specifications):
   ` id="y" class="a b c d" name="value"`.
   """
   
-  attribute_specification_matches = \
-          compute_attribute_specification_matches(attribute_specifications)
-  
   attribute_value_from_name = {}
   
-  for attribute_specification_match in attribute_specification_matches:
+  for attribute_specification_match \
+  in compute_attribute_specification_matches(attribute_specifications):
     
     name, value = \
             extract_attribute_name_and_value(attribute_specification_match)
