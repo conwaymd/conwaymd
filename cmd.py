@@ -532,9 +532,10 @@ class ReplacementMaster:
     continuation = continuation_match.group('continuation')
     
     if attribute_name is not None:
-      attribute_value = none_to_empty_string(attribute_value) + continuation
+      attribute_value = \
+              none_to_empty_string(attribute_value) + '\n' + continuation
     elif substitution is not None:
-      substitution = substitution + continuation
+      substitution = substitution + '\n' + continuation
     else:
       ReplacementMaster.print_error(
         'continuation only allowed for attribute or substitution declarations',
