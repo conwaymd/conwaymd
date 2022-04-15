@@ -85,6 +85,7 @@ class ExtensibleFenceReplacement:
     'replacement_order',
     'syntax_type',
     'allowed_flags',
+    'opening_delimiter',
     # TODO: other attributes
   ]
   
@@ -626,6 +627,52 @@ class ReplacementMaster:
     replacement.set_allowed_flags(flag_setting_from_letter, has_flags)
   
   @staticmethod
+  def compute_opening_delimiter_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none> NONE )
+            |
+          (?P<opening_delimiter> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_opening_delimiter(
+    replacement,
+    attribute_value,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    opening_delimiter_match = \
+            ReplacementMaster.compute_opening_delimiter_match(attribute_value)
+    
+    invalid_value = opening_delimiter_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `replacement_order`',
+        source_file,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if opening_delimiter_match.group('none') is not None:
+      return
+    
+    opening_delimiter = opening_delimiter_match.group('opening_delimiter')
+    replacement.set_opening_delimiter(opening_delimiter)
+  
+  @staticmethod
   def compute_replacement_order_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -868,6 +915,14 @@ class ReplacementMaster:
       
       if attribute_name == 'allowed_flags':
         ReplacementMaster.stage_allowed_flags(
+          replacement,
+          attribute_value,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'opening_delimiter':
+        ReplacementMaster.stage_opening_delimiter(
           replacement,
           attribute_value,
           source_file,
