@@ -675,7 +675,11 @@ class ReplacementMaster:
     return re.fullmatch(
       r'''
         [\s]*
-        (?P<syntax_type> BLOCK | INLINE )
+        (?:
+          (?P<syntax_type> BLOCK | INLINE )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
         [\s]*
       ''',
       attribute_value,
@@ -693,9 +697,11 @@ class ReplacementMaster:
     
     syntax_type_match = \
             ReplacementMaster.compute_syntax_type_match(attribute_value)
-    if syntax_type_match is None:
+    
+    invalid_value = syntax_type_match.group('invalid_value')
+    if invalid_value is not None:
       ReplacementMaster.print_error(
-        f'invalid value `{attribute_value}` for attribute `syntax_type`',
+        f'invalid value `{invalid_value}` for attribute `syntax_type`',
         source_file,
         line_number_range_start,
         line_number,
