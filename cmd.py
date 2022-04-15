@@ -684,7 +684,7 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     ReplacementMaster.process_regex_substitution(
-      substitution,
+      substitution_match,
       replacement,
       source_file,
       line_number_range_start,
