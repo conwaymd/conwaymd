@@ -552,6 +552,10 @@ class ReplacementMaster:
     return attribute_value, substitution
   
   @staticmethod
+  def is_none_keyword_match(attribute_value):
+    return re.fullmatch(r'[\s]*NONE[\s]*', attribute_value, flags=re.ASCII)
+  
+  @staticmethod
   def compute_allowed_flag_matches(attribute_value):
     return re.finditer(
       r'''
@@ -585,7 +589,7 @@ class ReplacementMaster:
     
     flag_setting_from_letter = {}
     
-    if re.fullmatch(r'[\s]*NONE[\s]*', attribute_value, flags=re.ASCII):
+    if ReplacementMaster.is_none_keyword_match(attribute_value):
       return
     
     for allowed_flag_match \
