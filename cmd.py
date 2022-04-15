@@ -67,7 +67,7 @@ class ExtensibleFenceReplacement:
   ````
   ExtensibleFenceReplacement: #«id»
   - replacement_order: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
-  - syntax_type: DISPLAY | INLINE (mandatory)
+  - syntax_type: BLOCK | INLINE (mandatory)
   - allowed_flags:
       (def) NONE
         |
@@ -83,6 +83,7 @@ class ExtensibleFenceReplacement:
   
   ATTRIBUTE_NAMES = [
     'replacement_order',
+    'syntax_type',
     # TODO: other attributes
   ]
   
@@ -606,6 +607,41 @@ class ReplacementMaster:
     )
   
   @staticmethod
+  def compute_syntax_type_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?P<syntax_type> BLOCK | INLINE )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_syntax_type(
+    replacement,
+    attribute_value,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    syntax_type_match = \
+            ReplacementMaster.compute_syntax_type_match(attribute_value)
+    if syntax_type_match is None:
+      ReplacementMaster.print_error(
+        f'invalid value `{attribute_value}` for attribute `syntax_type`',
+        source_file,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    syntax_type = get_group('syntax_type', syntax_type_match)
+    replacement.set_syntax_type(syntax_type == 'BLOCK')
+  
+  @staticmethod
   def compute_substitution_match(substitution):
     
     substitution_delimiters = re.findall('[-]{2,}[>]', substitution)
@@ -747,6 +783,14 @@ class ReplacementMaster:
       
       if attribute_name == 'replacement_order':
         ReplacementMaster.stage_replacement_order(
+          replacement,
+          attribute_value,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'syntax_type':
+        ReplacementMaster.stage_syntax_type(
           replacement,
           attribute_value,
           source_file,
