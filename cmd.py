@@ -585,7 +585,7 @@ class ReplacementMaster:
         [\s]*
       ''',
       attribute_value,
-      flags=re.ASCII | re.VERBOSE
+      flags=re.ASCII | re.VERBOSE,
     )
   
   @staticmethod
