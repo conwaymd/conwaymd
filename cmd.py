@@ -601,13 +601,24 @@ class ReplacementMaster:
     replacement.add_substitution(pattern, substitute)
   
   @staticmethod
-  def process_regex_substitution(
-    substitution_match,
+  def stage_regex_substitution(
     replacement,
+    substitution,
     source_file,
     line_number_range_start,
     line_number,
   ):
+    
+    substitution_match = \
+            ReplacementMaster.compute_substitution_match(substitution)
+    if substitution_match is None:
+      ReplacementMaster.print_error(
+        f'missing delimiter in substitution `{substitution}`',
+        source_file,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     pattern = get_group('pattern', substitution_match)
     substitute = get_group('substitute', substitution_match)
@@ -642,34 +653,6 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     replacement.add_substitution(pattern, substitute)
-  
-  @staticmethod
-  def stage_regex_substitution(
-    replacement,
-    substitution,
-    source_file,
-    line_number_range_start,
-    line_number,
-  ):
-    
-    substitution_match = \
-            ReplacementMaster.compute_substitution_match(substitution)
-    if substitution_match is None:
-      ReplacementMaster.print_error(
-        f'missing delimiter in substitution `{substitution}`',
-        source_file,
-        line_number_range_start,
-        line_number,
-      )
-      sys.exit(GENERIC_ERROR_EXIT_CODE)
-    
-    ReplacementMaster.process_regex_substitution(
-      substitution_match,
-      replacement,
-      source_file,
-      line_number_range_start,
-      line_number,
-    )
   
   @staticmethod
   def stage(
