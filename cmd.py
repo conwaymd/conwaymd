@@ -585,6 +585,9 @@ class ReplacementMaster:
     
     flag_setting_from_letter = {}
     
+    if re.fullmatch(r'[\s]*NONE[\s]*', attribute_value, flags=re.ASCII):
+      return
+    
     for allowed_flag_match \
     in ReplacementMaster.compute_allowed_flag_matches(attribute_value):
       
