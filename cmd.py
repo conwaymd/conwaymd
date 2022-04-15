@@ -329,6 +329,14 @@ class ReplacementMaster:
     )
   
   @staticmethod
+  def print_traceback(exception):
+    traceback.print_exception(
+      type(exception),
+      exception,
+      exception.__traceback__,
+    )
+  
+  @staticmethod
   def is_whitespace_only(line):
     return re.fullmatch(r'[\s]*', line, flags=re.ASCII)
   
@@ -633,11 +641,7 @@ class ReplacementMaster:
         line_number_range_start,
         line_number,
       )
-      traceback.print_exception(
-        type(pattern_exception),
-        pattern_exception,
-        pattern_exception.__traceback__
-      )
+      ReplacementMaster.print_traceback(pattern_exception)
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     try:
@@ -654,11 +658,7 @@ class ReplacementMaster:
         line_number_range_start,
         line_number,
       )
-      traceback.print_exception(
-        type(substitute_exception),
-        substitute_exception,
-        substitute_exception.__traceback__
-      )
+      ReplacementMaster.print_traceback(substitute_exception)
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     replacement.add_substitution(pattern, substitute)
