@@ -576,14 +576,6 @@ class ReplacementMaster:
     )
   
   @staticmethod
-  def process_ordinary_substitution(substitution_match, replacement):
-    
-    pattern = get_group('pattern', substitution_match)
-    substitute = get_group('substitute', substitution_match)
-    
-    replacement.add_substitution(pattern, substitute)
-  
-  @staticmethod
   def stage_ordinary_substitution(
     replacement,
     substitution,
@@ -603,10 +595,10 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    ReplacementMaster.process_ordinary_substitution(
-      substitution_match,
-      replacement,
-    )
+    pattern = get_group('pattern', substitution_match)
+    substitute = get_group('substitute', substitution_match)
+    
+    replacement.add_substitution(pattern, substitute)
   
   @staticmethod
   def process_regex_substitution(
