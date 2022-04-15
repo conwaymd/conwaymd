@@ -921,7 +921,7 @@ class ReplacementMaster:
             |
           (?P<replacement_order_type> BEFORE | AFTER )
           [ ]
-          [#] (?P<replacement_order_id> [a-z-]+ )
+          [#] (?P<replacement_order_reference_id> [a-z-]+ )
             |
           (?P<invalid_value> [\s\S]*? )
         )
@@ -962,11 +962,11 @@ class ReplacementMaster:
     
     replacement_order_type = \
             replacement_order_match.group('replacement_order_type')
-    replacement_order_id = \
-            replacement_order_match.group('replacement_order_id')
+    replacement_order_reference_id = \
+            replacement_order_match.group('replacement_order_reference_id')
     replacement.set_replacement_order(
       replacement_order_type,
-      replacement_order_id,
+      replacement_order_reference_id,
     )
   
   @staticmethod
