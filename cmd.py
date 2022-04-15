@@ -591,8 +591,7 @@ class ReplacementMaster:
       
       if allowed_flag_match.group('whitespace_only') is not None:
         ReplacementMaster.print_error(
-          f'invalid specification ``'
-          ' for attribute `allowed_flags`',
+          f'invalid specification `` for attribute `allowed_flags`',
           source_file,
           line_number_range_start,
           line_number,
@@ -658,8 +657,8 @@ class ReplacementMaster:
     invalid_value = attribute_specifications_match.group('invalid_value')
     if invalid_value is not None:
       ReplacementMaster.print_error(
-        f'invalid value `{invalid_value}` '
-        'for attribute `attribute_specifications`',
+        f'invalid value `{invalid_value}`'
+        ' for attribute `attribute_specifications`',
         source_file,
         line_number_range_start,
         line_number,
@@ -712,7 +711,8 @@ class ReplacementMaster:
     invalid_value = extensible_delimiter_match.group('invalid_value')
     if invalid_value is not None:
       ReplacementMaster.print_error(
-        f'`{invalid_value}` is not a character repeated',
+        f'invalid value `{invalid_value}` not a character repeated'
+        ' for attribute `extensible_delimiter`',
         source_file,
         line_number_range_start,
         line_number,
@@ -763,7 +763,7 @@ class ReplacementMaster:
     invalid_value = opening_delimiter_match.group('invalid_value')
     if invalid_value is not None:
       ReplacementMaster.print_error(
-        f'invalid value `{invalid_value}` for attribute `replacement_order`',
+        f'invalid value `{invalid_value}` for attribute `opening_delimiter`',
         source_file,
         line_number_range_start,
         line_number,
@@ -910,7 +910,7 @@ class ReplacementMaster:
             ReplacementMaster.compute_substitution_match(substitution)
     if substitution_match is None:
       ReplacementMaster.print_error(
-        f'missing delimiter in substitution `{substitution}`',
+        f'missing delimiter `-->` in substitution `{substitution}`',
         source_file,
         line_number_range_start,
         line_number,
@@ -935,7 +935,7 @@ class ReplacementMaster:
             ReplacementMaster.compute_substitution_match(substitution)
     if substitution_match is None:
       ReplacementMaster.print_error(
-        f'missing delimiter in substitution `{substitution}`',
+        f'missing delimiter `-->` in substitution `{substitution}`',
         source_file,
         line_number_range_start,
         line_number,
