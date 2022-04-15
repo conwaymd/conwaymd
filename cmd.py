@@ -846,7 +846,7 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
-      if attribute_name == 'replacement_order':
+      elif attribute_name == 'replacement_order':
         ReplacementMaster.stage_replacement_order(
           replacement,
           attribute_value,
