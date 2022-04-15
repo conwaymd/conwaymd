@@ -1169,16 +1169,16 @@ def compute_attribute_specification_matches(attribute_specifications):
 
 
 ATTRIBUTE_NAME_FROM_ABBREVIATION = \
-  {
-    '#': 'id',
-    '.': 'class',
-    'l': 'lang',
-    'r': 'rowspan',
-    'c': 'colspan',
-    'w': 'width',
-    'h': 'height',
-    's': 'style',
-  }
+{
+  '#': 'id',
+  '.': 'class',
+  'l': 'lang',
+  'r': 'rowspan',
+  'c': 'colspan',
+  'w': 'width',
+  'h': 'height',
+  's': 'style',
+}
 
 
 def extract_attribute_name_and_value(attribute_specification_match):
