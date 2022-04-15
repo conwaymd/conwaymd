@@ -1266,47 +1266,48 @@ ATTRIBUTE_NAME_FROM_ABBREVIATION = \
 
 def extract_attribute_name_and_value(attribute_specification_match):
   
-  name = get_group('name', attribute_specification_match)
-  if name != '':
+  name = attribute_specification_match.group('name')
+  if name is not None:
     
     try:
       name = ATTRIBUTE_NAME_FROM_ABBREVIATION[name]
     except KeyError:
       pass
     
-    quoted_value = get_group('quoted_value', attribute_specification_match)
-    bare_value = get_group('bare_value', attribute_specification_match)
-    value = quoted_value + bare_value # at most one will be non-empty
+    quoted_value = attribute_specification_match.group('quoted_value')
+    if quoted_value is not None:
+      return name, quoted_value
     
-    return name, value
+    bare_value = attribute_specification_match.group('bare_value')
+    if bare_value is not None:
+      return name, bare_value
   
-  id_ = get_group('id_', attribute_specification_match)
-  if id_ != '':
+  id_ = attribute_specification_match.group('id_')
+  if id_ is not None:
     return 'id', id_
   
-  class_ = get_group('class_', attribute_specification_match)
-  if class_ != '':
+  class_ = attribute_specification_match.group('class_')
+  if class_ is not None:
     return 'class', class_
   
-  rowspan = get_group('rowspan', attribute_specification_match)
-  if rowspan != '':
+  rowspan = attribute_specification_match.group('rowspan')
+  if rowspan is not None:
     return 'rowspan', rowspan
   
-  colspan = get_group('colspan', attribute_specification_match)
-  if colspan != '':
+  colspan = attribute_specification_match.group('colspan')
+  if colspan is not None:
     return 'colspan', colspan
   
-  width = get_group('width', attribute_specification_match)
-  if width != '':
+  width = attribute_specification_match.group('width')
+  if width is not None:
     return 'width', width
   
-  height = get_group('height', attribute_specification_match)
-  if height != '':
+  height = attribute_specification_match.group('height')
+  if height is not None:
     return 'height', height
   
-  boolean_attribute = \
-          get_group('boolean_attribute', attribute_specification_match)
-  if boolean_attribute != '':
+  boolean_attribute = attribute_specification_match.group('boolean_attribute')
+  if boolean_attribute is not None:
     return boolean_attribute, None
   
   return None, None
