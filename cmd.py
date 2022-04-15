@@ -1449,18 +1449,6 @@ def none_to_empty_string(string):
   return ''
 
 
-def get_group(group_name, match):
-  """
-  Retrieve as string a named capture group from a match object.
-  
-  Ensures the result is not None.
-  """
-  
-  string = match.group(group_name)
-  
-  return none_to_empty_string(string)
-
-
 def extract_rules_and_content(cmd):
   """
   Extract replacement rules and main content from CMD file content.
