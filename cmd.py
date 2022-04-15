@@ -673,7 +673,7 @@ class ReplacementMaster:
     line_number_range_start,
     line_number,
   ):
-
+    
     substitution_match = \
             ReplacementMaster.compute_substitution_match(substitution)
     if substitution_match is None:
