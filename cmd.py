@@ -369,19 +369,19 @@ class ReplacementMaster:
                       f'`{file_name}`'
                         for file_name in self._included_file_names
                     )
-            print(
-              'error: '
-              f'{source_file}, line {line_number}: '
-              f'recursive inclusion: {recursive_inclusion_string}'
+            ReplacementMaster.print_error(
+              f'recursive inclusion: {recursive_inclusion_string}',
+              source_file,
+              line_number,
             )
             sys.exit(GENERIC_ERROR_EXIT_CODE)
         self._included_file_names.append(rules_file_name)
         replacement_rules = rules_file.read()
     except FileNotFoundError:
-      print(
-        'error: '
-        f'{source_file}, line {line_number}: '
-        f'file `{rules_file_name}` not found'
+      ReplacementMaster.print_error(
+        f'file `{rules_file_name}` not found',
+        source_file,
+        line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
@@ -412,18 +412,18 @@ class ReplacementMaster:
     if class_name == 'ExtensibleFenceReplacement':
       replacement = ExtensibleFenceReplacement(id_)
     else:
-      print(
-        'error: '
-        f'{source_file}, line {line_number}: '
-        f'unrecognised replacement class `{class_name}`'
+      ReplacementMaster.print_error(
+        f'unrecognised replacement class `{class_name}`',
+        source_file,
+        line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     if id_ in self._replacement_from_id:
-      print(
-        'error: '
-        f'{source_file}, line {line_number}: '
-        f'replacement already declared with id `{id_}`'
+      ReplacementMaster.print_error(
+        f'replacement already declared with id `{id_}`',
+        source_file,
+        line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
@@ -454,10 +454,10 @@ class ReplacementMaster:
     
     attribute_name = get_group('attribute_name', attribute_declaration_match)
     if attribute_name not in replacement.ATTRIBUTE_NAMES:
-      print(
-        'error: '
-        f'{source_file}, line {line_number}: '
-        f'unrecognised attribute `{attribute_name}` for `{class_name}`'
+      ReplacementMaster.print_error(
+        f'unrecognised attribute `{attribute_name}` for `{class_name}`',
+        source_file,
+        line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
@@ -754,10 +754,10 @@ class ReplacementMaster:
       replacement.validate()
     except MissingAttributeException as exception:
       missing_attribute = exception.get_missing_attribute()
-      print(
-        'error: '
-        f'{source_file}, line {line_number}: '
-        f'missing attribute `{missing_attribute}` for {class_name}'
+      ReplacementMaster.print_error(
+        f'missing attribute `{missing_attribute}` for {class_name}',
+        source_file,
+        line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
@@ -769,10 +769,10 @@ class ReplacementMaster:
       pass
     elif replacement_order_type == 'ROOT':
       if self._root_replacement_id is not None:
-        print(
-          'error: '
-          f'{source_file}, line {line_number}: '
-          f'root replacement already declared (#{self._root_replacement_id})'
+        ReplacementMaster.print_error(
+          f'root replacement already declared (#{self._root_replacement_id})',
+          source_file,
+          line_number,
         )
         sys.exit(GENERIC_ERROR_EXIT_CODE)
       self._root_replacement_id = id_
