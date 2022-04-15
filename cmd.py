@@ -50,6 +50,87 @@ class MissingAttributeException(Exception):
     return self._missing_attribute
 
 
+class OrdinaryDictionaryReplacement:
+  """
+  A replacement rule for a dictionary of ordinary substitutions.
+  
+  Substitutions shall be applied simultaneously,
+  that earlier substitutions be not sabotaged by newer ones.
+  
+  CMD replacement rule syntax:
+  ````
+  OrdinaryDictionaryReplacement: #«id»
+  - replacement_order: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  * «pattern» --> «substitute»
+  [...]
+  ````
+  """
+  
+  ATTRIBUTE_NAMES = [
+    'replacement_order',
+  ]
+  
+  def __init__(self, id_):
+    self._id = id_
+    self._replacement_order_type = None
+    self._replacement_order_reference_id = None
+    self._substitute_from_pattern = {}
+    self._regex_pattern = None
+    self._substitute_function = None
+  
+  def get_id(self):
+    return self._id
+  
+  def set_replacement_order(
+    self,
+    replacement_order_type,
+    replacement_order_reference_id,
+  ):
+    self._replacement_order_type = replacement_order_type
+    self._replacement_order_reference_id = replacement_order_reference_id
+  
+  def get_replacement_order_type(self):
+    return self._replacement_order_type
+  
+  def get_replacement_order_reference_id(self):
+    return self._replacement_order_reference_id
+  
+  def add_substitution(self, pattern, substitute):
+    self._substitute_from_pattern[pattern] = substitute
+  
+  def validate(self):
+    
+    self._regex_pattern = \
+            OrdinaryDictionaryReplacement.build_regex_pattern(
+              self._substitute_from_pattern,
+            )
+    self._substitute_function = \
+            OrdinaryDictionaryReplacement.build_substitute_function(
+              self._substitute_from_pattern,
+            )
+  
+  @staticmethod
+  def build_regex_pattern(substitute_from_pattern):
+    return '|'.join(re.escape(pattern) for pattern in substitute_from_pattern)
+  
+  @staticmethod
+  def build_substitute_function(substitute_from_pattern):
+    
+    def substitute_function(match):
+      pattern = match.group()
+      substitute = substitute_from_pattern[pattern]
+      return substitute
+    
+    return substitute_function
+  
+  def apply(self, string):
+    return re.sub(
+      self._regex_pattern,
+      self._substitute_function,
+      string,
+    )
+
+
 class ExtensibleFenceReplacement:
   """
   A generalised extensible-fence-style replacement rule.
@@ -86,7 +167,6 @@ class ExtensibleFenceReplacement:
   ]
   
   def __init__(self, id_):
-    
     self._id = id_
     self._replacement_order_type = None
     self._replacement_order_reference_id = None
@@ -437,7 +517,9 @@ class ReplacementMaster:
     class_name = class_declaration_match.group('class_name')
     id_ = class_declaration_match.group('id_')
     
-    if class_name == 'ExtensibleFenceReplacement':
+    if class_name == 'OrdinaryDictionaryReplacement':
+      replacement = OrdinaryDictionaryReplacement(id_)
+    elif class_name == 'ExtensibleFenceReplacement':
       replacement = ExtensibleFenceReplacement(id_)
     else:
       ReplacementMaster.print_error(
@@ -1793,6 +1875,11 @@ def extract_rules_and_content(cmd):
 
 STANDARD_RULES = \
 '''# STANDARD_RULES
+
+OrdinaryDictionaryReplacement: #escape-html
+* & --> &amp;
+* < --> &lt;
+* > --> &gt;
 
 ExtensibleFenceReplacement: #literals
 - replacement_order: ROOT
