@@ -140,12 +140,12 @@ class TestCmd(unittest.TestCase):
     self.assertEqual(cmd.none_to_empty_string('xyz'), 'xyz')
   
   def test_extract_rules_and_content(self):
-    self.assertEqual(cmd.extract_rules_and_content(''), ('', ''))
-    self.assertEqual(cmd.extract_rules_and_content('abc'), ('', 'abc'))
-    self.assertEqual(cmd.extract_rules_and_content('%%%abc'), ('', '%%%abc'))
-    self.assertEqual(cmd.extract_rules_and_content('abc%%%'), ('', 'abc%%%'))
+    self.assertEqual(cmd.extract_rules_and_content(''), (None, ''))
+    self.assertEqual(cmd.extract_rules_and_content('abc'), (None, 'abc'))
+    self.assertEqual(cmd.extract_rules_and_content('%%%abc'), (None, '%%%abc'))
+    self.assertEqual(cmd.extract_rules_and_content('abc%%%'), (None, 'abc%%%'))
     self.assertEqual(cmd.extract_rules_and_content('%%%\nabc'), ('', 'abc'))
-    self.assertEqual(cmd.extract_rules_and_content('X%%\nY'), ('', 'X%%\nY'))
+    self.assertEqual(cmd.extract_rules_and_content('X%%\nY'), (None, 'X%%\nY'))
     self.assertEqual(
       cmd.extract_rules_and_content(
         'This be the preamble.\nEven two lines of preamble.\n%%%%%\nYea.\n'

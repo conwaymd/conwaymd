@@ -1000,6 +1000,9 @@ class ReplacementMaster:
   
   def legislate(self, replacement_rules, source_file):
     
+    if replacement_rules is None:
+      return
+    
     class_name = None
     replacement = None
     attribute_name = None
@@ -1487,8 +1490,8 @@ def extract_rules_and_content(cmd):
             flags=re.MULTILINE | re.VERBOSE,
           )
   
-  replacement_rules = get_group('replacement_rules', match)
-  main_content = get_group('main_content', match)
+  replacement_rules = match.group('replacement_rules')
+  main_content = match.group('main_content')
   
   return replacement_rules, main_content
 
