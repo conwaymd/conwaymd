@@ -889,6 +889,8 @@ class ReplacementMaster:
           sys.exit(GENERIC_ERROR_EXIT_CODE)
       
       content_replacement_list.append(content_replacement)
+    
+    replacement.set_content_replacements(content_replacement_list)
   
   @staticmethod
   def compute_extensible_delimiter_match(attribute_value):
