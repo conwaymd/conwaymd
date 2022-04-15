@@ -520,25 +520,6 @@ class ReplacementMaster:
     )
   
   @staticmethod
-  def process_replacement_order(replacement_order_match, replacement):
-    
-    if get_group('none', replacement_order_match) != '':
-      return
-    
-    if get_group('root', replacement_order_match) != '':
-      replacement.set_replacement_order('ROOT', None)
-      return
-    
-    replacement_order_type = \
-            get_group('replacement_order_type', replacement_order_match)
-    replacement_order_id = \
-            get_group('replacement_order_id', replacement_order_match)
-    replacement.set_replacement_order(
-      replacement_order_type,
-      replacement_order_id,
-    )
-  
-  @staticmethod
   def stage_replacement_order(
     replacement,
     attribute_value,
@@ -558,9 +539,20 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    ReplacementMaster.process_replacement_order(
-      replacement_order_match,
-      replacement,
+    if get_group('none', replacement_order_match) != '':
+      return
+    
+    if get_group('root', replacement_order_match) != '':
+      replacement.set_replacement_order('ROOT', None)
+      return
+    
+    replacement_order_type = \
+      get_group('replacement_order_type', replacement_order_match)
+    replacement_order_id = \
+      get_group('replacement_order_id', replacement_order_match)
+    replacement.set_replacement_order(
+      replacement_order_type,
+      replacement_order_id,
     )
   
   @staticmethod
