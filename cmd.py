@@ -1416,7 +1416,7 @@ class ReplacementMaster:
       
       if ReplacementMaster.is_whitespace_only(line) \
       or ReplacementMaster.is_comment(line):
-        if attribute_name is not None:
+        if attribute_name is not None or substitution is not None:
           attribute_name, attribute_value, \
           substitution, \
           line_number_range_start = \
@@ -1446,7 +1446,7 @@ class ReplacementMaster:
       rules_inclusion_match = \
               ReplacementMaster.compute_rules_inclusion_match(line)
       if rules_inclusion_match is not None:
-        if attribute_name is not None:
+        if attribute_name is not None or substitution is not None:
           attribute_name, attribute_value, \
           substitution, \
           line_number_range_start = \
@@ -1481,7 +1481,7 @@ class ReplacementMaster:
       class_declaration_match = \
               ReplacementMaster.compute_class_declaration_match(line)
       if class_declaration_match is not None:
-        if attribute_name is not None:
+        if attribute_name is not None or substitution is not None:
           attribute_name, attribute_value, \
           substitution, \
           line_number_range_start = \
@@ -1517,7 +1517,7 @@ class ReplacementMaster:
       attribute_declaration_match = \
               ReplacementMaster.compute_attribute_declaration_match(line)
       if attribute_declaration_match is not None:
-        if attribute_name is not None:
+        if attribute_name is not None or substitution is not None:
           attribute_name, attribute_value, \
           substitution, \
           line_number_range_start = \
@@ -1545,7 +1545,7 @@ class ReplacementMaster:
       substitution_declaration_match = \
               ReplacementMaster.compute_substitution_declaration_match(line)
       if substitution_declaration_match is not None:
-        if attribute_name is not None:
+        if attribute_name is not None or substitution is not None:
           attribute_name, attribute_value, \
           substitution, \
           line_number_range_start = \
@@ -1588,7 +1588,7 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     # At end of file
-    if attribute_name is not None:
+    if attribute_name is not None or substitution is not None:
       self.stage(
         class_name,
         replacement,
