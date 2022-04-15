@@ -791,16 +791,20 @@ class ReplacementMaster:
         return
       
       content_replacement_id = content_replacement_match.group('id_')
-      try:
-        content_replacement = self._replacement_from_id[content_replacement_id]
-      except KeyError:
-        ReplacementMaster.print_error(
-          f'undefined replacement `#{content_replacement_id}`',
-          source_file,
-          line_number_range_start,
-          line_number,
-        )
-        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      if content_replacement_id == replacement.get_id():
+        content_replacement = replacement
+      else:
+        try:
+          content_replacement = \
+                  self._replacement_from_id[content_replacement_id]
+        except KeyError:
+          ReplacementMaster.print_error(
+            f'undefined replacement `#{content_replacement_id}`',
+            source_file,
+            line_number_range_start,
+            line_number,
+          )
+          sys.exit(GENERIC_ERROR_EXIT_CODE)
       
       content_replacement_list.append(content_replacement)
   
