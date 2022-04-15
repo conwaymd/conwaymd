@@ -394,7 +394,7 @@ class ReplacementMaster:
             self._included_file_names.append(rules_file_name)
             recursive_inclusion_string = \
                     ' includes '.join(
-                      f'`{file_name}`'
+                      f'`/{file_name}`'
                         for file_name in self._included_file_names
                     )
             ReplacementMaster.print_error(
