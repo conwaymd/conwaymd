@@ -310,11 +310,23 @@ class ReplacementMaster:
     self._replacement_queue = []
   
   @staticmethod
-  def build_line_range_string(start, end):
-    if start == end:
-      return f'line {start}'
+  def print_error(
+    message,
+    source_file,
+    start_line_number,
+    end_line_number=None,
+  ):
+    
+    if end_line_number is None or start_line_number == end_line_number:
+      line_number_range = f'line {start_line_number}'
     else:
-      return f'lines {start} to {end}'
+      line_number_range = f'lines {start_line_number} to {end_line_number}'
+    
+    print(
+      'error: '
+      f'{source_file}, {line_number_range}: '
+      f'{message}'
+    )
   
   @staticmethod
   def is_whitespace_only(line):
@@ -534,16 +546,13 @@ class ReplacementMaster:
     replacement_order_match = \
             ReplacementMaster.compute_replacement_order_match(attribute_value)
     if replacement_order_match is None:
-      line_number_range = \
-            ReplacementMaster.build_line_range_string(
-              line_number_range_start,
-              line_number,
-            )
-      print(
-        'error: '
-        f'{source_file}, {line_number_range}: '
-        f'invalid value `{attribute_value}` for attribute `replacement_order`'
+      ReplacementMaster.print_error(
+        f'invalid value `{attribute_value}` for attribute `replacement_order`',
+        source_file,
+        line_number_range_start,
+        line_number,
       )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     ReplacementMaster.process_replacement_order(
       replacement_order_match,
@@ -590,16 +599,13 @@ class ReplacementMaster:
     substitution_match = \
             ReplacementMaster.compute_substitution_match(substitution)
     if substitution_match is None:
-      line_number_range = \
-              ReplacementMaster.build_line_range_string(
-                line_number_range_start,
-                line_number,
-              )
-      print(
-        'error: '
-        f'{source_file}, {line_number_range}: '
-        f'missing delimiter in substitution `{substitution}`'
+      ReplacementMaster.print_error(
+        f'missing delimiter in substitution `{substitution}`',
+        source_file,
+        line_number_range_start,
+        line_number,
       )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     ReplacementMaster.process_ordinary_substitution(
       substitution_match,
@@ -621,15 +627,11 @@ class ReplacementMaster:
     try:
       re.sub(pattern, '', '', flags=re.ASCII | re.MULTILINE | re.VERBOSE)
     except re.error as pattern_exception:
-      line_number_range = \
-              ReplacementMaster.build_line_range_string(
-                line_number_range_start,
-                line_number,
-              )
-      print(
-        'error: '
-        f'{source_file}, {line_number_range}: '
-        f'bad regex pattern `{pattern}`'
+      ReplacementMaster.print_error(
+        f'bad regex pattern `{pattern}`',
+        source_file,
+        line_number_range_start,
+        line_number,
       )
       traceback.print_exception(
         type(pattern_exception),
@@ -646,15 +648,11 @@ class ReplacementMaster:
         flags=re.ASCII | re.MULTILINE | re.VERBOSE,
       )
     except re.error as substitute_exception:
-      line_number_range = \
-        ReplacementMaster.build_line_range_string(
-          line_number_range_start,
-          line_number,
-        )
-      print(
-        'error: '
-        f'{source_file}, {line_number_range}: '
-        f'bad regex substitute `{substitute}` for pattern `{pattern}`'
+      ReplacementMaster.print_error(
+        f'bad regex substitute `{substitute}` for pattern `{pattern}`',
+        source_file,
+        line_number_range_start,
+        line_number,
       )
       traceback.print_exception(
         type(substitute_exception),
@@ -677,15 +675,11 @@ class ReplacementMaster:
     substitution_match = \
             ReplacementMaster.compute_substitution_match(substitution)
     if substitution_match is None:
-      line_number_range = \
-              ReplacementMaster.build_line_range_string(
-                line_number_range_start,
-                line_number,
-              )
-      print(
-        'error: '
-        f'{source_file}, {line_number_range}: '
-        f'missing delimiter in substitution `{substitution}`'
+      ReplacementMaster.print_error(
+        f'missing delimiter in substitution `{substitution}`',
+        source_file,
+        line_number_range_start,
+        line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
@@ -728,15 +722,11 @@ class ReplacementMaster:
           line_number,
         )
       else:
-        line_number_range = \
-                ReplacementMaster.build_line_range_string(
-                  line_number_range_start,
-                  line_number,
-                )
-        print(
-          'error: '
-          f'{source_file}, {line_number_range}: '
-          f'class {class_name} does not allow substitutions'
+        ReplacementMaster.print_error(
+          f'class {class_name} does not allow substitutions',
+          source_file,
+          line_number_range_start,
+          line_number,
         )
         sys.exit(GENERIC_ERROR_EXIT_CODE)
       
