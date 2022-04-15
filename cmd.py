@@ -82,7 +82,7 @@ class ExtensibleFenceReplacement:
     'attribute_specifications',
     # TODO: 'content_replacements',
     'closing_delimiter',
-    # TODO: 'tag_name',
+    'tag_name',
   ]
   
   def __init__(self, id_):
@@ -926,6 +926,51 @@ class ReplacementMaster:
     replacement.set_syntax_type(syntax_type == 'BLOCK')
   
   @staticmethod
+  def compute_tag_name_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none> NONE )
+            |
+          (?P<tag_name> [a-z]+ )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_tag_name(
+    replacement,
+    attribute_value,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    tag_name_match = ReplacementMaster.compute_tag_name_match(attribute_value)
+    
+    invalid_value = tag_name_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `tag_name`',
+        source_file,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if tag_name_match.group('none') is not None:
+      return
+    
+    tag_name = tag_name_match.group('tag_name')
+    replacement.set_tag_name(tag_name)
+  
+  @staticmethod
   def compute_substitution_match(substitution):
     
     substitution_delimiters = re.findall('[-]{2,}[>]', substitution)
@@ -1115,6 +1160,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'syntax_type':
         ReplacementMaster.stage_syntax_type(
+          replacement,
+          attribute_value,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'tag_name':
+        ReplacementMaster.stage_tag_name(
           replacement,
           attribute_value,
           source_file,
