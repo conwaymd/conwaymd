@@ -80,7 +80,9 @@ class ExtensibleFenceReplacement:
     'opening_delimiter',
     'extensible_delimiter',
     'attribute_specifications',
-    # TODO: other attributes
+    # TODO: 'content_replacements',
+    'closing_delimiter',
+    # TODO: 'tag_name',
   ]
   
   def __init__(self, id_):
@@ -676,6 +678,52 @@ class ReplacementMaster:
     replacement.set_attribute_specifications(attribute_specifications)
   
   @staticmethod
+  def compute_closing_delimiter_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none> NONE )
+            |
+          (?P<closing_delimiter> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_closing_delimiter(
+    replacement,
+    attribute_value,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    closing_delimiter_match = \
+            ReplacementMaster.compute_closing_delimiter_match(attribute_value)
+    
+    invalid_value = closing_delimiter_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `closing_delimiter`',
+        source_file,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if closing_delimiter_match.group('none') is not None:
+      return
+    
+    closing_delimiter = closing_delimiter_match.group('closing_delimiter')
+    replacement.set_closing_delimiter(closing_delimiter)
+  
+  @staticmethod
   def compute_extensible_delimiter_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -1027,6 +1075,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'attribute_specifications':
         ReplacementMaster.stage_attribute_specifications(
+          replacement,
+          attribute_value,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'closing_delimiter':
+        ReplacementMaster.stage_closing_delimiter(
           replacement,
           attribute_value,
           source_file,
