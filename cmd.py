@@ -170,7 +170,7 @@ class ExtensibleFenceReplacement:
               self._closing_delimiter,
             )
     self._substitute_function = \
-            ExtensibleFenceReplacement.build_substitute_function(
+            self.build_substitute_function(
               self._flag_setting_from_letter,
               self._has_flags,
               self._attribute_specifications,
@@ -230,8 +230,8 @@ class ExtensibleFenceReplacement:
       ]
     )
   
-  @staticmethod
   def build_substitute_function(
+    self,
     flag_setting_from_letter,
     has_flags,
     attribute_specifications,
@@ -260,7 +260,18 @@ class ExtensibleFenceReplacement:
         attributes_sequence = ''
       
       content = match.group('content')
-      # TODO: content replacements
+      for replacement in self._content_replacement_list:
+        replacement_id = replacement.get_id()
+        if replacement_id == 'escape-html':
+          if 'KEEP_HTML_UNESCAPED' in enabled_flag_settings:
+            continue
+        elif replacement_id == 'reduce-whitespace':
+          if 'REDUCE_WHITESPACE' not in enabled_flag_settings:
+            continue
+        elif replacement_id == 'de-indent':
+          if 'KEEP_INDENTED' in enabled_flag_settings:
+            continue
+        content = replacement.apply(content)
       
       if tag_name is None:
         return content
