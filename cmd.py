@@ -33,6 +33,7 @@ import argparse
 import os
 import re
 import sys
+import textwrap
 import traceback
 
 
@@ -276,7 +277,7 @@ class ReplacementMaster:
   
   ## `legislate` ##
   
-  Parse CMD replacement rule syntax. A line can be either:
+  Parse CMD replacement rule syntax. A line must be either:
   (1) whitespace-only,
   (2) a comment (beginning with `#`),
   (3) a rules inclusion (of the form `< /«rules_file_name»`),
@@ -299,6 +300,19 @@ class ReplacementMaster:
   
   Applies the legislated replacements.
   """
+  
+  SYNTAX_HELP = textwrap.dedent(
+    '''\
+    In CMD replacement rule syntax, a line must be either:
+    (1) whitespace-only,
+    (2) a comment (beginning with `#`),
+    (3) a rules inclusion (of the form `< /«rules_file_name»`),
+    (4) the start of a class declaration (of the form `«ClassName»: #«id»`),
+    (5) the start of an attribute declaration (beginning with `- `),
+    (6) the start of a substitution declaration (beginning with `* `), or
+    (7) a continuation (beginning with whitespace).
+    '''
+  )
   
   def __init__(self, cmd_file_name):
     
@@ -498,6 +512,42 @@ class ReplacementMaster:
     line_number_range_start = line_number
     
     return substitution, line_number_range_start
+  
+  @staticmethod
+  def compute_continuation_match(line):
+    return re.fullmatch(
+      r'''
+        (?P<continuation> [\s]+ [\S][\s\S]* )
+      ''',
+      line,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def process_continuation_line(
+    continuation_match,
+    attribute_name,
+    attribute_value,
+    substitution,
+    source_file,
+    line_number,
+  ):
+    
+    continuation = get_group('continuation', continuation_match)
+    
+    if attribute_name is not None:
+      attribute_value = none_to_empty_string(attribute_value) + continuation
+    elif substitution is not None:
+      substitution = substitution + continuation
+    else:
+      ReplacementMaster.print_error(
+        'continuation only allowed for attribute or substitution declarations',
+        source_file,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    return attribute_value, substitution
   
   @staticmethod
   def compute_replacement_order_match(attribute_value):
@@ -922,7 +972,25 @@ class ReplacementMaster:
                 )
         continue
       
-      # TODO: continuation
+      continuation_match = ReplacementMaster.compute_continuation_match(line)
+      if continuation_match is not None:
+        attribute_value, substitution = \
+                ReplacementMaster.process_continuation_line(
+                  continuation_match,
+                  attribute_name,
+                  attribute_value,
+                  substitution,
+                  source_file,
+                  line_number,
+                )
+        continue
+      
+      ReplacementMaster.print_error(
+        'invalid syntax\n\n' + ReplacementMaster.SYNTAX_HELP,
+        source_file,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     # At end of file
     if attribute_name is not None:
