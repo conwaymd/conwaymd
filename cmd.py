@@ -623,6 +623,8 @@ class ReplacementMaster:
           (?P<replacement_order_type> BEFORE | AFTER )
           [ ]
           [#] (?P<replacement_order_id> [a-z-]+ )
+            |
+          (?P<invalid_value> [\s\S]*? )
         )
         [\s]*
       ''',
@@ -641,9 +643,11 @@ class ReplacementMaster:
     
     replacement_order_match = \
             ReplacementMaster.compute_replacement_order_match(attribute_value)
-    if replacement_order_match is None:
+    
+    invalid_value = replacement_order_match.group('invalid_value')
+    if invalid_value is not None:
       ReplacementMaster.print_error(
-        f'invalid value `{attribute_value}` for attribute `replacement_order`',
+        f'invalid value `{invalid_value}` for attribute `replacement_order`',
         source_file,
         line_number_range_start,
         line_number,
