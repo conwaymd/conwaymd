@@ -97,7 +97,7 @@ class ExtensibleFenceReplacement:
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
     self._attribute_specifications = None
-    self._content_replacement_id_list = []
+    self._content_replacement_list = []
     self._closing_delimiter = ''
     self._tag_name = None
     self._regex_pattern = None
@@ -141,8 +141,8 @@ class ExtensibleFenceReplacement:
   def set_attribute_specifications(self, attribute_specifications):
     self._attribute_specifications = attribute_specifications
   
-  def set_content_replacements(self, content_replacement_id_list):
-    self._content_replacement_id_list = content_replacement_id_list
+  def set_content_replacements(self, content_replacement_list):
+    self._content_replacement_list = content_replacement_list
   
   def set_closing_delimiter(self, closing_delimiter):
     self._closing_delimiter = closing_delimiter
