@@ -14,6 +14,20 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  def test_ordinary_dictionary_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.OrdinaryDictionaryReplacement.build_regex_pattern(
+        {
+          'a': 'b',
+          'b': 'c',
+          'c': 'd',
+          r'#$&*+-.^\|~': 'COMPLICATED',
+        }
+      ),
+      r'a|b|c|\#\$\&\*\+\-\.\^\\\|\~'
+    )
+  
   def test_extensible_fence_replacement_build_regex_pattern(self):
     
     self.assertEqual(
