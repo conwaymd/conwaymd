@@ -33,6 +33,7 @@ import argparse
 import os
 import re
 import sys
+import traceback
 
 
 GENERIC_ERROR_EXIT_CODE = 1
@@ -550,7 +551,155 @@ class ReplacementMaster:
     )
   
   @staticmethod
+  def compute_substitution_match(substitution):
+    
+    substitution_delimiters = re.findall('[-]{2,}[>]', substitution)
+    longest_substitution_delimiter = max(substitution_delimiters, key=len)
+    
+    return re.fullmatch(
+      fr'''
+        [\s]*
+          (?P<pattern> [\S][\s\S]* )
+        [\s]*
+          {re.escape(longest_substitution_delimiter)}
+        [\s]*
+          (?P<substitute> [\S][\s\S]* )
+        [\s]*
+      ''',
+      substitution,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def process_ordinary_substitution(substitution_match, replacement):
+    
+    pattern = get_group('pattern', substitution_match)
+    substitute = get_group('substitute', substitution_match)
+    
+    replacement.add_substitution(pattern, substitute)
+  
+  @staticmethod
+  def stage_ordinary_substitution(
+    replacement,
+    substitution,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    substitution_match = \
+            ReplacementMaster.compute_substitution_match(substitution)
+    if substitution_match is None:
+      line_number_range = \
+              ReplacementMaster.build_line_range_string(
+                line_number_range_start,
+                line_number,
+              )
+      print(
+        'error: '
+        f'{source_file}, {line_number_range}: '
+        f'missing delimiter in substitution `{substitution}`'
+      )
+    
+    ReplacementMaster.process_ordinary_substitution(
+      substitution_match,
+      replacement,
+    )
+  
+  @staticmethod
+  def process_regex_substitution(
+    substitution_match,
+    replacement,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    pattern = get_group('pattern', substitution_match)
+    substitute = get_group('substitute', substitution_match)
+    
+    try:
+      re.sub(pattern, '', '', flags=re.ASCII | re.MULTILINE | re.VERBOSE)
+    except re.error as pattern_exception:
+      line_number_range = \
+              ReplacementMaster.build_line_range_string(
+                line_number_range_start,
+                line_number,
+              )
+      print(
+        'error: '
+        f'{source_file}, {line_number_range}: '
+        f'bad regex pattern `{pattern}`'
+      )
+      traceback.print_exception(
+        type(pattern_exception),
+        pattern_exception,
+        pattern_exception.__traceback__
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    try:
+      re.sub(
+        pattern,
+        substitute,
+        '',
+        flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+      )
+    except re.error as substitute_exception:
+      line_number_range = \
+        ReplacementMaster.build_line_range_string(
+          line_number_range_start,
+          line_number,
+        )
+      print(
+        'error: '
+        f'{source_file}, {line_number_range}: '
+        f'bad regex substitute `{substitute}` for pattern `{pattern}`'
+      )
+      traceback.print_exception(
+        type(substitute_exception),
+        substitute_exception,
+        substitute_exception.__traceback__
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    replacement.add_substitution(pattern, substitute)
+  
+  @staticmethod
+  def stage_regex_substitution(
+    replacement,
+    substitution,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+
+    substitution_match = \
+            ReplacementMaster.compute_substitution_match(substitution)
+    if substitution_match is None:
+      line_number_range = \
+              ReplacementMaster.build_line_range_string(
+                line_number_range_start,
+                line_number,
+              )
+      print(
+        'error: '
+        f'{source_file}, {line_number_range}: '
+        f'missing delimiter in substitution `{substitution}`'
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    ReplacementMaster.process_regex_substitution(
+      substitution,
+      replacement,
+      source_file,
+      line_number_range_start,
+      line_number,
+    )
+  
+  @staticmethod
   def stage(
+    class_name,
     replacement,
     attribute_name,
     attribute_value,
@@ -560,20 +709,51 @@ class ReplacementMaster:
     line_number,
   ):
     
-    # TODO: staging a substitution
-    
-    if attribute_name == 'replacement_order':
-      ReplacementMaster.stage_replacement_order(
-        replacement,
-        attribute_value,
-        source_file,
-        line_number_range_start,
-        line_number,
-      )
-    
-    # TODO: implement other attribute name cases
-    # (I think we don't need to check the class_name is right ---
-    # that should have already happened before we get to the staging stage)
+    if substitution is not None: # staging a substitution
+      
+      if class_name == 'OrdinaryDictionaryReplacement':
+        ReplacementMaster.stage_ordinary_substitution(
+          replacement,
+          substitution,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+      elif class_name == 'RegexDictionaryReplacement':
+        ReplacementMaster.stage_regex_substitution(
+          replacement,
+          substitution,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+      else:
+        line_number_range = \
+                ReplacementMaster.build_line_range_string(
+                  line_number_range_start,
+                  line_number,
+                )
+        print(
+          'error: '
+          f'{source_file}, {line_number_range}: '
+          f'class {class_name} does not allow substitutions'
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+    else: # staging an attribute declaration
+      
+      if attribute_name == 'replacement_order':
+        ReplacementMaster.stage_replacement_order(
+          replacement,
+          attribute_value,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+      
+      # TODO: implement other attribute name cases
+      # (I think we don't need to check the class_name is right ---
+      # that should have already happened before we get to the staging stage)
     
     return None, None, None, None
     # attribute_name, attribute_value, substitution, line_number_range_start
@@ -643,6 +823,7 @@ class ReplacementMaster:
           substitution, \
           line_number_range_start = \
                   ReplacementMaster.stage(
+                    class_name,
                     replacement,
                     attribute_name,
                     attribute_value,
@@ -672,6 +853,7 @@ class ReplacementMaster:
           substitution, \
           line_number_range_start = \
                   ReplacementMaster.stage(
+                    class_name,
                     replacement,
                     attribute_name,
                     attribute_value,
@@ -705,6 +887,7 @@ class ReplacementMaster:
           substitution, \
           line_number_range_start = \
                   ReplacementMaster.stage(
+                    class_name,
                     replacement,
                     attribute_name,
                     attribute_value,
@@ -740,6 +923,7 @@ class ReplacementMaster:
           substitution, \
           line_number_range_start = \
                   ReplacementMaster.stage(
+                    class_name,
                     replacement,
                     attribute_name,
                     attribute_value,
@@ -767,6 +951,7 @@ class ReplacementMaster:
           substitution, \
           line_number_range_start = \
                   ReplacementMaster.stage(
+                    class_name,
                     replacement,
                     attribute_name,
                     attribute_value,
@@ -787,6 +972,7 @@ class ReplacementMaster:
     # At end of file
     if attribute_name is not None:
       ReplacementMaster.stage(
+        class_name,
         replacement,
         attribute_name,
         attribute_value,
