@@ -245,14 +245,14 @@ class ExtensibleFenceReplacement:
       
       enabled_flag_settings = set()
       if has_flags:
-        flags = get_group('flags', match)
+        flags = match.group('flags')
         for flag_letter, flag_setting in flag_setting_from_letter.items():
           if flag_letter in flags:
             enabled_flag_settings.add(flag_setting)
       
       if attribute_specifications is not None:
         matched_attribute_specifications = \
-                get_group('attribute_specifications', match)
+                match.group('attribute_specifications')
         combined_attribute_specifications = \
                 ' '.join(
                   [attribute_specifications, matched_attribute_specifications]
@@ -262,7 +262,7 @@ class ExtensibleFenceReplacement:
       else:
         attributes_sequence = ''
       
-      content = get_group('content', match)
+      content = match.group('content')
       # TODO: content replacements
       
       if tag_name is None:
@@ -378,7 +378,7 @@ class ReplacementMaster:
     line_number,
   ):
     
-    rules_file_name = get_group('rules_file_name', rules_inclusion_match)
+    rules_file_name = rules_inclusion_match.group('rules_file_name')
     try:
       with open(rules_file_name, 'r', encoding='utf-8') as rules_file:
         for file_name in self._included_file_names:
@@ -426,8 +426,8 @@ class ReplacementMaster:
     line_number,
   ):
     
-    class_name = get_group('class_name', class_declaration_match)
-    id_ = get_group('id_', class_declaration_match)
+    class_name = class_declaration_match.group('class_name')
+    id_ = class_declaration_match.group('id_')
     
     if class_name == 'ExtensibleFenceReplacement':
       replacement = ExtensibleFenceReplacement(id_)
@@ -472,7 +472,7 @@ class ReplacementMaster:
     line_number,
   ):
     
-    attribute_name = get_group('attribute_name', attribute_declaration_match)
+    attribute_name = attribute_declaration_match.group('attribute_name')
     if attribute_name not in replacement.ATTRIBUTE_NAMES:
       ReplacementMaster.print_error(
         f'unrecognised attribute `{attribute_name}` for `{class_name}`',
@@ -482,7 +482,7 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     partial_attribute_value = \
-            get_group('partial_attribute_value', attribute_declaration_match)
+            attribute_declaration_match.group('partial_attribute_value')
     attribute_value = \
             none_to_empty_string(attribute_value) + partial_attribute_value
     
@@ -508,7 +508,7 @@ class ReplacementMaster:
   ):
     
     partial_substitution = \
-            get_group('partial_substitution', substitution_declaration_match)
+            substitution_declaration_match.group('partial_substitution')
     substitution = none_to_empty_string(substitution) + partial_substitution
     
     line_number_range_start = line_number
@@ -535,7 +535,7 @@ class ReplacementMaster:
     line_number,
   ):
     
-    continuation = get_group('continuation', continuation_match)
+    continuation = continuation_match.group('continuation')
     
     if attribute_name is not None:
       attribute_value = none_to_empty_string(attribute_value) + continuation
@@ -591,8 +591,8 @@ class ReplacementMaster:
     for allowed_flag_match \
     in ReplacementMaster.compute_allowed_flag_matches(attribute_value):
       
-      invalid_syntax = get_group('invalid_syntax', allowed_flag_match)
-      if invalid_syntax != '':
+      invalid_syntax = allowed_flag_match.group('invalid_syntax')
+      if invalid_syntax is not None:
         ReplacementMaster.print_error(
           f'invalid specification `{invalid_syntax}`'
           ' for attribute `allowed_flags`',
@@ -602,8 +602,8 @@ class ReplacementMaster:
         )
         sys.exit(GENERIC_ERROR_EXIT_CODE)
       
-      flag_letter = get_group('flag_letter', allowed_flag_match)
-      flag_setting = get_group('flag_setting', allowed_flag_match)
+      flag_letter = allowed_flag_match.group('flag_letter')
+      flag_setting = allowed_flag_match.group('flag_setting')
       flag_setting_from_letter[flag_letter] = flag_setting
     
     has_flags = len(flag_setting_from_letter) > 0
@@ -650,17 +650,17 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    if get_group('none', replacement_order_match) != '':
+    if replacement_order_match.group('none') is not None:
       return
     
-    if get_group('root', replacement_order_match) != '':
+    if replacement_order_match.group('root') is not None:
       replacement.set_replacement_order('ROOT', None)
       return
     
     replacement_order_type = \
-      get_group('replacement_order_type', replacement_order_match)
+            replacement_order_match.group('replacement_order_type')
     replacement_order_id = \
-      get_group('replacement_order_id', replacement_order_match)
+            replacement_order_match.group('replacement_order_id')
     replacement.set_replacement_order(
       replacement_order_type,
       replacement_order_id,
@@ -698,7 +698,7 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    syntax_type = get_group('syntax_type', syntax_type_match)
+    syntax_type = syntax_type_match.group('syntax_type')
     replacement.set_syntax_type(syntax_type == 'BLOCK')
   
   @staticmethod
@@ -741,8 +741,8 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    pattern = get_group('pattern', substitution_match)
-    substitute = get_group('substitute', substitution_match)
+    pattern = substitution_match.group('pattern')
+    substitute = substitution_match.group('substitute')
     
     replacement.add_substitution(pattern, substitute)
   
@@ -766,8 +766,8 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    pattern = get_group('pattern', substitution_match)
-    substitute = get_group('substitute', substitution_match)
+    pattern = substitution_match.group('pattern')
+    substitute = substitution_match.group('substitute')
     
     try:
       re.sub(pattern, '', '', flags=re.ASCII | re.MULTILINE | re.VERBOSE)
