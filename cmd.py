@@ -555,6 +555,10 @@ class ReplacementMaster:
   def compute_allowed_flag_matches(attribute_value):
     return re.finditer(
       r'''
+        (?P<whitespace_only> \A [\s]* \Z )
+          |
+        (?P<none> \A [\s]* NONE [\s]* \Z )
+          |
         [\s]*
         (?:
           (?P<flag_letter> [a-z] ) =
@@ -569,6 +573,7 @@ class ReplacementMaster:
             |
           (?P<invalid_syntax> [\S]+ )
         )
+        [\s]*
       ''',
       attribute_value,
       flags=re.ASCII | re.VERBOSE
@@ -585,11 +590,18 @@ class ReplacementMaster:
     
     flag_setting_from_letter = {}
     
-    if re.fullmatch(r'[\s]*NONE[\s]*', attribute_value, flags=re.ASCII):
-      return
-    
     for allowed_flag_match \
     in ReplacementMaster.compute_allowed_flag_matches(attribute_value):
+      
+      if allowed_flag_match.group('whitespace_only') is not None:
+        ReplacementMaster.print_error(
+          f'invalid specification ``'
+          ' for attribute `allowed_flags`',
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
       
       invalid_syntax = allowed_flag_match.group('invalid_syntax')
       if invalid_syntax is not None:
@@ -601,6 +613,9 @@ class ReplacementMaster:
           line_number,
         )
         sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      if allowed_flag_match.group('none') is not None:
+        return
       
       flag_letter = allowed_flag_match.group('flag_letter')
       flag_setting = allowed_flag_match.group('flag_setting')
