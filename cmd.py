@@ -555,7 +555,7 @@ class ReplacementMaster:
       r'''
         (?P<whitespace_only> \A [\s]* \Z )
           |
-        (?P<none> \A [\s]* NONE [\s]* \Z )
+        (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
           |
         [\s]*
         (?:
@@ -611,7 +611,7 @@ class ReplacementMaster:
         )
         sys.exit(GENERIC_ERROR_EXIT_CODE)
       
-      if allowed_flag_match.group('none') is not None:
+      if allowed_flag_match.group('none_keyword') is not None:
         return
       
       flag_letter = allowed_flag_match.group('flag_letter')
@@ -628,9 +628,9 @@ class ReplacementMaster:
       r'''
         [\s]*
         (?:
-          (?P<none> NONE )
+          (?P<none_keyword> NONE )
             |
-          (?P<empty> EMPTY )
+          (?P<empty_keyword> EMPTY )
             |
           (?P<attribute_specifications> [\S][\s\S]*? )
             |
@@ -667,10 +667,10 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    if attribute_specifications_match.group('none') is not None:
+    if attribute_specifications_match.group('none_keyword') is not None:
       return
     
-    if attribute_specifications_match.group('empty') is not None:
+    if attribute_specifications_match.group('empty_keyword') is not None:
       replacement.set_attribute_specifications('')
     
     attribute_specifications = \
@@ -683,7 +683,7 @@ class ReplacementMaster:
       r'''
         [\s]*
         (?:
-          (?P<none> NONE )
+          (?P<none_keyword> NONE )
             |
           (?P<closing_delimiter> [\S][\s\S]*? )
             |
@@ -717,7 +717,7 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    if closing_delimiter_match.group('none') is not None:
+    if closing_delimiter_match.group('none_keyword') is not None:
       return
     
     closing_delimiter = closing_delimiter_match.group('closing_delimiter')
@@ -784,7 +784,7 @@ class ReplacementMaster:
       r'''
         [\s]*
         (?:
-          (?P<none> NONE )
+          (?P<none_keyword> NONE )
             |
           (?P<opening_delimiter> [\S][\s\S]*? )
             |
@@ -818,7 +818,7 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    if opening_delimiter_match.group('none') is not None:
+    if opening_delimiter_match.group('none_keyword') is not None:
       return
     
     opening_delimiter = opening_delimiter_match.group('opening_delimiter')
@@ -830,9 +830,9 @@ class ReplacementMaster:
       r'''
         [\s]*
         (?:
-          (?P<none> NONE )
+          (?P<none_keyword> NONE )
             |
-          (?P<root> ROOT )
+          (?P<root_keyword> ROOT )
             |
           (?P<replacement_order_type> BEFORE | AFTER )
           [ ]
@@ -868,10 +868,10 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    if replacement_order_match.group('none') is not None:
+    if replacement_order_match.group('none_keyword') is not None:
       return
     
-    if replacement_order_match.group('root') is not None:
+    if replacement_order_match.group('root_keyword') is not None:
       replacement.set_replacement_order('ROOT', None)
       return
     
@@ -931,7 +931,7 @@ class ReplacementMaster:
       r'''
         [\s]*
         (?:
-          (?P<none> NONE )
+          (?P<none_keyword> NONE )
             |
           (?P<tag_name> [a-z]+ )
             |
@@ -964,7 +964,7 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    if tag_name_match.group('none') is not None:
+    if tag_name_match.group('none_keyword') is not None:
       return
     
     tag_name = tag_name_match.group('tag_name')
