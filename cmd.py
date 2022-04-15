@@ -331,10 +331,10 @@ class ReplacementMaster:
     end_line_number=None,
   ):
     
-    if end_line_number is None or start_line_number == end_line_number:
+    if end_line_number is None or start_line_number == end_line_number - 1:
       line_number_range = f'line {start_line_number}'
     else:
-      line_number_range = f'lines {start_line_number} to {end_line_number}'
+      line_number_range = f'lines {start_line_number} to {end_line_number - 1}'
     
     print(
       'error: '
