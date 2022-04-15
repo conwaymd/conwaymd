@@ -1070,49 +1070,55 @@ def factorise_repeated_character(string):
   return first_character, string_length
 
 
+def compute_attribute_specification_matches(attribute_specifications):
+  return re.finditer(
+    r'''
+      [\s]*
+      (?:
+        (?P<name> [^\s=]+ ) =
+                (?:
+                  "(?P<quoted_value> [\s\S]*? )"
+                    |
+                  (?P<bare_value> [\S]* )
+                )
+          |
+        [#] (?P<id_> [^\s"]+ )
+          |
+        [.] (?P<class_> [^\s"]+ )
+          |
+        [r] (?P<rowspan> [0-9]+ )
+          |
+        [c] (?P<colspan> [0-9]+ )
+          |
+        [w] (?P<width> [0-9]+ )
+          |
+        [h] (?P<height> [0-9]+ )
+          |
+        (?P<boolean_attribute> [\S]+ )
+      ) ?
+      [\s]*
+    ''',
+    attribute_specifications,
+    flags=re.ASCII | re.VERBOSE,
+  )
+
+
 ATTRIBUTE_NAME_FROM_ABBREVIATION = \
-        {
-          '#': 'id',
-          '.': 'class',
-          'l': 'lang',
-          'r': 'rowspan',
-          'c': 'colspan',
-          'w': 'width',
-          'h': 'height',
-          's': 'style',
-        }
-BUILD_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
-        r'''
-          [\s]*
-          (?:
-            (?P<name> [^\s=]+ ) =
-                    (?:
-                      "(?P<quoted_value> [\s\S]*? )"
-                        |
-                      (?P<bare_value> [\S]* )
-                    )
-              |
-            [#] (?P<id_> [^\s"]+ )
-              |
-            [.] (?P<class_> [^\s"]+ )
-              |
-            [r] (?P<rowspan> [0-9]+ )
-              |
-            [c] (?P<colspan> [0-9]+ )
-              |
-            [w] (?P<width> [0-9]+ )
-              |
-            [h] (?P<height> [0-9]+ )
-              |
-            (?P<boolean_attribute> [\S]+ )
-          ) ?
-          [\s]*
-        '''
+  {
+    '#': 'id',
+    '.': 'class',
+    'l': 'lang',
+    'r': 'rowspan',
+    'c': 'colspan',
+    'w': 'width',
+    'h': 'height',
+    's': 'style',
+  }
 
 
-def extract_attribute_name_and_value(match):
+def extract_attribute_name_and_value(attribute_specification_match):
   
-  name = get_group('name', match)
+  name = get_group('name', attribute_specification_match)
   if name != '':
     
     try:
@@ -1120,37 +1126,38 @@ def extract_attribute_name_and_value(match):
     except KeyError:
       pass
     
-    quoted_value = get_group('quoted_value', match)
-    bare_value = get_group('bare_value', match)
+    quoted_value = get_group('quoted_value', attribute_specification_match)
+    bare_value = get_group('bare_value', attribute_specification_match)
     value = quoted_value + bare_value # at most one will be non-empty
     
     return name, value
   
-  id_ = get_group('id_', match)
+  id_ = get_group('id_', attribute_specification_match)
   if id_ != '':
     return 'id', id_
   
-  class_ = get_group('class_', match)
+  class_ = get_group('class_', attribute_specification_match)
   if class_ != '':
     return 'class', class_
   
-  rowspan = get_group('rowspan', match)
+  rowspan = get_group('rowspan', attribute_specification_match)
   if rowspan != '':
     return 'rowspan', rowspan
   
-  colspan = get_group('colspan', match)
+  colspan = get_group('colspan', attribute_specification_match)
   if colspan != '':
     return 'colspan', colspan
   
-  width = get_group('width', match)
+  width = get_group('width', attribute_specification_match)
   if width != '':
     return 'width', width
   
-  height = get_group('height', match)
+  height = get_group('height', attribute_specification_match)
   if height != '':
     return 'height', height
   
-  boolean_attribute = get_group('boolean_attribute', match)
+  boolean_attribute = \
+          get_group('boolean_attribute', attribute_specification_match)
   if boolean_attribute != '':
     return boolean_attribute, None
   
@@ -1193,18 +1200,16 @@ def build_attributes_sequence(attribute_specifications):
   ` id="y" class="a b c d" name="value"`.
   """
   
-  matches = \
-          re.finditer(
-            BUILD_ATTRIBUTES_SEQUENCE_REGEX_PATTERN,
-            attribute_specifications,
-            flags=re.ASCII | re.VERBOSE,
-          )
+  attribute_specification_matches = \
+          compute_attribute_specification_matches(attribute_specifications)
   
   attribute_value_from_name = {}
   
-  for match in matches:
+  for attribute_specification_match in attribute_specification_matches:
     
-    name, value = extract_attribute_name_and_value(match)
+    name, value = \
+            extract_attribute_name_and_value(attribute_specification_match)
+    
     if name is None:
       continue
     
