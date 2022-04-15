@@ -124,11 +124,11 @@ class OrdinaryDictionaryReplacement:
     return substitute_function
   
   def apply(self, string):
-    return re.sub(
-      self._regex_pattern,
-      self._substitute_function,
-      string,
-    )
+    
+    if self._regex_pattern != '':
+      string = re.sub(self._regex_pattern, self._substitute_function, string)
+    
+    return string
 
 
 class ExtensibleFenceReplacement:

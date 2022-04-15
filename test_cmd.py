@@ -17,6 +17,10 @@ class TestCmd(unittest.TestCase):
   def test_ordinary_dictionary_replacement_build_regex_pattern(self):
     
     self.assertEqual(
+      cmd.OrdinaryDictionaryReplacement.build_regex_pattern({}),
+      ''
+    )
+    self.assertEqual(
       cmd.OrdinaryDictionaryReplacement.build_regex_pattern(
         {
           'a': 'b',
