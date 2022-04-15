@@ -365,7 +365,7 @@ class ReplacementMaster:
   def compute_rules_inclusion_match(line):
     return re.fullmatch(
       r'''
-        [<][ ][/] (?P<rules_file_name> [\S][\s\S]* )
+        [<][ ][/] (?P<rules_file_name> [\S][\s\S]*? ) [\s]*
       ''',
       line,
       flags=re.ASCII | re.VERBOSE,
