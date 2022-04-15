@@ -98,12 +98,16 @@ class TestCmd(unittest.TestCase):
       ' empty1="" empty2="" boolean'
     )
     self.assertEqual(
-      cmd.build_attributes_sequence('name="quoted value" name=bare-value'),
-      ' name="quoted value" name="bare-value"'
+      cmd.build_attributes_sequence('qv="quoted value" bv=bare-value'),
+      ' qv="quoted value" bv="bare-value"'
     )
     self.assertEqual(
       cmd.build_attributes_sequence('#=top .=good    l=en    r=3    c=2'),
       ' id="top" class="good" lang="en" rowspan="3" colspan="2"'
+    )
+    self.assertEqual(
+      cmd.build_attributes_sequence('id=x #y .a .b name=value .=c class="d"'),
+      ' id="y" class="a b c d" name="value"'
     )
     self.assertEqual(
       cmd.build_attributes_sequence('w="320" h=16 s="font-weight: bold"'),

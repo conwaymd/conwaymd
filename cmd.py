@@ -857,7 +857,7 @@ BUILD_ATTRIBUTES_SEQUENCE_REGEX_PATTERN = \
         '''
 
 
-def build_attributes_sequence_substitute_function(match):
+def extract_attribute_name_and_value(match):
   
   name = get_group('name', match)
   if name != '':
@@ -871,47 +871,107 @@ def build_attributes_sequence_substitute_function(match):
     bare_value = get_group('bare_value', match)
     value = quoted_value + bare_value # at most one will be non-empty
     
-    return f' {name}="{value}"'
+    return name, value
   
   id_ = get_group('id_', match)
   if id_ != '':
-    return f' id="{id_}"'
+    return 'id', id_
   
   class_ = get_group('class_', match)
   if class_ != '':
-    return f' class="{class_}"'
+    return 'class', class_
   
   rowspan = get_group('rowspan', match)
   if rowspan != '':
-    return f' rowspan={rowspan}'
+    return 'rowspan', rowspan
   
   colspan = get_group('colspan', match)
   if colspan != '':
-    return f' colspan={colspan}'
+    return 'colspan', colspan
   
   width = get_group('width', match)
   if width != '':
-    return f' width={width}'
+    return 'width', width
   
   height = get_group('height', match)
   if height != '':
-    return f' height={height}'
+    return 'height', height
   
   boolean_attribute = get_group('boolean_attribute', match)
   if boolean_attribute != '':
-    return f' {boolean_attribute}'
+    return boolean_attribute, None
   
-  return ''
+  return None, None
 
 
 def build_attributes_sequence(attribute_specifications):
+  """
+  Convert CMD attribute specifications to an attribute sequence.
   
-  return re.sub(
-    BUILD_ATTRIBUTES_SEQUENCE_REGEX_PATTERN,
-    build_attributes_sequence_substitute_function,
-    attribute_specifications,
-    flags=re.ASCII | re.VERBOSE,
-  )
+  CMD attribute specifications are of the following forms:
+  ````
+  name="«quoted_value»"
+  name=«bare_value»
+  #«id»
+  .«class»
+  r«rowspan»
+  c«colspan»
+  w«width»
+  h«height»
+  «boolean_attribute»
+  ````
+  In the two forms with an explicit equals sign,
+  the following abbreviations are allowed for `name`:
+  - # for id
+  - . for class
+  - l for lang
+  - r for rowspan
+  - c for colspan
+  - w for width
+  - h for height
+  - s for style
+  
+  If an attribute of the same name is specified multiple times,
+  the latest specification shall prevail,
+  except when `class` is specified multiple times,
+  in which case the values will be appended.
+  For example, `id=x #y .a .b name=value .=c class="d"`
+  shall be converted to the attrbute sequence
+  ` id="y" class="a b c d" name="value"`.
+  """
+  
+  matches = \
+          re.finditer(
+            BUILD_ATTRIBUTES_SEQUENCE_REGEX_PATTERN,
+            attribute_specifications,
+            flags=re.ASCII | re.VERBOSE,
+          )
+  
+  attribute_value_from_name = {}
+  
+  for match in matches:
+    
+    name, value = extract_attribute_name_and_value(match)
+    if name is None:
+      continue
+    
+    if name == 'class':
+      try:
+        attribute_value_from_name['class'] += f' {value}'
+      except KeyError:
+        attribute_value_from_name['class'] = value
+    else:
+      attribute_value_from_name[name] = value
+  
+  attribute_sequence = ''
+  
+  for name, value in attribute_value_from_name.items():
+    if value is None:
+      attribute_sequence += f' {name}'
+    else:
+      attribute_sequence += f' {name}="{value}"'
+  
+  return attribute_sequence
 
 
 def build_block_anchoring_regex(syntax_type_is_block):
