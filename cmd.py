@@ -910,7 +910,7 @@ def build_attributes_sequence(attribute_specifications):
     BUILD_ATTRIBUTES_SEQUENCE_REGEX_PATTERN,
     build_attributes_sequence_substitute_function,
     attribute_specifications,
-    flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+    flags=re.ASCII | re.VERBOSE,
   )
 
 
