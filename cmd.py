@@ -84,6 +84,7 @@ class ExtensibleFenceReplacement:
   ATTRIBUTE_NAMES = [
     'replacement_order',
     'syntax_type',
+    'allowed_flags',
     # TODO: other attributes
   ]
   
@@ -571,6 +572,62 @@ class ReplacementMaster:
     )
   
   @staticmethod
+  def compute_allowed_flag_matches(attribute_value):
+    return re.finditer(
+      r'''
+        [\s]*
+        (?:
+          (?P<flag_letter> [a-z] ) =
+                  (?P<flag_setting>
+                    KEEP_HTML_UNESCAPED
+                      |
+                    REDUCE_WHITESPACE
+                      |
+                    KEEP_INDENTED
+                  )
+                  (?= [\s] | \Z )
+            |
+          (?P<invalid_syntax> [\S]+ )
+        )
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE
+    )
+  
+  @staticmethod
+  def stage_allowed_flags(
+    replacement,
+    attribute_value,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    flag_setting_from_letter = {}
+    
+    for allowed_flag_match \
+    in ReplacementMaster.compute_allowed_flag_matches(attribute_value):
+      
+      invalid_syntax = get_group('invalid_syntax', allowed_flag_match)
+      if invalid_syntax != '':
+        ReplacementMaster.print_error(
+          f'invalid specification `{invalid_syntax}`'
+          ' for attribute `allowed_flags`',
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      flag_letter = get_group('flag_letter', allowed_flag_match)
+      flag_setting = get_group('flag_setting', allowed_flag_match)
+      flag_setting_from_letter[flag_letter] = flag_setting
+    
+    has_flags = len(flag_setting_from_letter) > 0
+    
+    replacement.set_allowed_flags(flag_setting_from_letter, has_flags)
+  
+  @staticmethod
   def stage_replacement_order(
     replacement,
     attribute_value,
@@ -781,6 +838,14 @@ class ReplacementMaster:
       
     else: # staging an attribute declaration
       
+      if attribute_name == 'allowed_flags':
+        ReplacementMaster.stage_allowed_flags(
+          replacement,
+          attribute_value,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
       if attribute_name == 'replacement_order':
         ReplacementMaster.stage_replacement_order(
           replacement,
