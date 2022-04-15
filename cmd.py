@@ -735,11 +735,11 @@ class ReplacementMaster:
     return re.fullmatch(
       fr'''
         [\s]*
-          (?P<pattern> [\S][\s\S]* )
+          (?P<pattern> [\S][\s\S]*? )
         [\s]*
           {re.escape(longest_substitution_delimiter)}
         [\s]*
-          (?P<substitute> [\S][\s\S]* )
+          (?P<substitute> [\S][\s\S]*? )
         [\s]*
       ''',
       substitution,
