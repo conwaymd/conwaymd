@@ -831,6 +831,7 @@ class ReplacementMaster:
           source_file,
           line_number,
         )
+        continue
       
       class_declaration_match = \
               ReplacementMaster.compute_class_declaration_match(line)
@@ -919,6 +920,7 @@ class ReplacementMaster:
                   substitution,
                   line_number,
                 )
+        continue
       
       # TODO: continuation
     
