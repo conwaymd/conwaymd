@@ -79,6 +79,7 @@ class ExtensibleFenceReplacement:
     'allowed_flags',
     'opening_delimiter',
     'extensible_delimiter',
+    'attribute_specifications',
     # TODO: other attributes
   ]
   
@@ -621,6 +622,61 @@ class ReplacementMaster:
     replacement.set_allowed_flags(flag_setting_from_letter, has_flags)
   
   @staticmethod
+  def compute_attribute_specifications_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none> NONE )
+            |
+          (?P<empty> EMPTY )
+            |
+          (?P<attribute_specifications> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_attribute_specifications(
+    replacement,
+    attribute_value,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    attribute_specifications_match = \
+            ReplacementMaster.compute_attribute_specifications_match(
+              attribute_value
+            )
+    
+    invalid_value = attribute_specifications_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` '
+        'for attribute `attribute_specifications`',
+        source_file,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if attribute_specifications_match.group('none') is not None:
+      return
+    
+    if attribute_specifications_match.group('empty') is not None:
+      replacement.set_attribute_specifications('')
+    
+    attribute_specifications = \
+            attribute_specifications_match.group('attribute_specifications')
+    replacement.set_attribute_specifications(attribute_specifications)
+  
+  @staticmethod
   def compute_extensible_delimiter_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -963,6 +1019,14 @@ class ReplacementMaster:
       
       if attribute_name == 'allowed_flags':
         ReplacementMaster.stage_allowed_flags(
+          replacement,
+          attribute_value,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'attribute_specifications':
+        ReplacementMaster.stage_attribute_specifications(
           replacement,
           attribute_value,
           source_file,
