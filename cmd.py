@@ -1141,8 +1141,10 @@ class ReplacementMaster:
   def compute_substitution_match(substitution):
     
     substitution_delimiters = re.findall('[-]{2,}[>]', substitution)
-    longest_substitution_delimiter = max(substitution_delimiters, key=len)
+    if len(substitution_delimiters) == 0:
+      return None
     
+    longest_substitution_delimiter = max(substitution_delimiters, key=len)
     return re.fullmatch(
       fr'''
         [\s]*
