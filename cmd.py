@@ -552,26 +552,6 @@ class ReplacementMaster:
     return attribute_value, substitution
   
   @staticmethod
-  def compute_replacement_order_match(attribute_value):
-    return re.fullmatch(
-      r'''
-        [\s]*
-        (?:
-          (?P<none> NONE )
-            |
-          (?P<root> ROOT )
-            |
-          (?P<replacement_order_type> BEFORE | AFTER )
-          [ ]
-          [#] (?P<replacement_order_id> [a-z-]+ )
-        )
-        [\s]*
-      ''',
-      attribute_value,
-      flags=re.ASCII | re.VERBOSE,
-    )
-  
-  @staticmethod
   def compute_allowed_flag_matches(attribute_value):
     return re.finditer(
       r'''
@@ -626,6 +606,26 @@ class ReplacementMaster:
     has_flags = len(flag_setting_from_letter) > 0
     
     replacement.set_allowed_flags(flag_setting_from_letter, has_flags)
+  
+  @staticmethod
+  def compute_replacement_order_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none> NONE )
+            |
+          (?P<root> ROOT )
+            |
+          (?P<replacement_order_type> BEFORE | AFTER )
+          [ ]
+          [#] (?P<replacement_order_id> [a-z-]+ )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
   
   @staticmethod
   def stage_replacement_order(
