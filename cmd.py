@@ -279,11 +279,12 @@ class ReplacementMaster:
   Parse CMD replacement rule syntax. A line can be either:
   (1) whitespace-only,
   (2) a comment (beginning with `#`),
-  (3) a rules inclusion (of the form `< «rules_file_name»`),
+  (3) a rules inclusion (of the form `< /«rules_file_name»`),
   (4) the start of a class declaration (of the form `«ClassName»: #«id»`),
   (5) the start of an attribute declaration (beginning with `- `),
   (6) the start of a substitution declaration (beginning with `* `), or
   (7) a continuation (beginning with whitespace).
+  «rules_file_name» is parsed relative to the working directory.
   An attribute declaration is of the form `- «name»: «value»`.
   A substitution declaration is of the form `* «pattern» --> «substitute»`,
   where the number of hyphens in the delimiter `-->`
@@ -348,7 +349,7 @@ class ReplacementMaster:
   def compute_rules_inclusion_match(line):
     return re.fullmatch(
       r'''
-        [<][ ] (?P<rules_file_name> [\S][\s\S]* )
+        [<][ ][/] (?P<rules_file_name> [\S][\s\S]* )
       ''',
       line,
       flags=re.ASCII | re.VERBOSE,
@@ -362,11 +363,6 @@ class ReplacementMaster:
   ):
     
     rules_file_name = get_group('rules_file_name', rules_inclusion_match)
-    # TODO:
-    #   - logic so that leading slash means 'relative to working directory',
-    #     while leading non-slash means 'relative to the current file'
-    #   - f'`{rules_file}`' with 'relative to working directory'
-    #     or 'relative to {some file}' for error message printing
     try:
       with open(rules_file_name, 'r', encoding='utf-8') as rules_file:
         for file_name in self._included_file_names:
