@@ -41,10 +41,6 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
-class NotCharacterRepeatedException(Exception):
-  pass
-
-
 class MissingAttributeException(Exception):
   
   def __init__(self, missing_attribute):
@@ -82,6 +78,7 @@ class ExtensibleFenceReplacement:
     'syntax_type',
     'allowed_flags',
     'opening_delimiter',
+    'extensible_delimiter',
     # TODO: other attributes
   ]
   
@@ -623,6 +620,60 @@ class ReplacementMaster:
     replacement.set_allowed_flags(flag_setting_from_letter, has_flags)
   
   @staticmethod
+  def compute_extensible_delimiter_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<extensible_delimiter>
+            (?P<extensible_delimiter_character> [\S] )
+            (?P=extensible_delimiter_character)*
+          )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_extensible_delimiter(
+    replacement,
+    attribute_value,
+    source_file,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    extensible_delimiter_match = \
+            ReplacementMaster.compute_extensible_delimiter_match(
+              attribute_value
+            )
+    
+    invalid_value = extensible_delimiter_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'`{invalid_value}` is not a character repeated',
+        source_file,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    extensible_delimiter_character = \
+            extensible_delimiter_match.group('extensible_delimiter_character')
+    extensible_delimiter = \
+            extensible_delimiter_match.group('extensible_delimiter')
+    extensible_delimiter_min_count = len(extensible_delimiter)
+    
+    replacement.set_extensible_delimiter(
+      extensible_delimiter_character,
+      extensible_delimiter_min_count,
+    )
+  
+  @staticmethod
   def compute_opening_delimiter_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -911,6 +962,14 @@ class ReplacementMaster:
       
       if attribute_name == 'allowed_flags':
         ReplacementMaster.stage_allowed_flags(
+          replacement,
+          attribute_value,
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'extensible_delimiter':
+        ReplacementMaster.stage_extensible_delimiter(
           replacement,
           attribute_value,
           source_file,
@@ -1206,17 +1265,6 @@ class ReplacementMaster:
     return string
 
 
-def factorise_repeated_character(string):
-  
-  first_character = string[0]
-  string_length = len(string)
-  
-  if string != first_character * string_length:
-    raise NotCharacterRepeatedException
-  
-  return first_character, string_length
-
-
 def compute_attribute_specification_matches(attribute_specifications):
   return re.finditer(
     r'''
@@ -1481,7 +1529,7 @@ def extract_rules_and_content(cmd):
 
 
 STANDARD_RULES = \
-r'''# STANDARD_RULES
+'''# STANDARD_RULES
 
 ExtensibleFenceReplacement: #literals
 - replacement_order: ROOT

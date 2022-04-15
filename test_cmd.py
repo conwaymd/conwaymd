@@ -58,24 +58,6 @@ class TestCmd(unittest.TestCase):
       '(?P=extensible_delimiter)'
     )
   
-  def test_factorise_repeated_character(self):
-    self.assertEqual(
-      cmd.factorise_repeated_character('$$$$$$'),
-      ('$', 6)
-    )
-    self.assertEqual(
-      cmd.factorise_repeated_character('````'),
-      ('`', 4)
-    )
-    self.assertRaises(
-      cmd.NotCharacterRepeatedException,
-      cmd.factorise_repeated_character, '$$$$$$````'
-    )
-    self.assertRaises(
-      cmd.NotCharacterRepeatedException,
-      cmd.factorise_repeated_character, 'ThisStringIsNotACharacterRepeated'
-    )
-  
   def test_to_attributes_sequence(self):
     self.assertEqual(
       cmd.build_attributes_sequence(''),
