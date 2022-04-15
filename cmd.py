@@ -54,10 +54,6 @@ class MissingAttributeException(Exception):
     return self._missing_attribute
 
 
-class RootReplacementAlreadyExistsException(Exception):
-  pass
-
-
 class ExtensibleFenceReplacement:
   """
   A generalised extensible-fence-style replacement rule.
