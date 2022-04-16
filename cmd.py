@@ -42,6 +42,14 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
+class CommittedReplacementSetException(Exception):
+  pass
+
+
+class UncommittedReplacementApplyException(Exception):
+  pass
+
+
 class MissingAttributeException(Exception):
   
   def __init__(self, missing_attribute):
@@ -64,6 +72,7 @@ class Replacement(abc.ABC):
   """
   
   def __init__(self, id_):
+    self._is_committed = False
     self._id = id_
     self._queue_position_type = None
     self._queue_reference_replacement = None
@@ -85,6 +94,10 @@ class Replacement(abc.ABC):
   
   @queue_position_type.setter
   def queue_position_type(self, value):
+    if self._is_committed:
+      raise CommittedReplacementSetException(
+        'error: cannot set attributes after commit()'
+      )
     self._queue_position_type = value
   
   @property
@@ -93,7 +106,44 @@ class Replacement(abc.ABC):
   
   @queue_reference_replacement.setter
   def queue_reference_replacement(self, value):
+    if self._is_committed:
+      raise CommittedReplacementSetException(
+        'error: cannot set attributes after commit()'
+      )
     self._queue_reference_replacement = value
+  
+  def commit(self):
+    self.__validate_mandatory_attributes()
+    self.__set_apply_method_variables()
+    self._is_committed = True
+  
+  def apply(self, string):
+    if not self._is_committed:
+      raise UncommittedReplacementApplyException(
+        'error: cannot call apply(string) before commit()'
+      )
+    return self.__apply(string)
+  
+  @abc.abstractmethod
+  def __validate_mandatory_attributes(self):
+    """
+    Ensure all mandatory attributes have been set.
+    """
+    pass
+  
+  @abc.abstractmethod
+  def __set_apply_method_variables(self):
+    """
+    Set variables used in `self.__apply(string)`.
+    """
+    pass
+  
+  @abc.abstractmethod
+  def __apply(self, string):
+    """
+    Apply the defined replacement to a string.
+    """
+    pass
 
 
 class OrdinaryDictionaryReplacement:
