@@ -486,7 +486,7 @@ class ExtensibleFenceReplacement(Replacement):
       
       content = match.group('content')
       for replacement in self._content_replacement_list:
-        replacement_id = replacement.get_id()
+        replacement_id = replacement.id_
         if replacement_id == 'escape-html':
           if 'KEEP_HTML_UNESCAPED' in enabled_flag_settings:
             continue
@@ -708,7 +708,7 @@ class ReplacementMaster:
   ):
     
     attribute_name = attribute_declaration_match.group('attribute_name')
-    if attribute_name not in replacement.ATTRIBUTE_NAMES:
+    if attribute_name not in replacement.attribute_names():
       ReplacementMaster.print_error(
         f'unrecognised attribute `{attribute_name}` for `{class_name}`',
         source_file,
@@ -856,9 +856,7 @@ class ReplacementMaster:
       flag_setting = allowed_flag_match.group('flag_setting')
       flag_setting_from_letter[flag_letter] = flag_setting
     
-    has_flags = len(flag_setting_from_letter) > 0
-    
-    replacement.set_allowed_flags(flag_setting_from_letter, has_flags)
+    replacement.flag_setting_from_letter = flag_setting_from_letter
   
   @staticmethod
   def compute_attribute_specifications_match(attribute_value):
@@ -909,11 +907,11 @@ class ReplacementMaster:
       return
     
     if attribute_specifications_match.group('empty_keyword') is not None:
-      replacement.set_attribute_specifications('')
+      replacement.attribute_specifications = ''
     
     attribute_specifications = \
             attribute_specifications_match.group('attribute_specifications')
-    replacement.set_attribute_specifications(attribute_specifications)
+    replacement.attribute_specifications = attribute_specifications
   
   @staticmethod
   def compute_closing_delimiter_match(attribute_value):
@@ -959,7 +957,7 @@ class ReplacementMaster:
       return
     
     closing_delimiter = closing_delimiter_match.group('closing_delimiter')
-    replacement.set_closing_delimiter(closing_delimiter)
+    replacement.closing_delimiter = closing_delimiter
   
   @staticmethod
   def compute_content_replacement_matches(attribute_value):
@@ -1018,7 +1016,7 @@ class ReplacementMaster:
         return
       
       content_replacement_id = content_replacement_match.group('id_')
-      if content_replacement_id == replacement.get_id():
+      if content_replacement_id == replacement.id_:
         content_replacement = replacement
       else:
         try:
@@ -1035,7 +1033,7 @@ class ReplacementMaster:
       
       content_replacement_list.append(content_replacement)
     
-    replacement.set_content_replacements(content_replacement_list)
+    replacement.content_replacements = content_replacement_list
   
   @staticmethod
   def compute_extensible_delimiter_match(attribute_value):
@@ -1087,10 +1085,8 @@ class ReplacementMaster:
             extensible_delimiter_match.group('extensible_delimiter')
     extensible_delimiter_min_count = len(extensible_delimiter)
     
-    replacement.set_extensible_delimiter(
-      extensible_delimiter_character,
-      extensible_delimiter_min_count,
-    )
+    replacement.extensible_delimiter_character = extensible_delimiter_character
+    replacement.extensible_delimiter_min_count = extensible_delimiter_min_count
   
   @staticmethod
   def compute_opening_delimiter_match(attribute_value):
@@ -1136,7 +1132,7 @@ class ReplacementMaster:
       return
     
     opening_delimiter = opening_delimiter_match.group('opening_delimiter')
-    replacement.set_opening_delimiter(opening_delimiter)
+    replacement.opening_delimiter = opening_delimiter
   
   @staticmethod
   def compute_queue_position_match(attribute_value):
@@ -1194,7 +1190,8 @@ class ReplacementMaster:
           line_number,
         )
         sys.exit(GENERIC_ERROR_EXIT_CODE)
-      replacement.set_queue_position('ROOT', None)
+      replacement.queue_position_type = 'ROOT'
+      replacement.queue_reference_replacement = None
       return
     
     queue_position_type = \
@@ -1202,7 +1199,7 @@ class ReplacementMaster:
     queue_reference_id = \
             queue_position_match.group('queue_reference_id')
     
-    if queue_reference_id == replacement.get_id():
+    if queue_reference_id == replacement.id_:
       ReplacementMaster.print_error(
         f'self-referential `queue_position`',
         source_file,
@@ -1223,10 +1220,8 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    replacement.set_queue_position(
-      queue_position_type,
-      queue_reference_replacement,
-    )
+    replacement.queue_position_type = queue_position_type
+    replacement.queue_reference_replacement = queue_reference_replacement
   
   @staticmethod
   def compute_syntax_type_match(attribute_value):
@@ -1267,7 +1262,7 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     syntax_type = syntax_type_match.group('syntax_type')
-    replacement.set_syntax_type(syntax_type == 'BLOCK')
+    replacement.syntax_type_is_block = syntax_type == 'BLOCK'
   
   @staticmethod
   def compute_tag_name_match(attribute_value):
@@ -1312,7 +1307,7 @@ class ReplacementMaster:
       return
     
     tag_name = tag_name_match.group('tag_name')
-    replacement.set_tag_name(tag_name)
+    replacement.tag_name = tag_name
   
   @staticmethod
   def compute_substitution_match(substitution):
@@ -1535,7 +1530,7 @@ class ReplacementMaster:
   def commit(self, class_name, replacement, source_file, line_number):
     
     try:
-      replacement.validate()
+      replacement.commit()
     except MissingAttributeException as exception:
       missing_attribute = exception.get_missing_attribute()
       ReplacementMaster.print_error(
@@ -1545,18 +1540,17 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    id_ = replacement.get_id()
+    id_ = replacement.id_
     self._replacement_from_id[id_] = replacement
     
-    queue_position_type = replacement.get_queue_position_type()
+    queue_position_type = replacement.queue_position_type
     if queue_position_type is None:
       pass
     elif queue_position_type == 'ROOT':
       self._root_replacement_id = id_
       self._replacement_queue.append(replacement)
     else:
-      queue_reference_replacement = \
-              replacement.get_queue_reference_replacement()
+      queue_reference_replacement = replacement.queue_reference_replacement
       queue_reference_index = \
               self._replacement_queue.index(queue_reference_replacement)
       if queue_position_type == 'BEFORE':
