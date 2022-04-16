@@ -639,6 +639,7 @@ class ReplacementMaster:
               )
     else:
       included_file_name = rules_inclusion_match.group('included_file_name')
+    included_file_name = os.path.normpath(included_file_name)
     
     try:
       with open(included_file_name, 'r', encoding='utf-8') as included_file:
@@ -660,7 +661,7 @@ class ReplacementMaster:
         replacement_rules = included_file.read()
     except FileNotFoundError:
       ReplacementMaster.print_error(
-        f'file `{included_file_name}` not found',
+        f'file `{included_file_name}` (relative to terminal) not found',
         rules_file_name,
         line_number,
       )
