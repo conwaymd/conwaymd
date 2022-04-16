@@ -515,17 +515,19 @@ class ReplacementMaster:
   Parse CMD replacement rule syntax. A line must be either:
   (1) whitespace-only,
   (2) a comment (beginning with `#`),
-  (3) a rules inclusion (of the form `< /«rules_file_name»`),
+  (3) a rules inclusion (of the form `< «included_file_name»`),
   (4) the start of a class declaration (of the form `«ClassName»: #«id»`),
   (5) the start of an attribute declaration (beginning with `- `),
   (6) the start of a substitution declaration (beginning with `* `), or
   (7) a continuation (beginning with whitespace).
-  «rules_file_name» is parsed relative to the working directory.
-  An attribute declaration is of the form `- «name»: «value»`.
-  A substitution declaration is of the form `* «pattern» --> «substitute»`,
-  where the number of hyphens in the delimiter `-->`
-  may be arbitrarily increased if «pattern» happens to contain
-  a run of hyphens followed by a closing angle-bracket.
+  - If «included_file_name» begins with a slash then
+    it is parsed relative to the working directory;
+    otherwise it is parsed relative to the current file.
+  - An attribute declaration is of the form `- «name»: «value»`.
+  - A substitution declaration is of the form `* «pattern» --> «substitute»`,
+    where the number of hyphens in the delimiter `-->`
+    may be arbitrarily increased if «pattern» happens to contain
+    a run of hyphens followed by a closing angle-bracket.
   
   Terminology:
   - Class declarations are _committed_.
@@ -541,20 +543,25 @@ class ReplacementMaster:
     In CMD replacement rule syntax, a line must be either:
     (1) whitespace-only,
     (2) a comment (beginning with `#`),
-    (3) a rules inclusion (of the form `< /«rules_file_name»`),
+    (3) a rules inclusion (of the form `< «included_file_name»`),
     (4) the start of a class declaration (of the form `«ClassName»: #«id»`),
     (5) the start of an attribute declaration (beginning with `- `),
     (6) the start of a substitution declaration (beginning with `* `), or
     (7) a continuation (beginning with whitespace).
+    - If «included_file_name» begins with a slash then
+      it is parsed relative to the working directory;
+      otherwise it is parsed relative to the current file.
+    - An attribute declaration is of the form `- «name»: «value»`.
+    - A substitution declaration is of the form `* «pattern» --> «substitute»`,
+      where the number of hyphens in the delimiter `-->`
+      may be arbitrarily increased if «pattern» happens to contain
+      a run of hyphens followed by a closing angle-bracket.
     '''
   )
   
   def __init__(self, cmd_file_name):
     
-    self._included_file_names = []
-    if cmd_file_name is not None:
-      self._included_file_names.append(cmd_file_name)
-    
+    self._opened_file_names = [cmd_file_name]
     self._replacement_from_id = {}
     self._root_replacement_id = None
     self._replacement_queue = []
@@ -603,7 +610,13 @@ class ReplacementMaster:
   def compute_rules_inclusion_match(line):
     return re.fullmatch(
       r'''
-        [<][ ][/] (?P<rules_file_name> [\S][\s\S]*? ) [\s]*
+        [<][ ]
+          (?:
+            [/] (?P<included_file_name> [\S][\s\S]*? )
+              |
+            (?P<included_file_name_relative> [\S][\s\S]*? )
+          )
+        [\s]*
       ''',
       line,
       flags=re.ASCII | re.VERBOSE,
@@ -612,38 +625,48 @@ class ReplacementMaster:
   def process_rules_inclusion_line(
     self,
     rules_inclusion_match,
-    source_file, # TODO: rewrite for renaming to rules_file_name
+    rules_file_name,
     line_number,
   ):
     
-    rules_file_name = rules_inclusion_match.group('rules_file_name')
+    included_file_name_relative = \
+            rules_inclusion_match.group('included_file_name_relative')
+    if included_file_name_relative is not None:
+      included_file_name = \
+              os.path.join(
+                os.path.dirname(rules_file_name),
+                included_file_name_relative,
+              )
+    else:
+      included_file_name = rules_inclusion_match.group('included_file_name')
+    
     try:
-      with open(rules_file_name, 'r', encoding='utf-8') as rules_file:
-        for file_name in self._included_file_names:
-          if os.path.samefile(rules_file_name, file_name):
-            self._included_file_names.append(rules_file_name)
+      with open(included_file_name, 'r', encoding='utf-8') as included_file:
+        for opened_file_name in self._opened_file_names:
+          if os.path.samefile(opened_file_name, included_file_name):
+            self._opened_file_names.append(included_file_name)
             recursive_inclusion_string = \
                     ' includes '.join(
-                      f'`/{file_name}`'
-                        for file_name in self._included_file_names
+                      f'`{opened_file_name}`'
+                        for opened_file_name in self._opened_file_names
                     )
             ReplacementMaster.print_error(
               f'recursive inclusion: {recursive_inclusion_string}',
-              source_file,
+              rules_file_name,
               line_number,
             )
             sys.exit(GENERIC_ERROR_EXIT_CODE)
-        self._included_file_names.append(rules_file_name)
-        replacement_rules = rules_file.read()
+        self._opened_file_names.append(included_file_name)
+        replacement_rules = included_file.read()
     except FileNotFoundError:
       ReplacementMaster.print_error(
-        f'file `{rules_file_name}` not found',
-        source_file,
+        f'file `{included_file_name}` not found',
+        rules_file_name,
         line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    self.legislate(replacement_rules, f'`{rules_file_name}`') # XXX
+    self.legislate(replacement_rules, included_file_name)
   
   @staticmethod
   def compute_class_declaration_match(line):
