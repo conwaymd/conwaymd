@@ -146,6 +146,33 @@ class Replacement(abc.ABC):
     raise NotImplementedError
 
 
+class DeIndentationReplacement(Replacement):
+  """
+  A replacement rule for de-indentation.
+  
+  CMD replacement rule syntax:
+  ````
+  DeIndentationReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  ````
+  """
+  
+  def __init__(self, id_):
+    super().__init__(id_)
+  
+  def attribute_names(self):
+    return ()
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    pass
+  
+  def _apply(self, string):
+    return de_indent(string)
+
+
 class OrdinaryDictionaryReplacement(Replacement):
   """
   A replacement rule for a dictionary of ordinary substitutions.
@@ -744,7 +771,9 @@ class ReplacementMaster:
     class_name = class_declaration_match.group('class_name')
     id_ = class_declaration_match.group('id_')
     
-    if class_name == 'OrdinaryDictionaryReplacement':
+    if class_name == 'DeIndentationReplacement':
+      replacement = DeIndentationReplacement(id_)
+    elif class_name == 'OrdinaryDictionaryReplacement':
       replacement = OrdinaryDictionaryReplacement(id_)
     elif class_name == 'ExtensibleFenceReplacement':
       replacement = ExtensibleFenceReplacement(id_)
@@ -2186,6 +2215,8 @@ def extract_rules_and_content(cmd):
 
 STANDARD_RULES = \
 r'''# STANDARD_RULES
+
+DeIndentationReplacement: #de-indent
 
 OrdinaryDictionaryReplacement: #escape-html
 * & --> &amp;
