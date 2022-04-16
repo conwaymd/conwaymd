@@ -38,6 +38,9 @@ import textwrap
 import traceback
 
 
+__version__ = 'v3.999...'
+
+
 GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
@@ -2176,6 +2179,11 @@ CMD_FILE_NAME_HELP = '''
 def parse_command_line_arguments():
   
   argument_parser = argparse.ArgumentParser(description=DESCRIPTION)
+  argument_parser.add_argument(
+    '-v', '--version',
+    action='version',
+    version=f'{argument_parser.prog} {__version__}',
+  )
   argument_parser.add_argument(
     'cmd_file_name_argument',
     default='',
