@@ -1862,6 +1862,52 @@ class ReplacementMaster:
     return string
 
 
+def compute_longest_common_prefix(strings):
+  
+  shortest_string = min(strings, key=len)
+  
+  prefix = shortest_string
+  while len(prefix) > 0:
+    if all(string.startswith(prefix) for string in strings):
+      break
+    prefix = prefix[:-1]
+  
+  return prefix
+
+
+def de_indent(string):
+  """
+  De-indent a string.
+  
+  Empty lines do not count towards the longest common indentation.
+  
+  Unlike `textwrap.dedent`, this method will not perform
+  blanket erasure of whitespace on whitespace-only lines.
+  Whitespace beyond the longest common indentation is preserved.
+  """
+  
+  indentations = \
+          re.findall(
+            r'''
+              ^ [^\S\n]+
+                |
+              ^ (?! $ )
+            ''',
+            string,
+            flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+          )
+  longest_common_indentation = compute_longest_common_prefix(indentations)
+  string = \
+          re.sub(
+            f'^{re.escape(longest_common_indentation)}',
+            '',
+            string,
+            flags=re.MULTILINE,
+          )
+  
+  return string
+
+
 def compute_attribute_specification_matches(attribute_specifications):
   return re.finditer(
     r'''

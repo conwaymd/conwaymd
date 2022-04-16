@@ -77,6 +77,42 @@ class TestCmd(unittest.TestCase):
       '(?P=extensible_delimiter)'
     )
   
+  def test_compute_longest_common_prefix(self):
+    self.assertEqual(
+      cmd.compute_longest_common_prefix(['a', 'b', 'c', 'd']),
+      ''
+    )
+    self.assertEqual(
+      cmd.compute_longest_common_prefix(['  ', '  ', '   ', '      ']),
+      '  '
+    )
+    self.assertEqual(
+      cmd.compute_longest_common_prefix(['\t  ', '\t  3', '\t   \t \t']),
+      '\t  '
+    )
+  
+  def test_de_indent(self):
+    self.assertEqual(
+      cmd.de_indent(
+'''
+    4 spaces
+
+      4 spaces + 2 spaces
+      \t   4 spaces + 2 spaces, 1 tab, 3 spaces
+     
+     4 spaces + 1 space (this line and above)
+'''
+      ),
+'''
+4 spaces
+
+  4 spaces + 2 spaces
+  \t   4 spaces + 2 spaces, 1 tab, 3 spaces
+ 
+ 4 spaces + 1 space (this line and above)
+'''
+    )
+  
   def test_build_attributes_sequence(self):
     self.assertEqual(
       cmd.build_attributes_sequence(''),
