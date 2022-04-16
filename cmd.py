@@ -34,7 +34,6 @@ import argparse
 import os
 import re
 import sys
-import textwrap
 import traceback
 
 
@@ -560,6 +559,27 @@ class ExtensibleFenceReplacement(Replacement):
     return substitute_function
 
 
+CMD_REPLACEMENT_SYNTAX_HELP = \
+'''\
+In CMD replacement rule syntax, a line must be either:
+(1) whitespace-only,
+(2) a comment (beginning with `#`),
+(3) a rules inclusion (of the form `< «included_file_name»`),
+(4) the start of a class declaration (of the form `«ClassName»: #«id»`),
+(5) the start of an attribute declaration (beginning with `- `),
+(6) the start of a substitution declaration (beginning with `* `), or
+(7) a continuation (beginning with whitespace).
+- If «included_file_name» begins with a slash then
+  it is parsed relative to the working directory;
+  otherwise it is parsed relative to the current file.
+- An attribute declaration is of the form `- «name»: «value»`.
+- A substitution declaration is of the form `* «pattern» --> «substitute»`,
+  where the number of hyphens in the delimiter `-->`
+  may be arbitrarily increased if «pattern» happens to contain
+  a run of hyphens followed by a closing angle-bracket.
+'''
+
+
 class ReplacementMaster:
   """
   Object governing the parsing and application of replacement rules.
@@ -591,27 +611,6 @@ class ReplacementMaster:
   
   Applies the legislated replacements.
   """
-  
-  SYNTAX_HELP = textwrap.dedent(
-    '''\
-    In CMD replacement rule syntax, a line must be either:
-    (1) whitespace-only,
-    (2) a comment (beginning with `#`),
-    (3) a rules inclusion (of the form `< «included_file_name»`),
-    (4) the start of a class declaration (of the form `«ClassName»: #«id»`),
-    (5) the start of an attribute declaration (beginning with `- `),
-    (6) the start of a substitution declaration (beginning with `* `), or
-    (7) a continuation (beginning with whitespace).
-    - If «included_file_name» begins with a slash then
-      it is parsed relative to the working directory;
-      otherwise it is parsed relative to the current file.
-    - An attribute declaration is of the form `- «name»: «value»`.
-    - A substitution declaration is of the form `* «pattern» --> «substitute»`,
-      where the number of hyphens in the delimiter `-->`
-      may be arbitrarily increased if «pattern» happens to contain
-      a run of hyphens followed by a closing angle-bracket.
-    '''
-  )
   
   def __init__(self, cmd_file_name):
     
@@ -1833,7 +1832,7 @@ class ReplacementMaster:
         continue
       
       ReplacementMaster.print_error(
-        'invalid syntax\n\n' + ReplacementMaster.SYNTAX_HELP,
+        'invalid syntax\n\n' + CMD_REPLACEMENT_SYNTAX_HELP,
         rules_file_name,
         line_number,
       )
