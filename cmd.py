@@ -69,7 +69,7 @@ class PlaceholderMaster:
   should not be altered further by replacements to follow.
   To protect a string from further alteration,
   it is temporarily replaced by a placeholder
-  consisting of code points in the Unicode Private Use Area.
+  consisting of code points in the main Unicode Private Use Area.
   Specifically, the placeholder shall be of the form
   `«marker»«counter»«marker»`, where «marker» is `U+F8FF`,
   and «counter» is base-6399 encoded using `U+E000` through `U+F8FE`,
@@ -82,6 +82,13 @@ class PlaceholderMaster:
   In fact the user should not be using Private Use Area code points
   in the first place, see <https://www.w3.org/TR/charmod/#C073>.
   """
+  
+  _COUNTER_MIN_CODE_POINT = 0xE000
+  _COUNTER_MAX_CODE_POINT = 0xF8FE
+  _COUNTER_BASE = _COUNTER_MAX_CODE_POINT - _COUNTER_MIN_CODE_POINT + 1
+  
+  _MARKER_CODE_POINT = 0xF8FF
+  _MARKER = chr(_MARKER_CODE_POINT)
 
 
 class Replacement(abc.ABC):
