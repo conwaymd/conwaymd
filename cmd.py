@@ -94,7 +94,7 @@ class Replacement(abc.ABC):
   def queue_position_type(self, value):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot set queue position type after commit()'
+        'error: cannot set `queue_position_type` after `commit()`'
       )
     self._queue_position_type = value
   
@@ -106,7 +106,7 @@ class Replacement(abc.ABC):
   def queue_reference_replacement(self, value):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot set queue reference replacement after commit()'
+        'error: cannot set `queue_reference_replacement` after `commit()`'
       )
     self._queue_reference_replacement = value
   
@@ -118,7 +118,7 @@ class Replacement(abc.ABC):
   def apply(self, string):
     if not self._is_committed:
       raise UncommittedApplyException(
-        'error: cannot call apply(string) before commit()'
+        'error: cannot call `apply(string)` before `commit()`'
       )
     return self._apply(string)
   
@@ -174,7 +174,7 @@ class OrdinaryDictionaryReplacement(Replacement):
   def add_substitution(self, pattern, substitute):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot add substitution after commit()'
+        'error: cannot `add_substitution(...)` after `commit()`'
       )
     self._substitute_from_pattern[pattern] = substitute
   
