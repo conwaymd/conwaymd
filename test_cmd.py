@@ -9,6 +9,7 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 
 
 import cmd
+import os
 import unittest
 
 
@@ -172,12 +173,16 @@ class TestCmd(unittest.TestCase):
     self.assertEqual(cmd.extract_cmd_name('file.'), 'file')
     self.assertEqual(cmd.extract_cmd_name('file'), 'file')
     
-    self.assertEqual(cmd.extract_cmd_name('./file.cmd'), 'file')
-    self.assertEqual(cmd.extract_cmd_name('./file.'), 'file')
-    self.assertEqual(cmd.extract_cmd_name('./file'), 'file')
-    
-    self.assertEqual(cmd.extract_cmd_name(r'a\b\file'), 'a/b/file')
-    self.assertEqual(cmd.extract_cmd_name(r'.\dir\file.cmd'), 'dir/file')
+    if os.sep == '/':
+      self.assertEqual(cmd.extract_cmd_name('./././file.cmd'), 'file')
+      self.assertEqual(cmd.extract_cmd_name('./dir/../file.cmd'), 'file')
+      self.assertEqual(cmd.extract_cmd_name('./file.'), 'file')
+      self.assertEqual(cmd.extract_cmd_name('./file'), 'file')
+    elif os.sep == '\\':
+      self.assertEqual(cmd.extract_cmd_name(r'.\.\.\file.cmd'), 'file')
+      self.assertEqual(cmd.extract_cmd_name(r'.\dir\..\file.cmd'), 'file')
+      self.assertEqual(cmd.extract_cmd_name(r'.\file.'), 'file')
+      self.assertEqual(cmd.extract_cmd_name(r'.\file'), 'file')
 
 
 if __name__ == '__main__':

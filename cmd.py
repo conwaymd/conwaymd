@@ -2118,19 +2118,10 @@ def extract_cmd_name(cmd_file_name_argument):
   """
   Extract name-without-extension from a CMD file name argument.
   
-  The argument received from the command line can be either
-  `«cmd_name».cmd`, `«cmd_name».`, or `«cmd_name»`,
-  or even `./«cmd_name».cmd` if the user is being dumb.
-  If no argument be received from the command line,
-  we loop through the file names, which are `./«cmd_name».cmd`.
-  If the operating system be Windows,
-  the directory separators will be backslashes
-  instead of forward slashes (as in URLs).
-  In all cases we want `«cmd_name»` with forward slashes.
+  The path is normalised by resolving `./` and `../`.
   """
   
-  cmd_file_name_argument = re.sub(r'\\', '/', cmd_file_name_argument)
-  cmd_file_name_argument = re.sub(r'\A[.][/]', '', cmd_file_name_argument)
+  cmd_file_name_argument = os.path.normpath(cmd_file_name_argument)
   cmd_name = re.sub(r'[.](cmd)?\Z', '', cmd_file_name_argument)
   
   return cmd_name
