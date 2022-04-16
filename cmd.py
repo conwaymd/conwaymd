@@ -2126,12 +2126,16 @@ def extract_rules_and_content(cmd):
 
 
 STANDARD_RULES = \
-'''# STANDARD_RULES
+r'''# STANDARD_RULES
 
 OrdinaryDictionaryReplacement: #escape-html
 * & --> &amp;
 * < --> &lt;
 * > --> &gt;
+
+RegexDictionaryReplacement: #trim-whitespace
+* \A [\s]* -->
+* [\s]* \Z -->
 
 ExtensibleFenceReplacement: #literals
 - queue_position: ROOT
