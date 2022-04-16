@@ -61,6 +61,29 @@ class MissingAttributeException(Exception):
     return self._missing_attribute
 
 
+class PlaceholderMaster:
+  """
+  Object providing placeholder protection to strings.
+  
+  There are many instances in which the result of a replacement
+  should not be altered further by replacements to follow.
+  To protect a string from further alteration,
+  it is temporarily replaced by a placeholder
+  consisting of code points in the Unicode Private Use Area.
+  Specifically, the placeholder shall be of the form
+  `«marker»«counter»«marker»`, where «marker» is `U+F8FF`,
+  and «counter» is base-6399 encoded using `U+E000` through `U+F8FE`,
+  incrementing every time a new string is protected.
+  Actual occurrences of «marker» itself are themselves
+  to be replaced with a placeholder to avoid ambiguity.
+  
+  It is assumed the user will not define replacements rules
+  that alter strings of the form `«marker»«counter»«marker»`.
+  In fact the user should not be using Private Use Area code points
+  in the first place, see <https://www.w3.org/TR/charmod/#C073>.
+  """
+
+
 class Replacement(abc.ABC):
   """
   Base class for a replacement rule.
