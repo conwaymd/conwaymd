@@ -77,7 +77,7 @@ class TestCmd(unittest.TestCase):
       '(?P=extensible_delimiter)'
     )
   
-  def test_to_attributes_sequence(self):
+  def test_build_attributes_sequence(self):
     self.assertEqual(
       cmd.build_attributes_sequence(''),
       ''
@@ -115,7 +115,7 @@ class TestCmd(unittest.TestCase):
       ' width="320" height="16" style="font-weight: bold"'
     )
   
-  def test_to_flags_regex(self):
+  def test_build_flags_regex(self):
     self.assertEqual(cmd.build_flags_regex({}, False), '')
     self.assertEqual(
       cmd.build_flags_regex(
@@ -129,7 +129,7 @@ class TestCmd(unittest.TestCase):
       '(?P<flags> [uwi]* )'
     )
   
-  def test_extensible_delimiter_opening_regex(self):
+  def test_build_extensible_delimiter_opening_regex(self):
     self.assertEqual(
       cmd.build_extensible_delimiter_opening_regex('$', 5),
       r'(?P<extensible_delimiter> \${5,} )'
@@ -167,7 +167,7 @@ class TestCmd(unittest.TestCase):
     self.assertFalse(cmd.is_cmd_file('file.'))
     self.assertFalse(cmd.is_cmd_file('file'))
   
-  def test_to_normalised_name(self):
+  def test_extract_cmd_name(self):
     
     self.assertEqual(cmd.extract_cmd_name('file.cmd'), 'file')
     self.assertEqual(cmd.extract_cmd_name('file.'), 'file')
