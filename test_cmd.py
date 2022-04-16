@@ -15,6 +15,59 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  def test_placeholder_master_encode_digit(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(0),
+      '\uE000'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(1),
+      '\uE001'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(0x69),
+      '\uE069'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(0x420),
+      '\uE420'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(0x18FE),
+      '\uF8FE'
+    )
+  
+  def test_placeholder_master_encode(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0),
+      '\uE000'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(1),
+      '\uE001'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0x18FE),
+      '\uF8FE'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0x18FF),
+      '\uE001\uE000'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0x69420),
+      '\uE043\uE963'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(
+          0x0069 * 0x18FF ** 4
+        + 0x0420 * 0x18FF ** 3
+        + 0x18FE * 0x18FF ** 1
+        + 0x0064 * 0x18FF ** 0
+      ),
+      '\uE069\uE420\uE000\uF8FE\uE064'
+    )
+  
   def test_ordinary_dictionary_replacement_build_regex_pattern(self):
     
     self.assertEqual(

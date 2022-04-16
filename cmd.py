@@ -71,14 +71,14 @@ class PlaceholderMaster:
   it is temporarily replaced by a placeholder
   consisting of code points in the main Unicode Private Use Area.
   Specifically, the placeholder shall be of the form
-  `«marker»«counter»«marker»`, where «marker» is `U+F8FF`,
-  and «counter» is base-6399 encoded using `U+E000` through `U+F8FE`,
+  `«marker»«encoded_counter»«marker»`, where «marker» is `U+F8FF`,
+  and «encoded_counter» is base-6399 `U+E000` through `U+F8FE`,
   incrementing every time a new string is protected.
-  Actual occurrences of «marker» itself are themselves
+  Actual occurrences of «marker» themselves
   to be replaced with a placeholder to avoid ambiguity.
   
   It is assumed the user will not define replacements rules
-  that alter strings of the form `«marker»«counter»«marker»`.
+  that alter strings of the form `«marker»«encoded_counter»«marker»`.
   In fact the user should not be using Private Use Area code points
   in the first place, see <https://www.w3.org/TR/charmod/#C073>.
   """
@@ -89,6 +89,37 @@ class PlaceholderMaster:
   
   _MARKER_CODE_POINT = 0xF8FF
   _MARKER = chr(_MARKER_CODE_POINT)
+  
+  @staticmethod
+  def encode_digit(digit):
+    
+    if digit < 0:
+      raise ValueError('error: digit must be non-negative')
+    
+    if digit >= PlaceholderMaster._COUNTER_BASE:
+      raise ValueError(
+        f'error: digit too large for base {PlaceholderMaster._COUNTER_BASE}'
+      )
+    
+    return chr(PlaceholderMaster._COUNTER_MIN_CODE_POINT + digit)
+  
+  @staticmethod
+  def encode(counter):
+    
+    if counter < 0:
+      raise ValueError('error: counter to be encoded must be non-negative')
+    
+    if counter == 0:
+      return PlaceholderMaster.encode_digit(0)
+    
+    encoded_digits = []
+    while counter > 0:
+      quotient, last_digit = divmod(counter, PlaceholderMaster._COUNTER_BASE)
+      encoded_last_digit = PlaceholderMaster.encode_digit(last_digit)
+      encoded_digits.append(encoded_last_digit)
+      counter = quotient
+    
+    return ''.join(reversed(encoded_digits))
 
 
 class Replacement(abc.ABC):
