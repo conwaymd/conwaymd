@@ -42,7 +42,7 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
-class CommittedReplacementSetException(Exception):
+class CommittedReplacementMutateException(Exception):
   pass
 
 
@@ -95,8 +95,8 @@ class Replacement(abc.ABC):
   @queue_position_type.setter
   def queue_position_type(self, value):
     if self._is_committed:
-      raise CommittedReplacementSetException(
-        'error: cannot set attributes after commit()'
+      raise CommittedReplacementMutateException(
+        'error: cannot mutate after commit()'
       )
     self._queue_position_type = value
   
@@ -107,8 +107,8 @@ class Replacement(abc.ABC):
   @queue_reference_replacement.setter
   def queue_reference_replacement(self, value):
     if self._is_committed:
-      raise CommittedReplacementSetException(
-        'error: cannot set attributes after commit()'
+      raise CommittedReplacementMutateException(
+        'error: cannot mutate after commit()'
       )
     self._queue_reference_replacement = value
   
