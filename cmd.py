@@ -29,6 +29,7 @@ TODO
 """
 
 
+import abc
 import argparse
 import os
 import re
@@ -48,6 +49,51 @@ class MissingAttributeException(Exception):
   
   def get_missing_attribute(self):
     return self._missing_attribute
+
+
+class Replacement(abc.ABC):
+  """
+  Base class for a replacement rule.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  Replacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  ````
+  """
+  
+  def __init__(self, id_):
+    self._id = id_
+    self._queue_position_type = None
+    self._queue_reference_replacement = None
+  
+  @property
+  @abc.abstractmethod
+  def attribute_names(self):
+    return (
+      'queue_position',
+    )
+  
+  @property
+  def id_(self):
+    return self._id
+  
+  @property
+  def queue_position_type(self):
+    return self._queue_position_type
+  
+  @queue_position_type.setter
+  def queue_position_type(self, value):
+    self._queue_position_type = value
+  
+  @property
+  def queue_reference_replacement(self):
+    return self._queue_reference_replacement
+  
+  @queue_reference_replacement.setter
+  def queue_reference_replacement(self, value):
+    self._queue_reference_replacement = value
 
 
 class OrdinaryDictionaryReplacement:
