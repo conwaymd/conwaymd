@@ -146,7 +146,7 @@ class Replacement(abc.ABC):
     pass
 
 
-class OrdinaryDictionaryReplacement:
+class OrdinaryDictionaryReplacement(Replacement):
   """
   A replacement rule for a dictionary of ordinary substitutions.
   
@@ -162,40 +162,24 @@ class OrdinaryDictionaryReplacement:
   ````
   """
   
-  ATTRIBUTE_NAMES = [
-    'queue_position',
-  ]
-  
   def __init__(self, id_):
-    self._id = id_
-    self._queue_position_type = None
-    self._queue_reference_replacement = None
+    super().__init__(id_)
     self._substitute_from_pattern = {}
     self._regex_pattern = None
     self._substitute_function = None
   
-  def get_id(self):
-    return self._id
-  
-  def set_queue_position(
-    self,
-    queue_position_type,
-    queue_reference_replacement,
-  ):
-    self._queue_position_type = queue_position_type
-    self._queue_reference_replacement = queue_reference_replacement
-  
-  def get_queue_position_type(self):
-    return self._queue_position_type
-  
-  def get_queue_reference_replacement(self):
-    return self._queue_reference_replacement
+  def attribute_names(self):
+    return (
+      'queue_position',
+    )
   
   def add_substitution(self, pattern, substitute):
     self._substitute_from_pattern[pattern] = substitute
   
-  def validate(self):
-    
+  def __validate_mandatory_attributes(self):
+    pass
+  
+  def __set_apply_method_variables(self):
     self._regex_pattern = \
             OrdinaryDictionaryReplacement.build_regex_pattern(
               self._substitute_from_pattern,
@@ -204,6 +188,13 @@ class OrdinaryDictionaryReplacement:
             OrdinaryDictionaryReplacement.build_substitute_function(
               self._substitute_from_pattern,
             )
+  
+  def __apply(self, string):
+    
+    if self._regex_pattern != '':
+      string = re.sub(self._regex_pattern, self._substitute_function, string)
+    
+    return string
   
   @staticmethod
   def build_regex_pattern(substitute_from_pattern):
@@ -218,13 +209,6 @@ class OrdinaryDictionaryReplacement:
       return substitute
     
     return substitute_function
-  
-  def apply(self, string):
-    
-    if self._regex_pattern != '':
-      string = re.sub(self._regex_pattern, self._substitute_function, string)
-    
-    return string
 
 
 class ExtensibleFenceReplacement:
