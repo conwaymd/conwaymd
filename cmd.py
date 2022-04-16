@@ -1911,10 +1911,12 @@ def de_indent(string):
   longest_common_indentation = compute_longest_common_prefix(indentations)
   string = \
           re.sub(
-            f'^{re.escape(longest_common_indentation)}',
+            f'''
+              ^ {re.escape(longest_common_indentation)}
+            ''',
             '',
             string,
-            flags=re.MULTILINE,
+            flags=re.MULTILINE | re.VERBOSE,
           )
   
   return string
