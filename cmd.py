@@ -1297,7 +1297,8 @@ class ReplacementMaster:
     if queue_position_match.group('root_keyword') is not None:
       if self._root_replacement_id is not None:
         ReplacementMaster.print_error(
-          f'root replacement already declared (#{self._root_replacement_id})',
+          'root replacement already declared'
+          f' (`#{self._root_replacement_id}`)',
           rules_file_name,
           line_number_range_start,
           line_number,
@@ -1555,7 +1556,7 @@ class ReplacementMaster:
         )
       else:
         ReplacementMaster.print_error(
-          f'class {class_name} does not allow substitutions',
+          f'class `{class_name}` does not allow substitutions',
           rules_file_name,
           line_number_range_start,
           line_number,
