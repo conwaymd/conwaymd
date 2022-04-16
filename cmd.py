@@ -213,7 +213,7 @@ class OrdinaryDictionaryReplacement(Replacement):
     return substitute_function
 
 
-class ExtensibleFenceReplacement:
+class ExtensibleFenceReplacement(Replacement):
   """
   A generalised extensible-fence-style replacement rule.
   
@@ -236,22 +236,8 @@ class ExtensibleFenceReplacement:
   ````
   """
   
-  ATTRIBUTE_NAMES = [
-    'queue_position',
-    'syntax_type',
-    'allowed_flags',
-    'opening_delimiter',
-    'extensible_delimiter',
-    'attribute_specifications',
-    'content_replacements',
-    'closing_delimiter',
-    'tag_name',
-  ]
-  
   def __init__(self, id_):
-    self._id = id_
-    self._queue_position_type = None
-    self._queue_reference_replacement = None
+    super().__init__(id_)
     self._syntax_type_is_block = None
     self._flag_setting_from_letter = {}
     self._has_flags = False
@@ -265,61 +251,138 @@ class ExtensibleFenceReplacement:
     self._regex_pattern = None
     self._substitute_function = None
   
-  def get_id(self):
-    return self._id
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'syntax_type',
+      'allowed_flags',
+      'opening_delimiter',
+      'extensible_delimiter',
+      'attribute_specifications',
+      'content_replacements',
+      'closing_delimiter',
+      'tag_name',
+    )
   
-  def set_queue_position(
-    self,
-    queue_position_type,
-    queue_reference_replacement,
-  ):
-    self._queue_position_type = queue_position_type
-    self._queue_reference_replacement = queue_reference_replacement
+  @property
+  def syntax_type_is_block(self):
+    return self._syntax_type_is_block
   
-  def get_queue_position_type(self):
-    return self._queue_position_type
+  @syntax_type_is_block.setter
+  def syntax_type_is_block(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `syntax_type_is_block` after `commit()`'
+      )
+    self._syntax_type_is_block = value
   
-  def get_queue_reference_replacement(self):
-    return self._queue_reference_replacement
+  @property
+  def flag_setting_from_letter(self):
+    return self._flag_setting_from_letter
   
-  def set_syntax_type(self, syntax_type_is_block):
-    self._syntax_type_is_block = syntax_type_is_block
+  @flag_setting_from_letter.setter
+  def flag_setting_from_letter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `flag_setting_from_letter` after `commit()`'
+      )
+    self._flag_setting_from_letter = value
   
-  def set_allowed_flags(self, flag_setting_from_letter, has_flags):
-    self._flag_setting_from_letter = flag_setting_from_letter
-    self._has_flags = has_flags
+  @property
+  def opening_delimiter(self):
+    return self._opening_delimiter
   
-  def set_opening_delimiter(self, opening_delimiter):
-    self._opening_delimiter = opening_delimiter
+  @opening_delimiter.setter
+  def opening_delimiter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `flag_setting_from_letter` after `commit()`'
+      )
+    self._opening_delimiter = value
   
-  def set_extensible_delimiter(
-    self,
-    extensible_delimiter_character,
-    extensible_delimiter_min_count,
-  ):
-    self._extensible_delimiter_character = extensible_delimiter_character
-    self._extensible_delimiter_min_count = extensible_delimiter_min_count
+  @property
+  def extensible_delimiter_character(self):
+    return self._extensible_delimiter_character
   
-  def set_attribute_specifications(self, attribute_specifications):
-    self._attribute_specifications = attribute_specifications
+  @extensible_delimiter_character.setter
+  def extensible_delimiter_character(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `extensible_delimiter_character` after `commit()`'
+      )
+    self._extensible_delimiter_character = value
   
-  def set_content_replacements(self, content_replacement_list):
-    self._content_replacement_list = content_replacement_list
+  @property
+  def extensible_delimiter_min_count(self):
+    return self._extensible_delimiter_min_count
   
-  def set_closing_delimiter(self, closing_delimiter):
-    self._closing_delimiter = closing_delimiter
+  @extensible_delimiter_min_count.setter
+  def extensible_delimiter_min_count(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `extensible_delimiter_min_count` after `commit()`'
+      )
+    self._extensible_delimiter_min_count = value
   
-  def set_tag_name(self, tag_name):
-    self._tag_name = tag_name
+  @property
+  def attribute_specifications(self):
+    return self._attribute_specifications
   
-  def validate(self):
+  @attribute_specifications.setter
+  def attribute_specifications(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `attribute_specifications` after `commit()`'
+      )
+    self._attribute_specifications = value
+  
+  @property
+  def content_replacement_list(self):
+    return self._content_replacement_list
+  
+  @content_replacement_list.setter
+  def content_replacement_list(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `content_replacement_list` after `commit()`'
+      )
+    self._content_replacement_list = value
+  
+  @property
+  def closing_delimiter(self):
+    return self._closing_delimiter
+  
+  @closing_delimiter.setter
+  def closing_delimiter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `closing_delimiter` after `commit()`'
+      )
+    self._closing_delimiter = value
+  
+  @property
+  def tag_name(self):
+    return self._tag_name
+  
+  @tag_name.setter
+  def tag_name(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `tag_name` after `commit()`'
+      )
+    self._tag_name = value
+  
+  def _validate_mandatory_attributes(self):
     
     if self._syntax_type_is_block is None:
       raise MissingAttributeException('syntax_type')
     
     if self._extensible_delimiter_character is None:
       raise MissingAttributeException('extensible_delimiter')
+  
+  def _set_apply_method_variables(self):
     
+    self._has_flags = len(self._flag_setting_from_letter) > 0
     self._regex_pattern = \
             ExtensibleFenceReplacement.build_regex_pattern(
               self._syntax_type_is_block,
@@ -339,7 +402,7 @@ class ExtensibleFenceReplacement:
               self._tag_name,
             )
   
-  def apply(self, string):
+  def _apply(self, string):
     return re.sub(
       self._regex_pattern,
       self._substitute_function,
