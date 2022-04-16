@@ -2137,6 +2137,12 @@ RegexDictionaryReplacement: #trim-whitespace
 * \A [\s]* -->
 * [\s]* \Z -->
 
+RegexDictionaryReplacement: #reduce-whitespace
+* [\n]+ --> \n
+* ^ [^\S\n]+ -->
+* [^\S\n]+ $ -->
+* [\s]+ (?= <br> ) -->
+
 ExtensibleFenceReplacement: #literals
 - queue_position: ROOT
 - syntax_type: INLINE
