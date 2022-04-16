@@ -29,6 +29,7 @@ TODO
 """
 
 
+import abc
 import argparse
 import os
 import re
@@ -41,6 +42,14 @@ GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
 
 
+class CommittedMutateException(Exception):
+  pass
+
+
+class UncommittedApplyException(Exception):
+  pass
+
+
 class MissingAttributeException(Exception):
   
   def __init__(self, missing_attribute):
@@ -50,7 +59,92 @@ class MissingAttributeException(Exception):
     return self._missing_attribute
 
 
-class OrdinaryDictionaryReplacement:
+class Replacement(abc.ABC):
+  """
+  Base class for a replacement rule.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  Replacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  ````
+  """
+  
+  def __init__(self, id_):
+    self._is_committed = False
+    self._id = id_
+    self._queue_position_type = None
+    self._queue_reference_replacement = None
+  
+  @property
+  @abc.abstractmethod
+  def attribute_names(self):
+    raise NotImplementedError
+  
+  @property
+  def id_(self):
+    return self._id
+  
+  @property
+  def queue_position_type(self):
+    return self._queue_position_type
+  
+  @queue_position_type.setter
+  def queue_position_type(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `queue_position_type` after `commit()`'
+      )
+    self._queue_position_type = value
+  
+  @property
+  def queue_reference_replacement(self):
+    return self._queue_reference_replacement
+  
+  @queue_reference_replacement.setter
+  def queue_reference_replacement(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `queue_reference_replacement` after `commit()`'
+      )
+    self._queue_reference_replacement = value
+  
+  def commit(self):
+    self._validate_mandatory_attributes()
+    self._set_apply_method_variables()
+    self._is_committed = True
+  
+  def apply(self, string):
+    if not self._is_committed:
+      raise UncommittedApplyException(
+        'error: cannot call `apply(string)` before `commit()`'
+      )
+    return self._apply(string)
+  
+  @abc.abstractmethod
+  def _validate_mandatory_attributes(self):
+    """
+    Ensure all mandatory attributes have been set.
+    """
+    raise NotImplementedError
+  
+  @abc.abstractmethod
+  def _set_apply_method_variables(self):
+    """
+    Set variables used in `self._apply(string)`.
+    """
+    raise NotImplementedError
+  
+  @abc.abstractmethod
+  def _apply(self, string):
+    """
+    Apply the defined replacement to a string.
+    """
+    raise NotImplementedError
+
+
+class OrdinaryDictionaryReplacement(Replacement):
   """
   A replacement rule for a dictionary of ordinary substitutions.
   
@@ -66,40 +160,28 @@ class OrdinaryDictionaryReplacement:
   ````
   """
   
-  ATTRIBUTE_NAMES = [
-    'queue_position',
-  ]
-  
   def __init__(self, id_):
-    self._id = id_
-    self._queue_position_type = None
-    self._queue_reference_replacement = None
+    super().__init__(id_)
     self._substitute_from_pattern = {}
     self._regex_pattern = None
     self._substitute_function = None
   
-  def get_id(self):
-    return self._id
-  
-  def set_queue_position(
-    self,
-    queue_position_type,
-    queue_reference_replacement,
-  ):
-    self._queue_position_type = queue_position_type
-    self._queue_reference_replacement = queue_reference_replacement
-  
-  def get_queue_position_type(self):
-    return self._queue_position_type
-  
-  def get_queue_reference_replacement(self):
-    return self._queue_reference_replacement
+  def attribute_names(self):
+    return (
+      'queue_position',
+    )
   
   def add_substitution(self, pattern, substitute):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot `add_substitution(...)` after `commit()`'
+      )
     self._substitute_from_pattern[pattern] = substitute
   
-  def validate(self):
-    
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
     self._regex_pattern = \
             OrdinaryDictionaryReplacement.build_regex_pattern(
               self._substitute_from_pattern,
@@ -108,6 +190,13 @@ class OrdinaryDictionaryReplacement:
             OrdinaryDictionaryReplacement.build_substitute_function(
               self._substitute_from_pattern,
             )
+  
+  def _apply(self, string):
+    
+    if self._regex_pattern != '':
+      string = re.sub(self._regex_pattern, self._substitute_function, string)
+    
+    return string
   
   @staticmethod
   def build_regex_pattern(substitute_from_pattern):
@@ -122,16 +211,9 @@ class OrdinaryDictionaryReplacement:
       return substitute
     
     return substitute_function
-  
-  def apply(self, string):
-    
-    if self._regex_pattern != '':
-      string = re.sub(self._regex_pattern, self._substitute_function, string)
-    
-    return string
 
 
-class ExtensibleFenceReplacement:
+class ExtensibleFenceReplacement(Replacement):
   """
   A generalised extensible-fence-style replacement rule.
   
@@ -154,22 +236,8 @@ class ExtensibleFenceReplacement:
   ````
   """
   
-  ATTRIBUTE_NAMES = [
-    'queue_position',
-    'syntax_type',
-    'allowed_flags',
-    'opening_delimiter',
-    'extensible_delimiter',
-    'attribute_specifications',
-    'content_replacements',
-    'closing_delimiter',
-    'tag_name',
-  ]
-  
   def __init__(self, id_):
-    self._id = id_
-    self._queue_position_type = None
-    self._queue_reference_replacement = None
+    super().__init__(id_)
     self._syntax_type_is_block = None
     self._flag_setting_from_letter = {}
     self._has_flags = False
@@ -183,61 +251,138 @@ class ExtensibleFenceReplacement:
     self._regex_pattern = None
     self._substitute_function = None
   
-  def get_id(self):
-    return self._id
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'syntax_type',
+      'allowed_flags',
+      'opening_delimiter',
+      'extensible_delimiter',
+      'attribute_specifications',
+      'content_replacements',
+      'closing_delimiter',
+      'tag_name',
+    )
   
-  def set_queue_position(
-    self,
-    queue_position_type,
-    queue_reference_replacement,
-  ):
-    self._queue_position_type = queue_position_type
-    self._queue_reference_replacement = queue_reference_replacement
+  @property
+  def syntax_type_is_block(self):
+    return self._syntax_type_is_block
   
-  def get_queue_position_type(self):
-    return self._queue_position_type
+  @syntax_type_is_block.setter
+  def syntax_type_is_block(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `syntax_type_is_block` after `commit()`'
+      )
+    self._syntax_type_is_block = value
   
-  def get_queue_reference_replacement(self):
-    return self._queue_reference_replacement
+  @property
+  def flag_setting_from_letter(self):
+    return self._flag_setting_from_letter
   
-  def set_syntax_type(self, syntax_type_is_block):
-    self._syntax_type_is_block = syntax_type_is_block
+  @flag_setting_from_letter.setter
+  def flag_setting_from_letter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `flag_setting_from_letter` after `commit()`'
+      )
+    self._flag_setting_from_letter = value
   
-  def set_allowed_flags(self, flag_setting_from_letter, has_flags):
-    self._flag_setting_from_letter = flag_setting_from_letter
-    self._has_flags = has_flags
+  @property
+  def opening_delimiter(self):
+    return self._opening_delimiter
   
-  def set_opening_delimiter(self, opening_delimiter):
-    self._opening_delimiter = opening_delimiter
+  @opening_delimiter.setter
+  def opening_delimiter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `flag_setting_from_letter` after `commit()`'
+      )
+    self._opening_delimiter = value
   
-  def set_extensible_delimiter(
-    self,
-    extensible_delimiter_character,
-    extensible_delimiter_min_count,
-  ):
-    self._extensible_delimiter_character = extensible_delimiter_character
-    self._extensible_delimiter_min_count = extensible_delimiter_min_count
+  @property
+  def extensible_delimiter_character(self):
+    return self._extensible_delimiter_character
   
-  def set_attribute_specifications(self, attribute_specifications):
-    self._attribute_specifications = attribute_specifications
+  @extensible_delimiter_character.setter
+  def extensible_delimiter_character(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `extensible_delimiter_character` after `commit()`'
+      )
+    self._extensible_delimiter_character = value
   
-  def set_content_replacements(self, content_replacement_list):
-    self._content_replacement_list = content_replacement_list
+  @property
+  def extensible_delimiter_min_count(self):
+    return self._extensible_delimiter_min_count
   
-  def set_closing_delimiter(self, closing_delimiter):
-    self._closing_delimiter = closing_delimiter
+  @extensible_delimiter_min_count.setter
+  def extensible_delimiter_min_count(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `extensible_delimiter_min_count` after `commit()`'
+      )
+    self._extensible_delimiter_min_count = value
   
-  def set_tag_name(self, tag_name):
-    self._tag_name = tag_name
+  @property
+  def attribute_specifications(self):
+    return self._attribute_specifications
   
-  def validate(self):
+  @attribute_specifications.setter
+  def attribute_specifications(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `attribute_specifications` after `commit()`'
+      )
+    self._attribute_specifications = value
+  
+  @property
+  def content_replacement_list(self):
+    return self._content_replacement_list
+  
+  @content_replacement_list.setter
+  def content_replacement_list(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `content_replacement_list` after `commit()`'
+      )
+    self._content_replacement_list = value
+  
+  @property
+  def closing_delimiter(self):
+    return self._closing_delimiter
+  
+  @closing_delimiter.setter
+  def closing_delimiter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `closing_delimiter` after `commit()`'
+      )
+    self._closing_delimiter = value
+  
+  @property
+  def tag_name(self):
+    return self._tag_name
+  
+  @tag_name.setter
+  def tag_name(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `tag_name` after `commit()`'
+      )
+    self._tag_name = value
+  
+  def _validate_mandatory_attributes(self):
     
     if self._syntax_type_is_block is None:
       raise MissingAttributeException('syntax_type')
     
     if self._extensible_delimiter_character is None:
       raise MissingAttributeException('extensible_delimiter')
+  
+  def _set_apply_method_variables(self):
     
+    self._has_flags = len(self._flag_setting_from_letter) > 0
     self._regex_pattern = \
             ExtensibleFenceReplacement.build_regex_pattern(
               self._syntax_type_is_block,
@@ -257,7 +402,7 @@ class ExtensibleFenceReplacement:
               self._tag_name,
             )
   
-  def apply(self, string):
+  def _apply(self, string):
     return re.sub(
       self._regex_pattern,
       self._substitute_function,
@@ -341,7 +486,7 @@ class ExtensibleFenceReplacement:
       
       content = match.group('content')
       for replacement in self._content_replacement_list:
-        replacement_id = replacement.get_id()
+        replacement_id = replacement.id_
         if replacement_id == 'escape-html':
           if 'KEEP_HTML_UNESCAPED' in enabled_flag_settings:
             continue
@@ -563,7 +708,7 @@ class ReplacementMaster:
   ):
     
     attribute_name = attribute_declaration_match.group('attribute_name')
-    if attribute_name not in replacement.ATTRIBUTE_NAMES:
+    if attribute_name not in replacement.attribute_names():
       ReplacementMaster.print_error(
         f'unrecognised attribute `{attribute_name}` for `{class_name}`',
         source_file,
@@ -711,9 +856,7 @@ class ReplacementMaster:
       flag_setting = allowed_flag_match.group('flag_setting')
       flag_setting_from_letter[flag_letter] = flag_setting
     
-    has_flags = len(flag_setting_from_letter) > 0
-    
-    replacement.set_allowed_flags(flag_setting_from_letter, has_flags)
+    replacement.flag_setting_from_letter = flag_setting_from_letter
   
   @staticmethod
   def compute_attribute_specifications_match(attribute_value):
@@ -764,11 +907,11 @@ class ReplacementMaster:
       return
     
     if attribute_specifications_match.group('empty_keyword') is not None:
-      replacement.set_attribute_specifications('')
+      replacement.attribute_specifications = ''
     
     attribute_specifications = \
             attribute_specifications_match.group('attribute_specifications')
-    replacement.set_attribute_specifications(attribute_specifications)
+    replacement.attribute_specifications = attribute_specifications
   
   @staticmethod
   def compute_closing_delimiter_match(attribute_value):
@@ -814,7 +957,7 @@ class ReplacementMaster:
       return
     
     closing_delimiter = closing_delimiter_match.group('closing_delimiter')
-    replacement.set_closing_delimiter(closing_delimiter)
+    replacement.closing_delimiter = closing_delimiter
   
   @staticmethod
   def compute_content_replacement_matches(attribute_value):
@@ -873,7 +1016,7 @@ class ReplacementMaster:
         return
       
       content_replacement_id = content_replacement_match.group('id_')
-      if content_replacement_id == replacement.get_id():
+      if content_replacement_id == replacement.id_:
         content_replacement = replacement
       else:
         try:
@@ -890,7 +1033,7 @@ class ReplacementMaster:
       
       content_replacement_list.append(content_replacement)
     
-    replacement.set_content_replacements(content_replacement_list)
+    replacement.content_replacements = content_replacement_list
   
   @staticmethod
   def compute_extensible_delimiter_match(attribute_value):
@@ -942,10 +1085,8 @@ class ReplacementMaster:
             extensible_delimiter_match.group('extensible_delimiter')
     extensible_delimiter_min_count = len(extensible_delimiter)
     
-    replacement.set_extensible_delimiter(
-      extensible_delimiter_character,
-      extensible_delimiter_min_count,
-    )
+    replacement.extensible_delimiter_character = extensible_delimiter_character
+    replacement.extensible_delimiter_min_count = extensible_delimiter_min_count
   
   @staticmethod
   def compute_opening_delimiter_match(attribute_value):
@@ -991,7 +1132,7 @@ class ReplacementMaster:
       return
     
     opening_delimiter = opening_delimiter_match.group('opening_delimiter')
-    replacement.set_opening_delimiter(opening_delimiter)
+    replacement.opening_delimiter = opening_delimiter
   
   @staticmethod
   def compute_queue_position_match(attribute_value):
@@ -1049,7 +1190,8 @@ class ReplacementMaster:
           line_number,
         )
         sys.exit(GENERIC_ERROR_EXIT_CODE)
-      replacement.set_queue_position('ROOT', None)
+      replacement.queue_position_type = 'ROOT'
+      replacement.queue_reference_replacement = None
       return
     
     queue_position_type = \
@@ -1057,7 +1199,7 @@ class ReplacementMaster:
     queue_reference_id = \
             queue_position_match.group('queue_reference_id')
     
-    if queue_reference_id == replacement.get_id():
+    if queue_reference_id == replacement.id_:
       ReplacementMaster.print_error(
         f'self-referential `queue_position`',
         source_file,
@@ -1078,10 +1220,8 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    replacement.set_queue_position(
-      queue_position_type,
-      queue_reference_replacement,
-    )
+    replacement.queue_position_type = queue_position_type
+    replacement.queue_reference_replacement = queue_reference_replacement
   
   @staticmethod
   def compute_syntax_type_match(attribute_value):
@@ -1122,7 +1262,7 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     syntax_type = syntax_type_match.group('syntax_type')
-    replacement.set_syntax_type(syntax_type == 'BLOCK')
+    replacement.syntax_type_is_block = syntax_type == 'BLOCK'
   
   @staticmethod
   def compute_tag_name_match(attribute_value):
@@ -1167,7 +1307,7 @@ class ReplacementMaster:
       return
     
     tag_name = tag_name_match.group('tag_name')
-    replacement.set_tag_name(tag_name)
+    replacement.tag_name = tag_name
   
   @staticmethod
   def compute_substitution_match(substitution):
@@ -1390,7 +1530,7 @@ class ReplacementMaster:
   def commit(self, class_name, replacement, source_file, line_number):
     
     try:
-      replacement.validate()
+      replacement.commit()
     except MissingAttributeException as exception:
       missing_attribute = exception.get_missing_attribute()
       ReplacementMaster.print_error(
@@ -1400,18 +1540,17 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    id_ = replacement.get_id()
+    id_ = replacement.id_
     self._replacement_from_id[id_] = replacement
     
-    queue_position_type = replacement.get_queue_position_type()
+    queue_position_type = replacement.queue_position_type
     if queue_position_type is None:
       pass
     elif queue_position_type == 'ROOT':
       self._root_replacement_id = id_
       self._replacement_queue.append(replacement)
     else:
-      queue_reference_replacement = \
-              replacement.get_queue_reference_replacement()
+      queue_reference_replacement = replacement.queue_reference_replacement
       queue_reference_index = \
               self._replacement_queue.index(queue_reference_replacement)
       if queue_position_type == 'BEFORE':
