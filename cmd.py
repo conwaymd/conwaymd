@@ -216,6 +216,57 @@ class OrdinaryDictionaryReplacement(Replacement):
     return substitute_function
 
 
+class RegexDictionaryReplacement(Replacement):
+  """
+  A replacement rule for a dictionary of regex substitutions.
+  
+  Substitutions are applied in order.
+  Python regex syntax is used,
+  with `flags=re.ASCII | re.MULTILINE | re.VERBOSE`.
+  
+  CMD replacement rule syntax:
+  ````
+  RegexDictionaryReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  * «pattern» --> «substitute»
+  [...]
+  ````
+  """
+  
+  def __init__(self, id_):
+    super().__init__(id_)
+    self._substitute_from_pattern = {}
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+    )
+  
+  def add_substitution(self, pattern, substitute):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot call `add_substitution(...)` after `commit()`'
+      )
+    self._substitute_from_pattern[pattern] = substitute
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    pass
+  
+  def _apply(self, string):
+    for pattern, substitute in self._substitute_from_pattern.items():
+      string = \
+              re.sub(
+                pattern,
+                substitute,
+                string,
+                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              )
+    return string
+
+
 class ExtensibleFenceReplacement(Replacement):
   """
   A generalised extensible-fence-style replacement rule.
@@ -698,6 +749,8 @@ class ReplacementMaster:
       replacement = OrdinaryDictionaryReplacement(id_)
     elif class_name == 'ExtensibleFenceReplacement':
       replacement = ExtensibleFenceReplacement(id_)
+    elif class_name == 'RegexDictionaryReplacement':
+      replacement = RegexDictionaryReplacement(id_)
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
