@@ -1409,7 +1409,7 @@ class ReplacementMaster:
         [\s]*
           {re.escape(longest_substitution_delimiter)}
         [\s]*
-          (?P<substitute> [\S][\s\S]*? )
+          (?P<substitute> [\s\S]*? )
         [\s]*
       ''',
       substitution,
