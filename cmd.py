@@ -2116,7 +2116,7 @@ def extract_rules_and_content(cmd):
               (?P<main_content> [\s\S]* )
             ''',
             cmd,
-            flags=re.MULTILINE | re.VERBOSE,
+            flags=re.ASCII | re.MULTILINE | re.VERBOSE,
           )
   
   replacement_rules = match.group('replacement_rules')
