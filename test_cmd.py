@@ -67,6 +67,10 @@ class TestCmd(unittest.TestCase):
       ),
       '\uE069\uE420\uE000\uF8FE\uE064'
     )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0x18FF ** 50 + 0x89 * 0x18FF),
+      '\uE001' + 48 * '\uE000' + '\uE089' + '\uE000'
+    )
   
   def test_ordinary_dictionary_replacement_build_regex_pattern(self):
     
