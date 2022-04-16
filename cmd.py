@@ -60,20 +60,20 @@ class OrdinaryDictionaryReplacement:
   CMD replacement rule syntax:
   ````
   OrdinaryDictionaryReplacement: #«id»
-  - replacement_order: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   * «pattern» --> «substitute»
   [...]
   ````
   """
   
   ATTRIBUTE_NAMES = [
-    'replacement_order',
+    'queue_position',
   ]
   
   def __init__(self, id_):
     self._id = id_
-    self._replacement_order_type = None
-    self._replacement_order_reference_id = None
+    self._queue_position_type = None
+    self._queue_reference_replacement = None
     self._substitute_from_pattern = {}
     self._regex_pattern = None
     self._substitute_function = None
@@ -81,19 +81,19 @@ class OrdinaryDictionaryReplacement:
   def get_id(self):
     return self._id
   
-  def set_replacement_order(
+  def set_queue_position(
     self,
-    replacement_order_type,
-    replacement_order_reference_id,
+    queue_position_type,
+    queue_reference_replacement,
   ):
-    self._replacement_order_type = replacement_order_type
-    self._replacement_order_reference_id = replacement_order_reference_id
+    self._queue_position_type = queue_position_type
+    self._queue_reference_replacement = queue_reference_replacement
   
-  def get_replacement_order_type(self):
-    return self._replacement_order_type
+  def get_queue_position_type(self):
+    return self._queue_position_type
   
-  def get_replacement_order_reference_id(self):
-    return self._replacement_order_reference_id
+  def get_queue_reference_replacement(self):
+    return self._queue_reference_replacement
   
   def add_substitution(self, pattern, substitute):
     self._substitute_from_pattern[pattern] = substitute
@@ -139,7 +139,7 @@ class ExtensibleFenceReplacement:
   CMD replacement rule syntax:
   ````
   ExtensibleFenceReplacement: #«id»
-  - replacement_order: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - syntax_type: BLOCK | INLINE (mandatory)
   - allowed_flags:
       (def) NONE
@@ -155,7 +155,7 @@ class ExtensibleFenceReplacement:
   """
   
   ATTRIBUTE_NAMES = [
-    'replacement_order',
+    'queue_position',
     'syntax_type',
     'allowed_flags',
     'opening_delimiter',
@@ -168,8 +168,8 @@ class ExtensibleFenceReplacement:
   
   def __init__(self, id_):
     self._id = id_
-    self._replacement_order_type = None
-    self._replacement_order_reference_id = None
+    self._queue_position_type = None
+    self._queue_reference_replacement = None
     self._syntax_type_is_block = None
     self._flag_setting_from_letter = {}
     self._has_flags = False
@@ -186,19 +186,19 @@ class ExtensibleFenceReplacement:
   def get_id(self):
     return self._id
   
-  def set_replacement_order(
+  def set_queue_position(
     self,
-    replacement_order_type,
-    replacement_order_reference_id,
+    queue_position_type,
+    queue_reference_replacement,
   ):
-    self._replacement_order_type = replacement_order_type
-    self._replacement_order_reference_id = replacement_order_reference_id
+    self._queue_position_type = queue_position_type
+    self._queue_reference_replacement = queue_reference_replacement
   
-  def get_replacement_order_type(self):
-    return self._replacement_order_type
+  def get_queue_position_type(self):
+    return self._queue_position_type
   
-  def get_replacement_order_reference_id(self):
-    return self._replacement_order_reference_id
+  def get_queue_reference_replacement(self):
+    return self._queue_reference_replacement
   
   def set_syntax_type(self, syntax_type_is_block):
     self._syntax_type_is_block = syntax_type_is_block
@@ -994,7 +994,7 @@ class ReplacementMaster:
     replacement.set_opening_delimiter(opening_delimiter)
   
   @staticmethod
-  def compute_replacement_order_match(attribute_value):
+  def compute_queue_position_match(attribute_value):
     return re.fullmatch(
       r'''
         [\s]*
@@ -1003,9 +1003,9 @@ class ReplacementMaster:
             |
           (?P<root_keyword> ROOT )
             |
-          (?P<replacement_order_type> BEFORE | AFTER )
+          (?P<queue_position_type> BEFORE | AFTER )
           [ ]
-          [#] (?P<replacement_order_reference_id> [a-z-]+ )
+          [#] (?P<queue_reference_id> [a-z-]+ )
             |
           (?P<invalid_value> [\s\S]*? )
         )
@@ -1015,8 +1015,8 @@ class ReplacementMaster:
       flags=re.ASCII | re.VERBOSE,
     )
   
-  @staticmethod
-  def stage_replacement_order(
+  def stage_queue_position(
+    self,
     replacement,
     attribute_value,
     source_file,
@@ -1024,33 +1024,63 @@ class ReplacementMaster:
     line_number,
   ):
     
-    replacement_order_match = \
-            ReplacementMaster.compute_replacement_order_match(attribute_value)
+    queue_position_match = \
+            ReplacementMaster.compute_queue_position_match(attribute_value)
     
-    invalid_value = replacement_order_match.group('invalid_value')
+    invalid_value = queue_position_match.group('invalid_value')
     if invalid_value is not None:
       ReplacementMaster.print_error(
-        f'invalid value `{invalid_value}` for attribute `replacement_order`',
+        f'invalid value `{invalid_value}` for attribute `queue_position`',
         source_file,
         line_number_range_start,
         line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    if replacement_order_match.group('none_keyword') is not None:
+    if queue_position_match.group('none_keyword') is not None:
       return
     
-    if replacement_order_match.group('root_keyword') is not None:
-      replacement.set_replacement_order('ROOT', None)
+    if queue_position_match.group('root_keyword') is not None:
+      if self._root_replacement_id is not None:
+        ReplacementMaster.print_error(
+          f'root replacement already declared (#{self._root_replacement_id})',
+          source_file,
+          line_number_range_start,
+          line_number,
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      replacement.set_queue_position('ROOT', None)
       return
     
-    replacement_order_type = \
-            replacement_order_match.group('replacement_order_type')
-    replacement_order_reference_id = \
-            replacement_order_match.group('replacement_order_reference_id')
-    replacement.set_replacement_order(
-      replacement_order_type,
-      replacement_order_reference_id,
+    queue_position_type = \
+            queue_position_match.group('queue_position_type')
+    queue_reference_id = \
+            queue_position_match.group('queue_reference_id')
+    
+    if queue_reference_id == replacement.get_id():
+      ReplacementMaster.print_error(
+        f'self-referential `queue_position`',
+        source_file,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    try:
+      queue_reference_replacement = \
+              self._replacement_from_id[queue_reference_id]
+    except KeyError:
+      ReplacementMaster.print_error(
+        f'undefined replacement `#{queue_reference_id}`',
+        source_file,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    replacement.set_queue_position(
+      queue_position_type,
+      queue_reference_replacement,
     )
   
   @staticmethod
@@ -1329,8 +1359,8 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
-      elif attribute_name == 'replacement_order':
-        ReplacementMaster.stage_replacement_order(
+      elif attribute_name == 'queue_position':
+        self.stage_queue_position(
           replacement,
           attribute_value,
           source_file,
@@ -1373,27 +1403,21 @@ class ReplacementMaster:
     id_ = replacement.get_id()
     self._replacement_from_id[id_] = replacement
     
-    replacement_order_type = replacement.get_replacement_order_type()
-    if replacement_order_type is None:
+    queue_position_type = replacement.get_queue_position_type()
+    if queue_position_type is None:
       pass
-    elif replacement_order_type == 'ROOT':
-      if self._root_replacement_id is not None:
-        ReplacementMaster.print_error(
-          f'root replacement already declared (#{self._root_replacement_id})',
-          source_file,
-          line_number,
-        )
-        sys.exit(GENERIC_ERROR_EXIT_CODE)
+    elif queue_position_type == 'ROOT':
       self._root_replacement_id = id_
       self._replacement_queue.append(replacement)
     else:
-      reference_id = replacement.get_replacement_order_reference_id()
-      reference_replacement = self._replacement_from_id[reference_id]
-      reference_index = self._replacement_queue.index(reference_replacement)
-      if replacement_order_type == 'BEFORE':
-        insertion_index = reference_index
-      elif replacement_order_type == 'AFTER':
-        insertion_index = reference_index + 1
+      queue_reference_replacement = \
+              replacement.get_queue_reference_replacement()
+      queue_reference_index = \
+              self._replacement_queue.index(queue_reference_replacement)
+      if queue_position_type == 'BEFORE':
+        insertion_index = queue_reference_index
+      elif queue_position_type == 'AFTER':
+        insertion_index = queue_reference_index + 1
       else:
         insertion_index = None
       self._replacement_queue.insert(insertion_index, replacement)
@@ -1886,7 +1910,7 @@ OrdinaryDictionaryReplacement: #escape-html
 * > --> &gt;
 
 ExtensibleFenceReplacement: #literals
-- replacement_order: ROOT
+- queue_position: ROOT
 - syntax_type: INLINE
 - allowed_flags:
     u=KEEP_HTML_UNESCAPED
