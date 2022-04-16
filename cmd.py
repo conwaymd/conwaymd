@@ -80,9 +80,7 @@ class Replacement(abc.ABC):
   @property
   @abc.abstractmethod
   def attribute_names(self):
-    return (
-      'queue_position',
-    )
+    raise NotImplementedError
   
   @property
   def id_(self):
@@ -129,21 +127,21 @@ class Replacement(abc.ABC):
     """
     Ensure all mandatory attributes have been set.
     """
-    pass
+    raise NotImplementedError
   
   @abc.abstractmethod
   def _set_apply_method_variables(self):
     """
     Set variables used in `self._apply(string)`.
     """
-    pass
+    raise NotImplementedError
   
   @abc.abstractmethod
   def _apply(self, string):
     """
     Apply the defined replacement to a string.
     """
-    pass
+    raise NotImplementedError
 
 
 class OrdinaryDictionaryReplacement(Replacement):
