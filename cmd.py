@@ -588,22 +588,22 @@ class ExtensibleFenceReplacement(Replacement):
 
 CMD_REPLACEMENT_SYNTAX_HELP = \
 '''\
-In CMD replacement rule syntax, a line must be either:
-(1) whitespace-only,
-(2) a comment (beginning with `#`),
-(3) a rules inclusion (of the form `< «included_file_name»`),
-(4) the start of a class declaration (of the form `«ClassName»: #«id»`),
-(5) the start of an attribute declaration (beginning with `- `),
-(6) the start of a substitution declaration (beginning with `* `), or
+In CMD replacement rule syntax, a line must be one of the following:
+(1) whitespace-only;
+(2) a comment (beginning with `#`);
+(3) a rules inclusion (`< «included_file_name»`);
+(4) a class declaration (`«ClassName»: #«id»`);
+(5) the start of an attribute declaration (`- «name»: «value»`);
+(6) the start of a substitution declaration (`* «pattern» --> «substitute»`);
 (7) a continuation (beginning with whitespace).
-- If «included_file_name» begins with a slash then
+- Note for (3): if «included_file_name» begins with a slash,
   it is parsed relative to the working directory;
   otherwise it is parsed relative to the current file.
-- An attribute declaration is of the form `- «name»: «value»`.
-- A substitution declaration is of the form `* «pattern» --> «substitute»`,
-  where the number of hyphens in the delimiter `-->`
-  may be arbitrarily increased if «pattern» happens to contain
+- Note for (6): the number of hyphens in the delimiter `-->`
+  may be arbitrarily increased should «pattern» contain
   a run of hyphens followed by a closing angle-bracket.
+- Note for (7): continuations are only allowed for attribute declarations
+  and for substitution declarations.
 '''
 
 
@@ -613,22 +613,8 @@ class ReplacementMaster:
   
   ## `legislate` ##
   
-  Parse CMD replacement rule syntax. A line must be either:
-  (1) whitespace-only,
-  (2) a comment (beginning with `#`),
-  (3) a rules inclusion (of the form `< «included_file_name»`),
-  (4) the start of a class declaration (of the form `«ClassName»: #«id»`),
-  (5) the start of an attribute declaration (beginning with `- `),
-  (6) the start of a substitution declaration (beginning with `* `), or
-  (7) a continuation (beginning with whitespace).
-  - If «included_file_name» begins with a slash then
-    it is parsed relative to the working directory;
-    otherwise it is parsed relative to the current file.
-  - An attribute declaration is of the form `- «name»: «value»`.
-  - A substitution declaration is of the form `* «pattern» --> «substitute»`,
-    where the number of hyphens in the delimiter `-->`
-    may be arbitrarily increased if «pattern» happens to contain
-    a run of hyphens followed by a closing angle-bracket.
+  Parses CMD replacement rule syntax.
+  See the constant `CMD_REPLACEMENT_SYNTAX_HELP` above.
   
   Terminology:
   - Class declarations are _committed_.
