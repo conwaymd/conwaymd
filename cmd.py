@@ -113,8 +113,8 @@ class Replacement(abc.ABC):
     self._queue_reference_replacement = value
   
   def commit(self):
-    self.__validate_mandatory_attributes()
-    self.__set_apply_method_variables()
+    self._validate_mandatory_attributes()
+    self._set_apply_method_variables()
     self._is_committed = True
   
   def apply(self, string):
@@ -122,24 +122,24 @@ class Replacement(abc.ABC):
       raise UncommittedApplyException(
         'error: cannot call apply(string) before commit()'
       )
-    return self.__apply(string)
+    return self._apply(string)
   
   @abc.abstractmethod
-  def __validate_mandatory_attributes(self):
+  def _validate_mandatory_attributes(self):
     """
     Ensure all mandatory attributes have been set.
     """
     pass
   
   @abc.abstractmethod
-  def __set_apply_method_variables(self):
+  def _set_apply_method_variables(self):
     """
-    Set variables used in `self.__apply(string)`.
+    Set variables used in `self._apply(string)`.
     """
     pass
   
   @abc.abstractmethod
-  def __apply(self, string):
+  def _apply(self, string):
     """
     Apply the defined replacement to a string.
     """
@@ -180,10 +180,10 @@ class OrdinaryDictionaryReplacement(Replacement):
       )
     self._substitute_from_pattern[pattern] = substitute
   
-  def __validate_mandatory_attributes(self):
+  def _validate_mandatory_attributes(self):
     pass
   
-  def __set_apply_method_variables(self):
+  def _set_apply_method_variables(self):
     self._regex_pattern = \
             OrdinaryDictionaryReplacement.build_regex_pattern(
               self._substitute_from_pattern,
@@ -193,7 +193,7 @@ class OrdinaryDictionaryReplacement(Replacement):
               self._substitute_from_pattern,
             )
   
-  def __apply(self, string):
+  def _apply(self, string):
     
     if self._regex_pattern != '':
       string = re.sub(self._regex_pattern, self._substitute_function, string)
