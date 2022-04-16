@@ -2181,7 +2181,7 @@ def main():
     generate_html_file(cmd_file_name_argument, uses_command_line_argument=True)
     return
   else:
-    for path, _, file_names in os.walk('./'):
+    for path, _, file_names in os.walk(os.curdir):
       for file_name in file_names:
         if is_cmd_file(file_name):
           cmd_file_name = os.path.join(path, file_name)
