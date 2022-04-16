@@ -112,6 +112,18 @@ class TestCmd(unittest.TestCase):
  4 spaces + 1 space (this line and above)
 '''
     )
+    self.assertEqual(
+      cmd.de_indent(
+        '''
+\t\t \t\t\t\t\t\t And,
+\t\t \t\t\t\t\t\tWhitespace before closing delimiter:
+        '''
+      ),
+'''
+ And,
+Whitespace before closing delimiter:
+'''
+    )
   
   def test_build_attributes_sequence(self):
     self.assertEqual(

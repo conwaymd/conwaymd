@@ -1880,12 +1880,24 @@ def de_indent(string):
   De-indent a string.
   
   Empty lines do not count towards the longest common indentation.
+  Whitespace-only lines do count towards the longest common indentation,
+  except for the last line, which, if whitespace-only,
+  will have its whitespace erased.
   
-  Unlike `textwrap.dedent`, this method will not perform
-  blanket erasure of whitespace on whitespace-only lines.
-  Whitespace beyond the longest common indentation is preserved.
+  In contrast, `textwrap.dedent` will perform blank erasure
+  of whitespace on all whitespace-only lines,
+  even those lines which are not the last line.
   """
   
+  string = \
+          re.sub(
+            r'''
+              ^ [^\S\n]+ \Z
+            ''',
+            '',
+            string,
+            flags=re.ASCII | re.MULTILINE | re.VERBOSE
+          )
   indentations = \
           re.findall(
             r'''
