@@ -391,6 +391,11 @@ BEFORE{ <`` Literal & < > ``> }AFTER
       // etc. etc.
     }
   ```
+  ````{#display-code-1 .class-2 l=en lang=en-AU .class-3}
+    :(
+    u<``<strong>LITERALS PREVAIL OVER DISPLAY CODE</strong>``>
+        <```<``(unless restrained by an outer literal)``>```>
+  ````
 '''
         ################################################################
         # END CMD
@@ -421,6 +426,10 @@ and even whitespace before a break element:<br>
 {
   // etc. etc.
 }
+</code></pre>
+<pre id="display-code-1" class="class-2 class-3" lang="en-AU"><code>:(
+<strong>LITERALS PREVAIL OVER DISPLAY CODE</strong>
+    &lt;``(unless restrained by an outer literal)``&gt;
 </code></pre>
 '''
       ################################################################
