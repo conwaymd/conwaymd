@@ -24,7 +24,7 @@ class TestCmd(unittest.TestCase):
     ]
     placeholders = [
       placeholder_master.protect(
-        placeholder_master.protect_marker_occurrences(string)
+        placeholder_master.replace_marker_occurrences(string)
       )
         for string in strings
     ]

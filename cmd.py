@@ -76,8 +76,9 @@ class PlaceholderMaster:
   and «encoded_counter» is base-6399 `U+E000` through `U+F8FE`,
   incrementing every time a new string is protected.
   
-  The very first call to PlaceholderMaster should be to
-  protect occurrences of «marker» in the text with a placeholder,
+  The very first call to PlaceholderMaster should be to the
+  `replace_marker_occurrences(...)` method;
+  this replaces occurrences of «marker» themselves with a placeholder,
   lest those occurrences of «marker» be confounding.
   The very last call to PlaceholderMaster should be to unprotect
   the text (restoring the strings were protected with a placeholder).
@@ -124,7 +125,7 @@ class PlaceholderMaster:
         f'which is greater than the current counter ({self._counter})\n\n'
         'Possible causes:\n'
         '- Confounding occurrences of «marker» have not been removed '
-          'by calling protect_marker_occurrences(...)\n'
+          'by calling replace_marker_occurrences(...)\n'
         '- A replacement rule alters or generates strings of the form '
           '`«marker»«encoded_counter»«marker»`'
       )
@@ -136,9 +137,14 @@ class PlaceholderMaster:
     self._placeholder_from_string = {}
     self._marker_placeholder = self.protect(PlaceholderMaster._MARKER)
   
-  def protect_marker_occurrences(self, string):
+  def replace_marker_occurrences(self, string):
     """
-    Ensure that occurrences of «marker» will not be confounding.
+    Replace occurrences of «marker» with a placeholder.
+    
+    The intent here is to ensure that occurrences of «marker»
+    will not be confounding by the time `unprotect(...)` is called.
+    It just so happens that the act of replacing occurrences
+    of «marker» is equivalent to protecting them with a placeholder.
     """
     
     return re.sub(PlaceholderMaster._MARKER, self._marker_placeholder, string)
@@ -313,11 +319,11 @@ class Replacement(abc.ABC):
 
 class PlaceholderMarkerReplacement(Replacement):
   """
-  A replacement rule replacing the placeholder marker with a placeholder.
+  A rule for replacing the placeholder marker with a placeholder.
   
-  To be used before PlaceholderProtectionReplacement,
-  see class PlaceholderMaster (especially `protect_marker_occurrences`).
   Ensures that occurrences of «marker» will not be confounding.
+  To be used before PlaceholderProtectionReplacement.
+  See class PlaceholderMaster, especially `replace_marker_occurrences`.
   """
   
   def __init__(self, id_, replacement_master):
@@ -334,7 +340,7 @@ class PlaceholderMarkerReplacement(Replacement):
     pass
   
   def _apply(self, string):
-    return self._replacement_master.protect_marker_occurrences(string)
+    return self._replacement_master.replace_marker_occurrences(string)
 
 
 class DeIndentationReplacement(Replacement):
