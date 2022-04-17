@@ -631,7 +631,7 @@ class ExtensibleFenceReplacement(Replacement):
   def __init__(self, id_):
     super().__init__(id_)
     self._syntax_type_is_block = None
-    self._flag_setting_from_letter = {}
+    self._flag_name_from_letter = {}
     self._has_flags = False
     self._opening_delimiter = ''
     self._extensible_delimiter_character = None
@@ -669,16 +669,16 @@ class ExtensibleFenceReplacement(Replacement):
     self._syntax_type_is_block = value
   
   @property
-  def flag_setting_from_letter(self):
-    return self._flag_setting_from_letter
+  def flag_name_from_letter(self):
+    return self._flag_name_from_letter
   
-  @flag_setting_from_letter.setter
-  def flag_setting_from_letter(self, value):
+  @flag_name_from_letter.setter
+  def flag_name_from_letter(self, value):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot set `flag_setting_from_letter` after `commit()`'
+        'error: cannot set `flag_name_from_letter` after `commit()`'
       )
-    self._flag_setting_from_letter = value
+    self._flag_name_from_letter = value
   
   @property
   def opening_delimiter(self):
@@ -688,7 +688,7 @@ class ExtensibleFenceReplacement(Replacement):
   def opening_delimiter(self, value):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot set `flag_setting_from_letter` after `commit()`'
+        'error: cannot set `flag_name_from_letter` after `commit()`'
       )
     self._opening_delimiter = value
   
@@ -774,11 +774,11 @@ class ExtensibleFenceReplacement(Replacement):
   
   def _set_apply_method_variables(self):
     
-    self._has_flags = len(self._flag_setting_from_letter) > 0
+    self._has_flags = len(self._flag_name_from_letter) > 0
     self._regex_pattern = \
             ExtensibleFenceReplacement.build_regex_pattern(
               self._syntax_type_is_block,
-              self._flag_setting_from_letter,
+              self._flag_name_from_letter,
               self._has_flags,
               self._opening_delimiter,
               self._extensible_delimiter_character,
@@ -788,7 +788,7 @@ class ExtensibleFenceReplacement(Replacement):
             )
     self._substitute_function = \
             self.build_substitute_function(
-              self._flag_setting_from_letter,
+              self._flag_name_from_letter,
               self._has_flags,
               self._attribute_specifications,
               self._tag_name,
@@ -805,7 +805,7 @@ class ExtensibleFenceReplacement(Replacement):
   @staticmethod
   def build_regex_pattern(
     syntax_is_block,
-    flag_setting_from_letter,
+    flag_name_from_letter,
     has_flags,
     opening_delimiter,
     extensible_delimiter_character,
@@ -816,7 +816,7 @@ class ExtensibleFenceReplacement(Replacement):
     
     block_anchoring_regex = \
             build_block_anchoring_regex(syntax_is_block)
-    flags_regex = build_flags_regex(flag_setting_from_letter, has_flags)
+    flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
     opening_delimiter_regex = re.escape(opening_delimiter)
     extensible_delimiter_opening_regex = \
             build_extensible_delimiter_opening_regex(
@@ -849,7 +849,7 @@ class ExtensibleFenceReplacement(Replacement):
   
   def build_substitute_function(
     self,
-    flag_setting_from_letter,
+    flag_name_from_letter,
     has_flags,
     attribute_specifications,
     tag_name,
@@ -857,12 +857,12 @@ class ExtensibleFenceReplacement(Replacement):
     
     def substitute_function(match):
       
-      enabled_flag_settings = set()
+      enabled_flag_names = set()
       if has_flags:
         flags = match.group('flags')
-        for flag_letter, flag_setting in flag_setting_from_letter.items():
+        for flag_letter, flag_name in flag_name_from_letter.items():
           if flag_letter in flags:
-            enabled_flag_settings.add(flag_setting)
+            enabled_flag_names.add(flag_name)
       
       if attribute_specifications is not None:
         matched_attribute_specifications = \
@@ -880,13 +880,13 @@ class ExtensibleFenceReplacement(Replacement):
       for replacement in self._content_replacements:
         replacement_id = replacement.id_
         if replacement_id == 'escape-html':
-          if 'KEEP_HTML_UNESCAPED' in enabled_flag_settings:
+          if 'KEEP_HTML_UNESCAPED' in enabled_flag_names:
             continue
         elif replacement_id == 'de-indent':
-          if 'KEEP_INDENTED' in enabled_flag_settings:
+          if 'KEEP_INDENTED' in enabled_flag_names:
             continue
         elif replacement_id == 'reduce-whitespace':
-          if 'REDUCE_WHITESPACE' not in enabled_flag_settings:
+          if 'REDUCE_WHITESPACE' not in enabled_flag_names:
             continue
         content = replacement.apply(content)
       
@@ -1220,7 +1220,7 @@ class ReplacementMaster:
         [\s]*
         (?:
           (?P<flag_letter> [a-z] ) =
-                  (?P<flag_setting>
+                  (?P<flag_name>
                     KEEP_HTML_UNESCAPED
                       |
                     KEEP_INDENTED
@@ -1246,7 +1246,7 @@ class ReplacementMaster:
     line_number,
   ):
     
-    flag_setting_from_letter = {}
+    flag_name_from_letter = {}
     
     for allowed_flag_match \
     in ReplacementMaster.compute_allowed_flag_matches(attribute_value):
@@ -1275,10 +1275,10 @@ class ReplacementMaster:
         return
       
       flag_letter = allowed_flag_match.group('flag_letter')
-      flag_setting = allowed_flag_match.group('flag_setting')
-      flag_setting_from_letter[flag_letter] = flag_setting
+      flag_name = allowed_flag_match.group('flag_name')
+      flag_name_from_letter[flag_letter] = flag_name
     
-    replacement.flag_setting_from_letter = flag_setting_from_letter
+    replacement.flag_name_from_letter = flag_name_from_letter
   
   @staticmethod
   def compute_attribute_specifications_match(attribute_value):
