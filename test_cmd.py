@@ -22,7 +22,12 @@ class TestCmd(unittest.TestCase):
       'Whoso saith \uE000, even \uF8FF\uE043\uE963\uF8FF, is wrong.',
       'What about \uE069\uE420\uE000\uF8FE\uE064?',
     ]
-    placeholders = [placeholder_master.protect(string) for string in strings]
+    placeholders = [
+      placeholder_master.protect(
+        placeholder_master.protect_marker_occurrences(string)
+      )
+        for string in strings
+    ]
     self.assertEqual(
       ''.join(strings),
       placeholder_master.unprotect(''.join(placeholders))
