@@ -2649,8 +2649,13 @@ ExtensibleFenceReplacement: #literals
     #placeholder-protect
 - closing_delimiter: >
 
-PlaceholderUnprotectionReplacement: #placeholder-unprotect
+ReplacementSequence: #whitespace
 - queue_position: AFTER #literals
+- replacements:
+    #reduce-whitespace
+
+PlaceholderUnprotectionReplacement: #placeholder-unprotect
+- queue_position: AFTER #whitespace
 '''
 
 
