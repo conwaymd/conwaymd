@@ -83,10 +83,9 @@ class PlaceholderMaster:
   The very last call to PlaceholderMaster should be to unprotect
   the text (restoring the strings were protected with a placeholder).
   
-  It is assumed the user will not define replacements rules
-  that alter strings of the form `«marker»«encoded_counter»«marker»`,
-  or generate strings of the form `«marker»«encoded_counter»«marker»`.
-  In fact the user should not be using Private Use Area code points
+  It is assumed the user will not define replacement rules that
+  tamper with strings of the form `«marker»«encoded_counter»«marker»`.
+  Note that the user should not be using Private Use Area code points
   in the first place, see <https://www.w3.org/TR/charmod/#C073>.
   """
   
@@ -126,8 +125,8 @@ class PlaceholderMaster:
         'Possible causes:\n'
         '- Confounding occurrences of «marker» have not been removed '
           'by calling replace_marker_occurrences(...)\n'
-        '- A replacement rule alters or generates strings of the form '
-          '`«marker»«encoded_counter»«marker»`'
+        '- A replacement rule has been defined that tampers with '
+          'strings of the form `«marker»«encoded_counter»«marker»`'
       )
       return placeholder
   
