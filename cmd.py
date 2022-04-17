@@ -618,7 +618,7 @@ class ExtensibleFenceReplacement(Replacement):
   - allowed_flags:
       (def) NONE
         |
-      «letter»=KEEP_HTML_UNESCAPED | REDUCE_WHITESPACE | KEEP_INDENTED [...]
+      «letter»=KEEP_HTML_UNESCAPED | KEEP_INDENTED | REDUCE_WHITESPACE [...]
   - opening_delimiter: (def) NONE | «string»
   - extensible_delimiter: «character_repeated» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
@@ -1223,9 +1223,9 @@ class ReplacementMaster:
                   (?P<flag_setting>
                     KEEP_HTML_UNESCAPED
                       |
-                    REDUCE_WHITESPACE
-                      |
                     KEEP_INDENTED
+                      |
+                    REDUCE_WHITESPACE
                   )
                   (?= [\s] | \Z )
             |
