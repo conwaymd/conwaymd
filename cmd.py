@@ -76,7 +76,7 @@ class PlaceholderMaster:
   incrementing every time a new string is protected.
   
   The very first call to PlaceholderMaster should be to
-  replace occurrences of «marker» in the text with a placeholder.
+  protect occurrences of «marker» in the text with a placeholder.
   The very last call to PlaceholderMaster should be to unprotect
   the text (restoring the strings were protected with a placeholder).
   
@@ -106,14 +106,20 @@ class PlaceholderMaster:
           )
   
   def _unprotect_substitute_function(self, placeholder_match):
+    
     placeholder = placeholder_match.group()
     string = self._string_from_placeholder[placeholder]
+    
     return string
   
   def __init__(self):
     self._counter = 0
     self._string_from_placeholder = {}
     self._placeholder_from_string = {}
+    self._marker_placeholder = self.protect(PlaceholderMaster._MARKER)
+  
+  def protect_marker_occurrences(self, string):
+    return re.sub(PlaceholderMaster._MARKER, self._marker_placeholder, string)
   
   def protect(self, string):
     """
