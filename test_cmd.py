@@ -360,7 +360,20 @@ r'''%%%
 ## `#literals`
 
 BEFORE{ <`` Literal & < > ``> }AFTER
-
+    <```
+      No indent,
+          yet four more spaces hence?
+    ```>
+   u<```` Flag `u`: unescaped HTML, <b>&amp; for ampersand!</b> ````>
+   i<```
+          Flag `i`: whitespace stripped on this line,
+      but indent preserved on lines thereafter.
+    ```>
+   uw<````````
+      Flag `w`: whitespace trimmed on all lines,
+        even trailing whitespace,  
+          and even whitespace before a break element:        <br>
+    ````````>
 ''',
         'test_cmd.py'
       ),
@@ -368,6 +381,14 @@ r'''
 # `test_cmd_to_html`
 ## `#literals`
 BEFORE{ Literal &amp; &lt; &gt; }AFTER
+No indent,
+    yet four more spaces hence?
+Flag `u`: unescaped HTML, <b>&amp; for ampersand!</b>
+Flag `i`: whitespace stripped on this line,
+      but indent preserved on lines thereafter.
+Flag `w`: whitespace trimmed on all lines,
+even trailing whitespace,
+and even whitespace before a break element:<br>
 '''
     )
   
