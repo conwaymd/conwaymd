@@ -311,6 +311,32 @@ class Replacement(abc.ABC):
     raise NotImplementedError
 
 
+class PlaceholderMarkerReplacement(Replacement):
+  """
+  A replacement rule replacing the placeholder marker with a placeholder.
+  
+  To be used before PlaceholderProtectionReplacement,
+  see class PlaceholderMaster (especially `protect_marker_occurrences`).
+  Ensures that occurrences of «marker» will not be confounding.
+  """
+  
+  def __init__(self, id_, replacement_master):
+    super().__init__(id_)
+    self._replacement_master = replacement_master
+  
+  def attribute_names(self):
+    return ()
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    pass
+  
+  def _apply(self, string):
+    return self._replacement_master.protect_marker_occurrences(string)
+
+
 class DeIndentationReplacement(Replacement):
   """
   A replacement rule for de-indentation.
