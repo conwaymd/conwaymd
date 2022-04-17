@@ -15,6 +15,148 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  def test_placeholder_master(self):
+    placeholder_master = cmd.PlaceholderMaster()
+    strings = [
+      'The quick brown fox jumps over the lazy dog, saith he.',
+      'Whoso saith \uE000, even \uF8FF\uE043\uE963\uF8FF, is wrong.',
+      'What about \uE069\uE420\uE000\uF8FE\uE064?',
+    ]
+    placeholders = [
+      placeholder_master.protect(
+        placeholder_master.replace_marker_occurrences(string)
+      )
+        for string in strings
+    ]
+    self.assertEqual(
+      ''.join(strings),
+      placeholder_master.unprotect(''.join(placeholders))
+    )
+  
+  def test_placeholder_master_encode_digit(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(0),
+      '\uE000'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(1),
+      '\uE001'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(0x69),
+      '\uE069'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(0x420),
+      '\uE420'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode_digit(0x18FE),
+      '\uF8FE'
+    )
+  
+  def test_placeholder_master_decode_encoded_digit(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uE000'),
+      0
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uE001'),
+      1
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uE069'),
+      0x69
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uE420'),
+      0x420
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uF8FE'),
+      0x18FE
+    )
+  
+  def test_placeholder_master_encode(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0),
+      '\uE000'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(1),
+      '\uE001'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0x18FE),
+      '\uF8FE'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0x18FF),
+      '\uE001\uE000'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0x69420),
+      '\uE043\uE963'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(
+          0x0069 * 0x18FF ** 4
+        + 0x0420 * 0x18FF ** 3
+        + 0x18FE * 0x18FF ** 1
+        + 0x0064 * 0x18FF ** 0
+      ),
+      '\uE069\uE420\uE000\uF8FE\uE064'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.encode(0x18FF ** 50 + 0x89 * 0x18FF),
+      '\uE001' + 48 * '\uE000' + '\uE089' + '\uE000'
+    )
+  
+  def test_placeholder_master_decode(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE000'),
+      0
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE001'),
+      1
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uF8FE'),
+      0x18FE
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE001\uE000'),
+      0x18FF
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE043\uE963'),
+      0x69420
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE069\uE420\uE000\uF8FE\uE064'),
+      0x0069 * 0x18FF ** 4
+      + 0x0420 * 0x18FF ** 3
+      + 0x18FE * 0x18FF ** 1
+      + 0x0064 * 0x18FF ** 0
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode(
+        '\uE001' + 48 * '\uE000' + '\uE089' + '\uE000'
+      ),
+      0x18FF ** 50 + 0x89 * 0x18FF
+    )
+  
+  def test_placeholder_master_build_placeholder(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.build_placeholder(0),
+      '\uF8FF\uE000\uF8FF'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.build_placeholder(0x69420),
+      '\uF8FF\uE043\uE963\uF8FF'
+    )
+  
   def test_ordinary_dictionary_replacement_build_regex_pattern(self):
     
     self.assertEqual(
