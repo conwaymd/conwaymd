@@ -353,6 +353,9 @@ Whitespace before closing delimiter:
   def test_cmd_to_html(self):
     self.assertEqual(
       cmd.cmd_to_html(
+        ################################################################
+        # START CMD
+        ################################################################
 r'''%%%
 
 # `test_cmd_to_html`
@@ -379,9 +382,16 @@ BEFORE{ <`` Literal & < > ``> }AFTER
         even trailing whitespace,  
           and even whitespace before a break element:        <br>
     ````````>
-''',
+'''
+        ################################################################
+        # END CMD
+        ################################################################
+        ,
         'test_cmd.py'
       ),
+      ################################################################
+      # START HTML
+      ################################################################
 r'''
 # `test_cmd_to_html`
 ## `#placeholder-markers`
@@ -398,6 +408,9 @@ Flag `w`: whitespace trimmed on all lines,
 even trailing whitespace,
 and even whitespace before a break element:<br>
 '''
+      ################################################################
+      # END HTML
+      ################################################################
     )
   
   def test_is_cmd_file(self):
