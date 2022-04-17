@@ -116,6 +116,11 @@ class PlaceholderMaster:
     self._placeholder_from_string = {}
   
   def protect(self, string):
+    """
+    Protect a string by allocating it a placeholder.
+    
+    Reuses existing placeholders where possible.
+    """
     
     string = self.unprotect(string)
     if string in self._placeholder_from_string:
@@ -129,6 +134,10 @@ class PlaceholderMaster:
     return placeholder
   
   def unprotect(self, string):
+    """
+    Unprotect a string by restoring placeholders to their strings.
+    """
+    
     return re.sub(
       PlaceholderMaster._PLACEHOLDER_PATTERN,
       self._unprotect_substitute_function,
