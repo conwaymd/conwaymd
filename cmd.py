@@ -86,9 +86,21 @@ class PlaceholderMaster:
   _COUNTER_CODE_POINT_MIN = 0xE000
   _COUNTER_CODE_POINT_MAX = 0xF8FE
   _COUNTER_BASE = _COUNTER_CODE_POINT_MAX - _COUNTER_CODE_POINT_MIN + 1
-  
   _MARKER_CODE_POINT = 0xF8FF
+  
+  _COUNTER_ENCODED_DIGIT_MIN = chr(_COUNTER_CODE_POINT_MIN)
+  _COUNTER_ENCODED_DIGIT_MAX = chr(_COUNTER_CODE_POINT_MAX)
   _MARKER = chr(_MARKER_CODE_POINT)
+  
+  _PLACEHOLDER_PATTERN = \
+          re.compile(
+            f'''
+              {_MARKER}
+              [{_COUNTER_ENCODED_DIGIT_MIN}-{_COUNTER_ENCODED_DIGIT_MAX}]+
+              {_MARKER}
+            ''',
+            flags=re.VERBOSE
+          )
   
   @staticmethod
   def encode_digit(digit):
