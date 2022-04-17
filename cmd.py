@@ -904,8 +904,10 @@ class ExtensibleFenceReplacement(Replacement):
         matched_attribute_specifications = \
                 match.group('attribute_specifications')
         combined_attribute_specifications = \
-                ' '.join(
-                  [attribute_specifications, matched_attribute_specifications]
+                (
+                  attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
                 build_attributes_sequence(combined_attribute_specifications)

@@ -382,6 +382,15 @@ BEFORE{ <`` Literal & < > ``> }AFTER
         even trailing whitespace,  
           and even whitespace before a break element:        <br>
     ````````>
+
+## `#display-code`
+
+  ```
+    for (int index = 0; index < count; index++)
+    {
+      // etc. etc.
+    }
+  ```
 '''
         ################################################################
         # END CMD
@@ -407,6 +416,12 @@ Flag `i`: whitespace stripped on this line,
 Flag `w`: whitespace trimmed on all lines,
 even trailing whitespace,
 and even whitespace before a break element:<br>
+## `#display-code`
+<pre><code>for (int index = 0; index &lt; count; index++)
+{
+  // etc. etc.
+}
+</code></pre>
 '''
       ################################################################
       # END HTML
