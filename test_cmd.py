@@ -350,6 +350,27 @@ Whitespace before closing delimiter:
       ('ABC\n', '123\n%%%%%%%\nXYZ')
     )
   
+  def test_cmd_to_html(self):
+    self.assertEqual(
+      cmd.cmd_to_html(
+r'''%%%
+
+# `test_cmd_to_html`
+
+## `#literals`
+
+BEFORE{ <`` Literal & < > ``> }AFTER
+
+''',
+        'test_cmd.py'
+      ),
+r'''
+# `test_cmd_to_html`
+## `#literals`
+BEFORE{ Literal &amp; &lt; &gt; }AFTER
+'''
+    )
+  
   def test_is_cmd_file(self):
     self.assertTrue(cmd.is_cmd_file('file.cmd'))
     self.assertTrue(cmd.is_cmd_file('.cmd'))
