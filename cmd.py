@@ -562,7 +562,7 @@ class ExtensibleFenceReplacement(Replacement):
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
     self._attribute_specifications = None
-    self._content_replacement_list = []
+    self._content_replacements = []
     self._closing_delimiter = ''
     self._tag_name = None
     self._regex_pattern = None
@@ -654,16 +654,16 @@ class ExtensibleFenceReplacement(Replacement):
     self._attribute_specifications = value
   
   @property
-  def content_replacement_list(self):
-    return self._content_replacement_list
+  def content_replacements(self):
+    return self._content_replacements
   
-  @content_replacement_list.setter
-  def content_replacement_list(self, value):
+  @content_replacements.setter
+  def content_replacements(self, value):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot set `content_replacement_list` after `commit()`'
+        'error: cannot set `content_replacements` after `commit()`'
       )
-    self._content_replacement_list = value
+    self._content_replacements = value
   
   @property
   def closing_delimiter(self):
@@ -802,7 +802,7 @@ class ExtensibleFenceReplacement(Replacement):
         attributes_sequence = ''
       
       content = match.group('content')
-      for replacement in self._content_replacement_list:
+      for replacement in self._content_replacements:
         replacement_id = replacement.id_
         if replacement_id == 'escape-html':
           if 'KEEP_HTML_UNESCAPED' in enabled_flag_settings:
@@ -1329,7 +1329,7 @@ class ReplacementMaster:
     line_number,
   ):
     
-    content_replacement_list = []
+    content_replacements = []
     
     for content_replacement_match \
     in ReplacementMaster.compute_content_replacement_matches(attribute_value):
@@ -1373,9 +1373,9 @@ class ReplacementMaster:
           )
           sys.exit(GENERIC_ERROR_EXIT_CODE)
       
-      content_replacement_list.append(content_replacement)
+      content_replacements.append(content_replacement)
     
-    replacement.content_replacements = content_replacement_list
+    replacement.content_replacements = content_replacements
   
   @staticmethod
   def compute_extensible_delimiter_match(attribute_value):
