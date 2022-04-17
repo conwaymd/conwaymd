@@ -882,11 +882,11 @@ class ExtensibleFenceReplacement(Replacement):
         if replacement_id == 'escape-html':
           if 'KEEP_HTML_UNESCAPED' in enabled_flag_settings:
             continue
-        elif replacement_id == 'reduce-whitespace':
-          if 'REDUCE_WHITESPACE' not in enabled_flag_settings:
-            continue
         elif replacement_id == 'de-indent':
           if 'KEEP_INDENTED' in enabled_flag_settings:
+            continue
+        elif replacement_id == 'reduce-whitespace':
+          if 'REDUCE_WHITESPACE' not in enabled_flag_settings:
             continue
         content = replacement.apply(content)
       
@@ -2637,8 +2637,8 @@ ExtensibleFenceReplacement: #literals
 - syntax_type: INLINE
 - allowed_flags:
     u=KEEP_HTML_UNESCAPED
-    w=REDUCE_WHITESPACE
     i=KEEP_INDENTED
+    w=REDUCE_WHITESPACE
 - opening_delimiter: <
 - extensible_delimiter: `
 - content_replacements:
