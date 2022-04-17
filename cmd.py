@@ -2801,7 +2801,7 @@ ExtensibleFenceReplacement: #display-code
     u=KEEP_HTML_UNESCAPED
     i=KEEP_INDENTED
     w=REDUCE_WHITESPACE
-- extensible_delimiter: ``
+- extensible_delimiter: ```
 - attribute_specifications: EMPTY
 - content_replacements:
     #escape-html
