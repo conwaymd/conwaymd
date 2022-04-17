@@ -324,6 +324,11 @@ class PlaceholderMarkerReplacement(Replacement):
   Ensures that occurrences of «marker» will not be confounding.
   To be used before PlaceholderProtectionReplacement.
   See class PlaceholderMaster, especially `replace_marker_occurrences`.
+  
+  CMD replacement rule syntax:
+  ````
+  PlaceholderMarkerReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   """
   
   def __init__(self, id_, replacement_master):
@@ -331,7 +336,9 @@ class PlaceholderMarkerReplacement(Replacement):
     self._replacement_master = replacement_master
   
   def attribute_names(self):
-    return ()
+    return (
+      'queue_position',
+    )
   
   def _validate_mandatory_attributes(self):
     pass
@@ -828,6 +835,7 @@ class ReplacementMaster:
     self._replacement_from_id = {}
     self._root_replacement_id = None
     self._replacement_queue = []
+    self._placeholder_master = PlaceholderMaster()
   
   @staticmethod
   def print_error(
@@ -954,7 +962,9 @@ class ReplacementMaster:
     class_name = class_declaration_match.group('class_name')
     id_ = class_declaration_match.group('id_')
     
-    if class_name == 'DeIndentationReplacement':
+    if class_name == 'PlaceholderMarkerReplacement':
+      replacement = PlaceholderMarkerReplacement(id_, self._placeholder_master)
+    elif class_name == 'DeIndentationReplacement':
       replacement = DeIndentationReplacement(id_)
     elif class_name == 'OrdinaryDictionaryReplacement':
       replacement = OrdinaryDictionaryReplacement(id_)
@@ -2400,6 +2410,9 @@ def extract_rules_and_content(cmd):
 STANDARD_RULES = \
 r'''# STANDARD_RULES
 
+PlaceholderMarkerReplacement: #placeholder-markers
+- queue_position: ROOT
+
 DeIndentationReplacement: #de-indent
 
 OrdinaryDictionaryReplacement: #escape-html
@@ -2418,7 +2431,7 @@ RegexDictionaryReplacement: #reduce-whitespace
 * [\s]+ (?= <br> ) -->
 
 ExtensibleFenceReplacement: #literals
-- queue_position: ROOT
+- queue_position: AFTER #placeholder-markers
 - syntax_type: INLINE
 - allowed_flags:
     u=KEEP_HTML_UNESCAPED
