@@ -83,9 +83,9 @@ class PlaceholderMaster:
   in the first place, see <https://www.w3.org/TR/charmod/#C073>.
   """
   
-  _COUNTER_MIN_CODE_POINT = 0xE000
-  _COUNTER_MAX_CODE_POINT = 0xF8FE
-  _COUNTER_BASE = _COUNTER_MAX_CODE_POINT - _COUNTER_MIN_CODE_POINT + 1
+  _COUNTER_CODE_POINT_MIN = 0xE000
+  _COUNTER_CODE_POINT_MAX = 0xF8FE
+  _COUNTER_BASE = _COUNTER_CODE_POINT_MAX - _COUNTER_CODE_POINT_MIN + 1
   
   _MARKER_CODE_POINT = 0xF8FF
   _MARKER = chr(_MARKER_CODE_POINT)
@@ -101,7 +101,7 @@ class PlaceholderMaster:
         f'error: digit too large for base {PlaceholderMaster._COUNTER_BASE}'
       )
     
-    return chr(PlaceholderMaster._COUNTER_MIN_CODE_POINT + digit)
+    return chr(PlaceholderMaster._COUNTER_CODE_POINT_MIN + digit)
   
   @staticmethod
   def encode(counter):
