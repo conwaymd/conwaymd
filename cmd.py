@@ -102,6 +102,23 @@ class PlaceholderMaster:
             flags=re.VERBOSE
           )
   
+  def _unprotect_substitute_function(self, placeholder_match):
+    placeholder = placeholder_match.group()
+    string = self._string_from_placeholder[placeholder]
+    return string
+  
+  def __init__(self):
+    self._counter = 0
+    self._string_from_placeholder = {}
+    self._placeholder_from_string = {}
+  
+  def unprotect(self, text):
+    return re.sub(
+      PlaceholderMaster._PLACEHOLDER_PATTERN,
+      self._unprotect_substitute_function,
+      text,
+    )
+  
   @staticmethod
   def encode_digit(digit):
     
