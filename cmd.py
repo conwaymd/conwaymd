@@ -317,6 +317,52 @@ class Replacement(abc.ABC):
     raise NotImplementedError
 
 
+class ReplacementSequence(Replacement):
+  """
+  A replacement rule that applies a sequence of replacement rules.
+  
+  CMD replacement rule syntax:
+  ````
+  ReplacementSequence: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - replacements: (def) NONE | #«id» [...]
+  ````
+  """
+  
+  def __init__(self, id_):
+    super().__init__(id_)
+    self._replacements = []
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'replacements',
+    )
+  
+  @property
+  def replacements(self):
+    return self._replacements
+  
+  @replacements.setter
+  def replacements(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `replacements` after `commit()`'
+      )
+    self._replacements = value
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    pass
+  
+  def _apply(self, string):
+    for replacement in self._replacements:
+      string = replacement.apply(string)
+    return string
+
+
 class PlaceholderMarkerReplacement(Replacement):
   """
   A rule for replacing the placeholder marker with a placeholder.
@@ -1024,7 +1070,9 @@ class ReplacementMaster:
     class_name = class_declaration_match.group('class_name')
     id_ = class_declaration_match.group('id_')
     
-    if class_name == 'PlaceholderMarkerReplacement':
+    if class_name == 'ReplacementSequence':
+      replacement = ReplacementSequence(id_)
+    elif class_name == 'PlaceholderMarkerReplacement':
       replacement = PlaceholderMarkerReplacement(id_, self._placeholder_master)
     elif class_name == 'PlaceholderProtectionReplacement':
       replacement = \
@@ -1599,6 +1647,82 @@ class ReplacementMaster:
     replacement.queue_reference_replacement = queue_reference_replacement
   
   @staticmethod
+  def compute_replacement_matches(attribute_value):
+    return re.finditer(
+      r'''
+        (?P<whitespace_only> \A [\s]* \Z )
+          |
+        (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+          |
+        (?:
+          [#] (?P<id_> [a-z-]+ ) (?= [\s] | \Z )
+            |
+          (?P<invalid_syntax> [\S]+ )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  def stage_replacements(
+    self,
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    matched_replacements = []
+    
+    for replacement_match \
+    in ReplacementMaster.compute_replacement_matches(attribute_value):
+      
+      if replacement_match.group('whitespace_only') is not None:
+        ReplacementMaster.print_error(
+          f'invalid specification `` for attribute `replacements`',
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      invalid_syntax = replacement_match.group('invalid_syntax')
+      if invalid_syntax is not None:
+        ReplacementMaster.print_error(
+          f'invalid specification `{invalid_syntax}`'
+          ' for attribute `replacements`',
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      if replacement_match.group('none_keyword') is not None:
+        return
+      
+      matched_replacement_id = replacement_match.group('id_')
+      if matched_replacement_id == replacement.id_:
+        matched_replacement = replacement
+      else:
+        try:
+          matched_replacement = \
+                  self._replacement_from_id[matched_replacement_id]
+        except KeyError:
+          ReplacementMaster.print_error(
+            f'undefined replacement `#{matched_replacement_id}`',
+            rules_file_name,
+            line_number_range_start,
+            line_number,
+          )
+          sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      matched_replacements.append(matched_replacement)
+    
+    replacement.replacements = matched_replacements
+  
+  @staticmethod
   def compute_syntax_type_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -1876,6 +2000,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'queue_position':
         self.stage_queue_position(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'replacements':
+        self.stage_replacements(
           replacement,
           attribute_value,
           rules_file_name,
