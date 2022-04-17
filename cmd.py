@@ -655,10 +655,7 @@ class ExtensibleFenceReplacement(Replacement):
   ExtensibleFenceReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - syntax_type: BLOCK | INLINE (mandatory)
-  - allowed_flags:
-      (def) NONE
-        |
-      «letter»=KEEP_HTML_UNESCAPED | KEEP_INDENTED | REDUCE_WHITESPACE [...]
+  - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
   - opening_delimiter: (def) NONE | «string»
   - extensible_delimiter: «character_repeated» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
@@ -918,16 +915,17 @@ class ExtensibleFenceReplacement(Replacement):
       
       content = match.group('content')
       for replacement in self._content_replacements:
-        replacement_id = replacement.id_
-        if replacement_id == 'escape-html':
-          if 'KEEP_HTML_UNESCAPED' in enabled_flag_names:
-            continue
-        elif replacement_id == 'de-indent':
-          if 'KEEP_INDENTED' in enabled_flag_names:
-            continue
-        elif replacement_id == 'reduce-whitespace':
-          if 'REDUCE_WHITESPACE' not in enabled_flag_names:
-            continue
+        
+        positive_flag_name = replacement.positive_flag_name
+        if positive_flag_name is not None \
+        and positive_flag_name not in enabled_flag_names:
+          continue
+        
+        negative_flag_name = replacement.negative_flag_name
+        if negative_flag_name is not None \
+        and negative_flag_name in enabled_flag_names:
+          continue
+        
         content = replacement.apply(content)
       
       if tag_name is None:
@@ -1259,15 +1257,7 @@ class ReplacementMaster:
           |
         [\s]*
         (?:
-          (?P<flag_letter> [a-z] ) =
-                  (?P<flag_name>
-                    KEEP_HTML_UNESCAPED
-                      |
-                    KEEP_INDENTED
-                      |
-                    REDUCE_WHITESPACE
-                  )
-                  (?= [\s] | \Z )
+          (?P<flag_letter> [a-z] ) = (?P<flag_name> [A-Z_]+ ) (?= [\s] | \Z )
             |
           (?P<invalid_syntax> [\S]+ )
         )
@@ -2765,8 +2755,10 @@ PlaceholderMarkerReplacement: #placeholder-markers
 PlaceholderProtectionReplacement: #placeholder-protect
 
 DeIndentationReplacement: #de-indent
+- negative_flag: KEEP_INDENTED
 
 OrdinaryDictionaryReplacement: #escape-html
+- negative_flag: KEEP_HTML_UNESCAPED
 * & --> &amp;
 * < --> &lt;
 * > --> &gt;
@@ -2776,6 +2768,7 @@ RegexDictionaryReplacement: #trim-whitespace
 * [\s]* \Z -->
 
 RegexDictionaryReplacement: #reduce-whitespace
+- positive_flag: REDUCE_WHITESPACE
 * [\n]+ --> \n
 * ^ [^\S\n]+ -->
 * [^\S\n]+ $ -->
