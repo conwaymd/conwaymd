@@ -241,6 +241,8 @@ class Replacement(abc.ABC):
   ````
   Replacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - positive_flag: (def) NONE | «FLAG_NAME»
+  - negative_flag: (def) NONE | «FLAG_NAME»
   ````
   """
   
@@ -249,6 +251,8 @@ class Replacement(abc.ABC):
     self._id = id_
     self._queue_position_type = None
     self._queue_reference_replacement = None
+    self._positive_flag_name = None
+    self._negative_flag_name = None
   
   @property
   @abc.abstractmethod
@@ -282,6 +286,30 @@ class Replacement(abc.ABC):
         'error: cannot set `queue_reference_replacement` after `commit()`'
       )
     self._queue_reference_replacement = value
+  
+  @property
+  def positive_flag_name(self):
+    return self._positive_flag_name
+  
+  @positive_flag_name.setter
+  def positive_flag_name(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `positive_flag_name` after `commit()`'
+      )
+    self._positive_flag_name = value
+  
+  @property
+  def negative_flag_name(self):
+    return self._negative_flag_name
+  
+  @negative_flag_name.setter
+  def negative_flag_name(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `negative_flag_name` after `commit()`'
+      )
+    self._negative_flag_name = value
   
   def commit(self):
     self._validate_mandatory_attributes()
@@ -464,6 +492,8 @@ class DeIndentationReplacement(Replacement):
   ````
   DeIndentationReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - positive_flag: (def) NONE | «FLAG_NAME»
+  - negative_flag: (def) NONE | «FLAG_NAME»
   ````
   """
   
@@ -473,6 +503,8 @@ class DeIndentationReplacement(Replacement):
   def attribute_names(self):
     return (
       'queue_position',
+      'positive_flag',
+      'negative_flag',
     )
   
   def _validate_mandatory_attributes(self):
@@ -496,6 +528,8 @@ class OrdinaryDictionaryReplacement(Replacement):
   ````
   OrdinaryDictionaryReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - positive_flag: (def) NONE | «FLAG_NAME»
+  - negative_flag: (def) NONE | «FLAG_NAME»
   * «pattern» --> «substitute»
   [...]
   ````
@@ -510,6 +544,8 @@ class OrdinaryDictionaryReplacement(Replacement):
   def attribute_names(self):
     return (
       'queue_position',
+      'positive_flag',
+      'negative_flag',
     )
   
   def add_substitution(self, pattern, substitute):
@@ -566,6 +602,8 @@ class RegexDictionaryReplacement(Replacement):
   ````
   RegexDictionaryReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - positive_flag: (def) NONE | «FLAG_NAME»
+  - negative_flag: (def) NONE | «FLAG_NAME»
   * «pattern» --> «substitute»
   [...]
   ````
@@ -578,6 +616,8 @@ class RegexDictionaryReplacement(Replacement):
   def attribute_names(self):
     return (
       'queue_position',
+      'positive_flag',
+      'negative_flag',
     )
   
   def add_substitution(self, pattern, substitute):
@@ -1512,6 +1552,52 @@ class ReplacementMaster:
     replacement.extensible_delimiter_min_count = extensible_delimiter_min_count
   
   @staticmethod
+  def compute_negative_flag_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none_keyword> NONE )
+            |
+          (?P<negative_flag_name> [A-Z_]+ )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_negative_flag(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+  ):
+    
+    negative_flag_match = \
+      ReplacementMaster.compute_negative_flag_match(attribute_value)
+    
+    invalid_value = negative_flag_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `negative_flag`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if negative_flag_match.group('none_keyword') is not None:
+      return
+    
+    negative_flag_name = negative_flag_match.group('negative_flag_name')
+    replacement.negative_flag_name = negative_flag_name
+  
+  @staticmethod
   def compute_opening_delimiter_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -1556,6 +1642,52 @@ class ReplacementMaster:
     
     opening_delimiter = opening_delimiter_match.group('opening_delimiter')
     replacement.opening_delimiter = opening_delimiter
+  
+  @staticmethod
+  def compute_positive_flag_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none_keyword> NONE )
+            |
+          (?P<positive_flag_name> [A-Z_]+ )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_positive_flag(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    positive_flag_match = \
+            ReplacementMaster.compute_positive_flag_match(attribute_value)
+    
+    invalid_value = positive_flag_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `positive_flag`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if positive_flag_match.group('none_keyword') is not None:
+      return
+    
+    positive_flag_name = positive_flag_match.group('positive_flag_name')
+    replacement.positive_flag_name = positive_flag_name
   
   @staticmethod
   def compute_queue_position_match(attribute_value):
@@ -1991,8 +2123,24 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
+      elif attribute_name == 'negative_flag':
+        ReplacementMaster.stage_negative_flag(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
       elif attribute_name == 'opening_delimiter':
         ReplacementMaster.stage_opening_delimiter(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'positive_flag':
+        ReplacementMaster.stage_positive_flag(
           replacement,
           attribute_value,
           rules_file_name,
