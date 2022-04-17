@@ -35,6 +35,7 @@ import os
 import re
 import sys
 import traceback
+import warnings
 
 
 __version__ = 'v3.999...'
@@ -76,12 +77,14 @@ class PlaceholderMaster:
   incrementing every time a new string is protected.
   
   The very first call to PlaceholderMaster should be to
-  protect occurrences of «marker» in the text with a placeholder.
+  protect occurrences of «marker» in the text with a placeholder,
+  lest those occurrences of «marker» be confounding.
   The very last call to PlaceholderMaster should be to unprotect
   the text (restoring the strings were protected with a placeholder).
   
   It is assumed the user will not define replacements rules
-  that alter strings of the form `«marker»«encoded_counter»«marker»`.
+  that alter strings of the form `«marker»«encoded_counter»«marker»`,
+  or generate strings of the form `«marker»«encoded_counter»«marker»`.
   In fact the user should not be using Private Use Area code points
   in the first place, see <https://www.w3.org/TR/charmod/#C073>.
   """
@@ -99,7 +102,9 @@ class PlaceholderMaster:
           re.compile(
             f'''
               {_MARKER}
-              [{_COUNTER_ENCODED_DIGIT_MIN}-{_COUNTER_ENCODED_DIGIT_MAX}]+
+              (?P<encoded_counter>
+                [{_COUNTER_ENCODED_DIGIT_MIN}-{_COUNTER_ENCODED_DIGIT_MAX}]+
+              )
               {_MARKER}
             ''',
             flags=re.VERBOSE
@@ -108,9 +113,20 @@ class PlaceholderMaster:
   def _unprotect_substitute_function(self, placeholder_match):
     
     placeholder = placeholder_match.group()
-    string = self._string_from_placeholder[placeholder]
-    
-    return string
+    try:
+      return self._string_from_placeholder[placeholder]
+    except KeyError:
+      encoded_counter = placeholder_match.group('encoded_counter')
+      warnings.warn(
+        'warning: placeholder encountered with unrecognised counter '
+        f'`{encoded_counter}` == int > {self._counter} \n\n' # TODO decode int
+        'Possible causes:\n'
+        '- Confounding occurrences of «marker» have not been removed '
+          'by calling protect_marker_occurrences(...)\n'
+        '- A replacement rule alters or generates strings of the form '
+          '`«marker»«encoded_counter»«marker»`'
+      )
+      return placeholder
   
   def __init__(self):
     self._counter = 0
@@ -119,6 +135,10 @@ class PlaceholderMaster:
     self._marker_placeholder = self.protect(PlaceholderMaster._MARKER)
   
   def protect_marker_occurrences(self, string):
+    """
+    Ensure that occurrences of «marker» will not be confounding.
+    """
+    
     return re.sub(PlaceholderMaster._MARKER, self._marker_placeholder, string)
   
   def protect(self, string):

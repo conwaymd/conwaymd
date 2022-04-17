@@ -15,6 +15,19 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  def test_placeholder_master(self):
+    placeholder_master = cmd.PlaceholderMaster()
+    strings = [
+      'The quick brown fox jumps over the lazy dog, saith he.',
+      'Whoso saith \uE000, even \uF8FF\uE043\uE963\uF8FF, is wrong.',
+      'What about \uE069\uE420\uE000\uF8FE\uE064?',
+    ]
+    placeholders = [placeholder_master.protect(string) for string in strings]
+    self.assertEqual(
+      ''.join(strings),
+      placeholder_master.unprotect(''.join(placeholders))
+    )
+  
   def test_placeholder_master_encode_digit(self):
     self.assertEqual(
       cmd.PlaceholderMaster.encode_digit(0),
