@@ -357,6 +357,11 @@ r'''%%%
 
 # `test_cmd_to_html`
 
+## `#placeholder-markers`
+
+If implemented properly, the following shall confound not:
+  `'\uF8FF\uE069\uE420\uE000\uF8FE\uE064\uF8FF'`: 
+
 ## `#literals`
 
 BEFORE{ <`` Literal & < > ``> }AFTER
@@ -379,6 +384,9 @@ BEFORE{ <`` Literal & < > ``> }AFTER
       ),
 r'''
 # `test_cmd_to_html`
+## `#placeholder-markers`
+If implemented properly, the following shall confound not:
+`'\uF8FF\uE069\uE420\uE000\uF8FE\uE064\uF8FF'`: 
 ## `#literals`
 BEFORE{ Literal &amp; &lt; &gt; }AFTER
 No indent,
