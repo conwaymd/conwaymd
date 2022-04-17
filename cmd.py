@@ -128,11 +128,11 @@ class PlaceholderMaster:
     
     return placeholder
   
-  def unprotect(self, text):
+  def unprotect(self, string):
     return re.sub(
       PlaceholderMaster._PLACEHOLDER_PATTERN,
       self._unprotect_substitute_function,
-      text,
+      string,
     )
   
   @staticmethod
