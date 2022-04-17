@@ -74,8 +74,11 @@ class PlaceholderMaster:
   `«marker»«encoded_counter»«marker»`, where «marker» is `U+F8FF`,
   and «encoded_counter» is base-6399 `U+E000` through `U+F8FE`,
   incrementing every time a new string is protected.
-  Actual occurrences of «marker» themselves
-  to be replaced with a placeholder to avoid ambiguity.
+  
+  The very first call to PlaceholderMaster should be to
+  replace occurrences of «marker» in the text with a placeholder.
+  The very last call to PlaceholderMaster should be to unprotect
+  the text (restoring the strings were protected with a placeholder).
   
   It is assumed the user will not define replacements rules
   that alter strings of the form `«marker»«encoded_counter»«marker»`.
@@ -111,6 +114,19 @@ class PlaceholderMaster:
     self._counter = 0
     self._string_from_placeholder = {}
     self._placeholder_from_string = {}
+  
+  def protect(self, string):
+    
+    string = self.unprotect(string)
+    if string in self._placeholder_from_string:
+      return self._placeholder_from_string[string]
+    
+    placeholder = PlaceholderMaster.build_placeholder(self._counter)
+    self._counter += 1
+    self._string_from_placeholder[placeholder] = string
+    self._placeholder_from_string[string] = placeholder
+    
+    return placeholder
   
   def unprotect(self, text):
     return re.sub(
