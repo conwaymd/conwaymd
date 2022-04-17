@@ -184,6 +184,10 @@ class PlaceholderMaster:
     return chr(PlaceholderMaster._COUNTER_CODE_POINT_MIN + digit)
   
   @staticmethod
+  def decode_encoded_digit(encoded_digit):
+    return ord(encoded_digit) - PlaceholderMaster._COUNTER_CODE_POINT_MIN
+  
+  @staticmethod
   def encode(counter):
     
     if counter < 0:

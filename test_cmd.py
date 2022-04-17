@@ -50,6 +50,28 @@ class TestCmd(unittest.TestCase):
       '\uF8FE'
     )
   
+  def test_placeholder_master_decode_encoded_digit(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uE000'),
+      0
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uE001'),
+      1
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uE069'),
+      0x69
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uE420'),
+      0x420
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode_encoded_digit('\uF8FE'),
+      0x18FE
+    )
+  
   def test_placeholder_master_encode(self):
     self.assertEqual(
       cmd.PlaceholderMaster.encode(0),
