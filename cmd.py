@@ -1330,6 +1330,7 @@ class ReplacementMaster:
     
     if attribute_specifications_match.group('empty_keyword') is not None:
       replacement.attribute_specifications = ''
+      return
     
     attribute_specifications = \
             attribute_specifications_match.group('attribute_specifications')
