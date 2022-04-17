@@ -2511,9 +2511,9 @@ ExtensibleFenceReplacement: #literals
 - extensible_delimiter: `
 - content_replacements:
     #escape-html
+    #de-indent
     #trim-whitespace
     #reduce-whitespace
-    #de-indent
     #placeholder-protect
 - closing_delimiter: >
 
