@@ -401,6 +401,12 @@ BEFORE{ <`` Literal & < > ``> }AFTER
     Retained indentation:
       a lot.
    ```
+
+## `#inline-code`
+
+This be `inline code`.
+u``{.classy} Whitespace stripped, and <b>unescaped</b>. ``
+Even ```inline with ``backticks within`` ```.
 '''
         ################################################################
         # END CMD
@@ -412,11 +418,11 @@ BEFORE{ <`` Literal & < > ``> }AFTER
       # START HTML
       ################################################################
 r'''
-# `test_cmd_to_html`
-## `#placeholder-markers`
+# <code>test_cmd_to_html</code>
+## <code>#placeholder-markers</code>
 If implemented properly, the following shall confound not:
-`'\uF8FF\uE069\uE420\uE000\uF8FE\uE064\uF8FF'`: 
-## `#literals`
+<code>'\uF8FF\uE069\uE420\uE000\uF8FE\uE064\uF8FF'</code>: 
+## <code>#literals</code>
 BEFORE{ Literal &amp; &lt; &gt; }AFTER
 No indent,
     yet four more spaces hence?
@@ -426,7 +432,7 @@ Flag `i`: whitespace stripped on this line,
 Flag `w`: whitespace trimmed on all lines,
 even trailing whitespace,
 and even whitespace before a break element:<br>
-## `#display-code`
+## <code>#display-code</code>
 <pre><code>for (int index = 0; index &lt; count; index++)
 {
   // etc. etc.
@@ -439,6 +445,10 @@ and even whitespace before a break element:<br>
 <pre><code>    Retained indentation:
       a lot.
 </code></pre>
+## <code>#inline-code</code>
+This be <code>inline code</code>.
+<code class="classy">Whitespace stripped, and <b>unescaped</b>.</code>
+Even <code>inline with ``backticks within``</code>.
 '''
       ################################################################
       # END HTML
