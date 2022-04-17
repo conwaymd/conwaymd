@@ -351,6 +351,36 @@ class PlaceholderMarkerReplacement(Replacement):
     return self._replacement_master.replace_marker_occurrences(string)
 
 
+class PlaceholderProtectionReplacement(Replacement):
+  """
+  A replacement rule for protecting strings with a placeholder.
+  
+  CMD replacement rule syntax:
+  ````
+  PlaceholderProtectionReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  ````
+  """
+  
+  def __init__(self, id_, replacement_master):
+    super().__init__(id_)
+    self._replacement_master = replacement_master
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+    )
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    pass
+  
+  def _apply(self, string):
+    return self._replacement_master.protect(string)
+
+
 class DeIndentationReplacement(Replacement):
   """
   A replacement rule for de-indentation.
@@ -967,6 +997,9 @@ class ReplacementMaster:
     
     if class_name == 'PlaceholderMarkerReplacement':
       replacement = PlaceholderMarkerReplacement(id_, self._placeholder_master)
+    elif class_name == 'PlaceholderProtectionReplacement':
+      replacement = \
+              PlaceholderProtectionReplacement(id_, self._placeholder_master)
     elif class_name == 'DeIndentationReplacement':
       replacement = DeIndentationReplacement(id_)
     elif class_name == 'OrdinaryDictionaryReplacement':
@@ -2415,6 +2448,8 @@ r'''# STANDARD_RULES
 
 PlaceholderMarkerReplacement: #placeholder-markers
 - queue_position: ROOT
+
+PlaceholderProtectionReplacement: #placeholder-protect
 
 DeIndentationReplacement: #de-indent
 
