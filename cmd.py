@@ -117,9 +117,11 @@ class PlaceholderMaster:
       return self._string_from_placeholder[placeholder]
     except KeyError:
       encoded_counter = placeholder_match.group('encoded_counter')
+      counter = PlaceholderMaster.decode(encoded_counter)
       warnings.warn(
         'warning: placeholder encountered with unrecognised counter '
-        f'`{encoded_counter}` == int > {self._counter} \n\n' # TODO decode int
+        f'`{encoded_counter}`, denoting {counter}, '
+        f'which is greater than the current counter ({self._counter})\n\n'
         'Possible causes:\n'
         '- Confounding occurrences of «marker» have not been removed '
           'by calling protect_marker_occurrences(...)\n'
