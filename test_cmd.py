@@ -107,6 +107,41 @@ class TestCmd(unittest.TestCase):
       '\uE001' + 48 * '\uE000' + '\uE089' + '\uE000'
     )
   
+  def test_placeholder_master_decode(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE000'),
+      0
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE001'),
+      1
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uF8FE'),
+      0x18FE
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE001\uE000'),
+      0x18FF
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE043\uE963'),
+      0x69420
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode('\uE069\uE420\uE000\uF8FE\uE064'),
+      0x0069 * 0x18FF ** 4
+      + 0x0420 * 0x18FF ** 3
+      + 0x18FE * 0x18FF ** 1
+      + 0x0064 * 0x18FF ** 0
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.decode(
+        '\uE001' + 48 * '\uE000' + '\uE089' + '\uE000'
+      ),
+      0x18FF ** 50 + 0x89 * 0x18FF
+    )
+  
   def test_placeholder_master_build_placeholder(self):
     self.assertEqual(
       cmd.PlaceholderMaster.build_placeholder(0),

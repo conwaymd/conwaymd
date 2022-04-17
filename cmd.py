@@ -206,6 +206,16 @@ class PlaceholderMaster:
     return ''.join(reversed(encoded_digits))
   
   @staticmethod
+  def decode(encoded_counter):
+    
+    counter = 0
+    for encoded_digit in encoded_counter:
+      digit = PlaceholderMaster.decode_encoded_digit(encoded_digit)
+      counter = counter * PlaceholderMaster._COUNTER_BASE + digit
+    
+    return counter
+  
+  @staticmethod
   def build_placeholder(counter):
     
     marker = PlaceholderMaster._MARKER
