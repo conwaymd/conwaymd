@@ -2650,7 +2650,7 @@ ExtensibleFenceReplacement: #literals
     #placeholder-protect
 - closing_delimiter: >
 
-RegexDictionaryReplacement: #code-wrap
+RegexDictionaryReplacement: #code-tag-wrap
 * \A --> <code>
 * \Z --> </code>
 
@@ -2667,7 +2667,7 @@ ExtensibleFenceReplacement: #display-code
     #escape-html
     #de-indent
     #reduce-whitespace
-    #code-wrap
+    #code-tag-wrap
     #placeholder-protect
 - tag_name: pre
 
