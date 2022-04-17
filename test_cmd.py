@@ -351,6 +351,7 @@ Whitespace before closing delimiter:
     )
   
   def test_cmd_to_html(self):
+    
     self.assertEqual(
       cmd.cmd_to_html(
         ################################################################
@@ -435,6 +436,24 @@ and even whitespace before a break element:<br>
       ################################################################
       # END HTML
       ################################################################
+    )
+    
+    self.assertEqual(
+      cmd.cmd_to_html(
+r'''
+RegexDictionaryReplacement: #delete-everything
+- queue_position: AFTER #placeholder-unprotect
+* [\s\S]* -->
+
+%%%
+
+The quick brown fox jumps over the lazy dog.
+Everything is everything, and everything is dumb.
+'''
+        ,
+        'test_cmd.py'
+      ),
+      ''
     )
   
   def test_is_cmd_file(self):
