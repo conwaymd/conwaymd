@@ -72,6 +72,16 @@ class TestCmd(unittest.TestCase):
       '\uE001' + 48 * '\uE000' + '\uE089' + '\uE000'
     )
   
+  def test_placeholder_master_build_placeholder(self):
+    self.assertEqual(
+      cmd.PlaceholderMaster.build_placeholder(0),
+      '\uF8FF\uE000\uF8FF'
+    )
+    self.assertEqual(
+      cmd.PlaceholderMaster.build_placeholder(0x69420),
+      '\uF8FF\uE043\uE963\uF8FF'
+    )
+  
   def test_ordinary_dictionary_replacement_build_regex_pattern(self):
     
     self.assertEqual(

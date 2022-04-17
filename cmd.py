@@ -120,6 +120,14 @@ class PlaceholderMaster:
       counter = quotient
     
     return ''.join(reversed(encoded_digits))
+  
+  @staticmethod
+  def build_placeholder(counter):
+    
+    marker = PlaceholderMaster._MARKER
+    encoded_counter = PlaceholderMaster.encode(counter)
+    
+    return f'{marker}{encoded_counter}{marker}'
 
 
 class Replacement(abc.ABC):
