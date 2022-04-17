@@ -365,7 +365,9 @@ class DeIndentationReplacement(Replacement):
     super().__init__(id_)
   
   def attribute_names(self):
-    return ()
+    return (
+      'queue_position',
+    )
   
   def _validate_mandatory_attributes(self):
     pass
