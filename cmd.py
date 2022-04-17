@@ -2649,8 +2649,29 @@ ExtensibleFenceReplacement: #literals
     #placeholder-protect
 - closing_delimiter: >
 
-ReplacementSequence: #whitespace
+RegexDictionaryReplacement: #code-wrap
+* \A --> <code>
+* \Z --> </code>
+
+ExtensibleFenceReplacement: #display-code
 - queue_position: AFTER #literals
+- syntax_type: BLOCK
+- allowed_flags:
+    u=KEEP_HTML_UNESCAPED
+    i=KEEP_INDENTED
+    w=REDUCE_WHITESPACE
+- extensible_delimiter: ``
+- attribute_specifications: EMPTY
+- content_replacements:
+    #escape-html
+    #de-indent
+    #reduce-whitespace
+    #code-wrap
+    #placeholder-protect
+- tag_name: pre
+
+ReplacementSequence: #whitespace
+- queue_position: AFTER #display-code
 - replacements:
     #reduce-whitespace
 
