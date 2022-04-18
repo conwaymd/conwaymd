@@ -349,9 +349,14 @@ class Replacement(abc.ABC):
     
     if self._verbose_mode_enabled:
       
+      if string_before == string_after:
+        no_change_indicator = ' (no change)'
+      else:
+        no_change_indicator = ''
+      
       print('<' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' BEFORE #{self._id}')
       print(string_before)
-      print('=' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT)
+      print('=' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + no_change_indicator)
       print(string_after)
       print('>' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' AFTER #{self._id}')
       print()
