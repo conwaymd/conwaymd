@@ -3099,6 +3099,9 @@ RegexDictionaryReplacement: #boilerplate-protect
 * <style>[\s\S]*?</style> --> \g<0>
 * <head>[\s\S]*?</head> --> \g<0>
 
+RegexDictionaryReplacement: #prepend-newline
+* \A --> \n
+
 ExtensibleFenceReplacement: #divisions
 - queue_position: AFTER #boilerplate-protect
 - syntax_type: BLOCK
@@ -3106,6 +3109,7 @@ ExtensibleFenceReplacement: #divisions
 - attribute_specifications: EMPTY
 - content_replacements:
     #divisions
+    #prepend-newline
 - tag_name: div
 
 RegexDictionaryReplacement: #ensure-trailing-newline
