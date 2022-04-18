@@ -476,7 +476,7 @@ Yet comments can remove code. <# `Like so.` #>
 r'''
 # <code>test_cmd_to_html</code>
 <code title="&amp;&lt;&gt;&quot;">Attribute specification escape test.</code>
-<pre title="<code>?</code>"><code>Attribute specification prevail test.
+<pre title="`?`"><code>Attribute specification prevail test.
 </code></pre>
 ## <code>#placeholder-markers</code>
 If implemented properly, the following shall confound not:

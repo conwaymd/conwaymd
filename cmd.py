@@ -664,8 +664,9 @@ class ExtensibleFenceReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_):
+  def __init__(self, id_, placeholder_master):
     super().__init__(id_)
+    self._placeholder_master = placeholder_master
     self._syntax_type_is_block = None
     self._flag_name_from_letter = {}
     self._has_flags = False
@@ -910,7 +911,9 @@ class ExtensibleFenceReplacement(Replacement):
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                build_attributes_sequence(combined_attribute_specifications)
+                self._placeholder_master.protect(
+                  build_attributes_sequence(combined_attribute_specifications)
+                )
       else:
         attributes_sequence = ''
       
@@ -1124,7 +1127,7 @@ class ReplacementMaster:
     elif class_name == 'OrdinaryDictionaryReplacement':
       replacement = OrdinaryDictionaryReplacement(id_)
     elif class_name == 'ExtensibleFenceReplacement':
-      replacement = ExtensibleFenceReplacement(id_)
+      replacement = ExtensibleFenceReplacement(id_, self._placeholder_master)
     elif class_name == 'RegexDictionaryReplacement':
       replacement = RegexDictionaryReplacement(id_)
     else:
