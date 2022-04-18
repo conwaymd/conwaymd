@@ -31,6 +31,7 @@ TODO
 
 import abc
 import argparse
+import copy
 import os
 import re
 import sys
@@ -322,7 +323,7 @@ class Replacement(abc.ABC):
       raise CommittedMutateException(
         'error: cannot set `concluding_replacements` after `commit()`'
       )
-    self._concluding_replacements = value
+    self._concluding_replacements = copy.copy(value)
   
   def commit(self):
     self._validate_mandatory_attributes()
@@ -396,7 +397,7 @@ class ReplacementSequence(Replacement):
       raise CommittedMutateException(
         'error: cannot set `replacements` after `commit()`'
       )
-    self._replacements = value
+    self._replacements = copy.copy(value)
   
   def _validate_mandatory_attributes(self):
     pass
@@ -739,7 +740,7 @@ class ExtensibleFenceReplacement(Replacement):
       raise CommittedMutateException(
         'error: cannot set `flag_name_from_letter` after `commit()`'
       )
-    self._flag_name_from_letter = value
+    self._flag_name_from_letter = copy.copy(value)
   
   @property
   def opening_delimiter(self):
@@ -799,7 +800,7 @@ class ExtensibleFenceReplacement(Replacement):
       raise CommittedMutateException(
         'error: cannot set `content_replacements` after `commit()`'
       )
-    self._content_replacements = value
+    self._content_replacements = copy.copy(value)
   
   @property
   def closing_delimiter(self):
