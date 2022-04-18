@@ -3074,11 +3074,20 @@ RegexDictionaryReplacement: #boilerplate-protect
 * <style>[\s\S]*?</style> --> \g<0>
 * <head>[\s\S]*?</head> --> \g<0>
 
+ExtensibleFenceReplacement: #divisions
+- queue_position: AFTER #boilerplate-protect
+- syntax_type: BLOCK
+- extensible_delimiter: ||
+- attribute_specifications: EMPTY
+- content_replacements:
+    #divisions
+- tag_name: div
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #boilerplate-protect
+- queue_position: AFTER #divisions
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline

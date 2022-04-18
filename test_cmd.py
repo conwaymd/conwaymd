@@ -477,6 +477,18 @@ Even ```inline with ``backticks within`` ```.
 
 `Code prevails over <## comments ##>.`
 Yet comments can remove code. <# `Like so.` #>
+
+## `#divisions`
+
+||||{.top-level}
+  Parent.
+  ||{.elder}
+  Child 1.
+  ||
+  ||{.younger}
+  Child 2.
+  ||
+||||
 '''
         ################################################################
         # END CMD
@@ -541,6 +553,16 @@ Even <code>inline with ``backticks within``</code>.
 ## <code>#comments</code>
 <code>Code prevails over &lt;## comments ##&gt;.</code>
 Yet comments can remove code.
+## <code>#divisions</code>
+||||{.top-level}
+Parent.
+||{.elder}
+Child 1.
+||
+||{.younger}
+Child 2.
+||
+||||
 </body>
 </html>
 '''
