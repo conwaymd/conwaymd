@@ -554,15 +554,12 @@ Even <code>inline with ``backticks within``</code>.
 <code>Code prevails over &lt;## comments ##&gt;.</code>
 Yet comments can remove code.
 ## <code>#divisions</code>
-||||{.top-level}
-Parent.
-||{.elder}
-Child 1.
-||
-||{.younger}
-Child 2.
-||
-||||
+<div class="top-level">  Parent.
+<div class="elder">  Child 1.
+</div>
+<div class="younger">  Child 2.
+</div>
+</div>
 </body>
 </html>
 '''
