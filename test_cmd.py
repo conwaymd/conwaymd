@@ -15,6 +15,8 @@ import unittest
 
 class TestCmd(unittest.TestCase):
   
+  maxDiff = None
+  
   def test_placeholder_master(self):
     placeholder_master = cmd.PlaceholderMaster()
     strings = [
@@ -407,6 +409,11 @@ BEFORE{ <`` Literal & < > ``> }AFTER
 This be `inline code`.
 u``{.classy} Whitespace stripped, and <b>unescaped</b>. ``
 Even ```inline with ``backticks within`` ```.
+
+## `#comments`
+
+`Code prevails over <## comments ##>.`
+Yet comments can remove code. <# `Like so.` #>
 '''
         ################################################################
         # END CMD
@@ -449,6 +456,9 @@ and even whitespace before a break element:<br>
 This be <code>inline code</code>.
 <code class="classy">Whitespace stripped, and <b>unescaped</b>.</code>
 Even <code>inline with ``backticks within``</code>.
+## <code>#comments</code>
+<code>Code prevails over &lt;## comments ##&gt;.</code>
+Yet comments can remove code.
 '''
       ################################################################
       # END HTML

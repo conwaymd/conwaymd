@@ -2830,8 +2830,18 @@ ExtensibleFenceReplacement: #inline-code
     #placeholder-protect
 - tag_name: code
 
-ReplacementSequence: #whitespace
+RegexDictionaryReplacement: #comments
 - queue_position: AFTER #inline-code
+* [^\S\n]*
+  [<]
+    (?P<hashes> [#]+ )
+      [\s\S]*?
+    (?P=hashes)
+  [>]
+    -->
+
+ReplacementSequence: #whitespace
+- queue_position: AFTER #comments
 - replacements:
     #reduce-whitespace
 
