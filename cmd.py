@@ -2484,6 +2484,44 @@ def de_indent(string):
   return string
 
 
+def escape_attribute_value_html(value):
+  """
+  Escape an attribute value that will be delimited by double quotes.
+  
+  For speed, we make the following assumptions:
+  - Entity names are any run of up to 31 letters.
+    At the time of writing (2022-04-18),
+    the longest entity name is `CounterClockwiseContourIntegral`
+    according to <https://html.spec.whatwg.org/entities.json>.
+    Actually checking is slow for very little return.
+  - Decimal code points are any run of up to 7 digits.
+  - Hexadecimal code points are any run of up to 6 digits.
+  """
+  
+  value = \
+          re.sub(
+            '''
+              [&]
+              (?!
+                (?:
+                  [a-zA-Z]{1,31}
+                    |
+                  [#] (?: [0-9]{1,7} | [xX] [0-9a-fA-F]{1,6} )
+                )
+                [;]
+              )
+            ''',
+            '&amp;',
+            value,
+            flags=re.VERBOSE,
+          )
+  value = re.sub('<', '&lt;', value)
+  value = re.sub('>', '&gt;', value)
+  value = re.sub('"', '&quot;', value)
+  
+  return value
+
+
 def compute_attribute_specification_matches(attribute_specifications):
   return re.finditer(
     r'''

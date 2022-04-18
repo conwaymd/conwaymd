@@ -269,6 +269,50 @@ Whitespace before closing delimiter:
 '''
     )
   
+  def test_escape_attribute_value_html(self):
+    self.assertEqual(
+      cmd.escape_attribute_value_html('&<>"'),
+      '&amp;&lt;&gt;&quot;'
+    )
+    self.assertEqual(
+      cmd.escape_attribute_value_html('&amp;&lt;&gt;&quot;'),
+      '&amp;&lt;&gt;&quot;'
+    )
+    self.assertEqual(
+      cmd.escape_attribute_value_html(
+        'https://en.wikipedia.org/w/index.php?title=Wikipedia&action=history'
+      ),
+      'https://en.wikipedia.org/w/index.php?title=Wikipedia&amp;action=history'
+    )
+    self.assertEqual(
+      cmd.escape_attribute_value_html('&ThisEntityNameHasTooManyCharacters;'),
+      '&amp;ThisEntityNameHasTooManyCharacters;'
+    )
+    self.assertEqual(
+      cmd.escape_attribute_value_html('&NotAValidNameButShortEnough;'),
+      '&NotAValidNameButShortEnough;'
+    )
+    self.assertEqual(
+      cmd.escape_attribute_value_html('&#1234567;'),
+      '&#1234567;'
+    )
+    self.assertEqual(
+      cmd.escape_attribute_value_html('&#12345678;'),
+      '&amp;#12345678;'
+    )
+    self.assertEqual(
+      cmd.escape_attribute_value_html('&#x123456;'),
+      '&#x123456;'
+    )
+    self.assertEqual(
+      cmd.escape_attribute_value_html('&#XAbCdeF;'),
+      '&#XAbCdeF;'
+    )
+    self.assertEqual(
+      cmd.escape_attribute_value_html('&#x1234567;'),
+      '&amp;#x1234567;'
+    )
+  
   def test_build_attributes_sequence(self):
     self.assertEqual(
       cmd.build_attributes_sequence(''),
