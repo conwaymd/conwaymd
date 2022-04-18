@@ -340,11 +340,7 @@ class Replacement(abc.ABC):
       )
     
     string_before = string
-    
     string = self._apply(string)
-    for replacement in self._concluding_replacements:
-      string = replacement.apply(string)
-    
     string_after = string
     
     if self._verbose_mode_enabled:
