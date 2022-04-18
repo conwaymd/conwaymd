@@ -44,6 +44,7 @@ __version__ = 'v3.999...'
 
 GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
+VERBOSE_MODE_DIVIDER_SYMBOL_COUNT = 48
 
 
 class CommittedMutateException(Exception):
@@ -247,7 +248,7 @@ class Replacement(abc.ABC):
   ````
   """
   
-  def __init__(self, id_):
+  def __init__(self, id_, verbose_mode_enabled):
     self._is_committed = False
     self._id = id_
     self._queue_position_type = None
@@ -255,6 +256,7 @@ class Replacement(abc.ABC):
     self._positive_flag_name = None
     self._negative_flag_name = None
     self._concluding_replacements = []
+    self._verbose_mode_enabled = verbose_mode_enabled
   
   @property
   @abc.abstractmethod
@@ -337,11 +339,24 @@ class Replacement(abc.ABC):
         'error: cannot call `apply(string)` before `commit()`'
       )
     
+    string_before = string
+    
     string = self._apply(string)
     for replacement in self._concluding_replacements:
       string = replacement.apply(string)
     
-    return string
+    string_after = string
+    
+    if self._verbose_mode_enabled:
+      
+      print("<" * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' BEFORE #{self._id}')
+      print(string_before)
+      print("=" * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT)
+      print(string_after)
+      print(">" * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' AFTER #{self._id}')
+      print()
+    
+    return string_after
   
   @abc.abstractmethod
   def _validate_mandatory_attributes(self):
@@ -377,8 +392,8 @@ class ReplacementSequence(Replacement):
   ````
   """
   
-  def __init__(self, id_):
-    super().__init__(id_)
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
     self._replacements = []
   
   def attribute_names(self):
@@ -426,8 +441,8 @@ class PlaceholderMarkerReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, replacement_master):
-    super().__init__(id_)
+  def __init__(self, id_, replacement_master, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
     self._replacement_master = replacement_master
   
   def attribute_names(self):
@@ -456,8 +471,8 @@ class PlaceholderProtectionReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, replacement_master):
-    super().__init__(id_)
+  def __init__(self, id_, replacement_master, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
     self._replacement_master = replacement_master
   
   def attribute_names(self):
@@ -485,8 +500,8 @@ class PlaceholderUnprotectionReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   """
   
-  def __init__(self, id_, replacement_master):
-    super().__init__(id_)
+  def __init__(self, id_, replacement_master, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
     self._replacement_master = replacement_master
   
   def attribute_names(self):
@@ -517,8 +532,8 @@ class DeIndentationReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_):
-    super().__init__(id_)
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
   
   def attribute_names(self):
     return (
@@ -556,8 +571,8 @@ class OrdinaryDictionaryReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_):
-    super().__init__(id_)
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
     self._substitute_from_pattern = {}
     self._regex_pattern = None
     self._substitute_function = None
@@ -632,8 +647,8 @@ class RegexDictionaryReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_):
-    super().__init__(id_)
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
     self._substitute_from_pattern = {}
   
   def attribute_names(self):
@@ -689,8 +704,8 @@ class ExtensibleFenceReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, placeholder_master):
-    super().__init__(id_)
+  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
     self._placeholder_master = placeholder_master
     self._syntax_type_is_block = None
     self._flag_name_from_letter = {}
@@ -1004,13 +1019,14 @@ class ReplacementMaster:
   Applies the legislated replacements.
   """
   
-  def __init__(self, cmd_file_name):
+  def __init__(self, cmd_file_name, verbose_mode_enabled):
     
     self._opened_file_names = [cmd_file_name]
     self._replacement_from_id = {}
     self._root_replacement_id = None
     self._replacement_queue = []
     self._placeholder_master = PlaceholderMaster()
+    self._verbose_mode_enabled = verbose_mode_enabled
   
   @staticmethod
   def print_error(
@@ -1140,23 +1156,42 @@ class ReplacementMaster:
     id_ = class_declaration_match.group('id_')
     
     if class_name == 'ReplacementSequence':
-      replacement = ReplacementSequence(id_)
+      replacement = ReplacementSequence(id_, self._verbose_mode_enabled)
     elif class_name == 'PlaceholderMarkerReplacement':
-      replacement = PlaceholderMarkerReplacement(id_, self._placeholder_master)
+      replacement = \
+              PlaceholderMarkerReplacement(
+                id_,
+                self._placeholder_master,
+                self._verbose_mode_enabled,
+              )
     elif class_name == 'PlaceholderProtectionReplacement':
       replacement = \
-              PlaceholderProtectionReplacement(id_, self._placeholder_master)
+              PlaceholderProtectionReplacement(
+                id_,
+                self._placeholder_master,
+                self._verbose_mode_enabled,
+              )
     elif class_name == 'PlaceholderUnprotectionReplacement':
       replacement = \
-              PlaceholderUnprotectionReplacement(id_, self._placeholder_master)
+              PlaceholderUnprotectionReplacement(
+                id_,
+                self._placeholder_master,
+                self._verbose_mode_enabled,
+              )
     elif class_name == 'DeIndentationReplacement':
-      replacement = DeIndentationReplacement(id_)
+      replacement = DeIndentationReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'OrdinaryDictionaryReplacement':
-      replacement = OrdinaryDictionaryReplacement(id_)
+      replacement = \
+              OrdinaryDictionaryReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'ExtensibleFenceReplacement':
-      replacement = ExtensibleFenceReplacement(id_, self._placeholder_master)
+      replacement = \
+              ExtensibleFenceReplacement(
+                id_,
+                self._placeholder_master,
+                self._verbose_mode_enabled,
+              )
     elif class_name == 'RegexDictionaryReplacement':
-      replacement = RegexDictionaryReplacement(id_)
+      replacement = RegexDictionaryReplacement(id_, self._verbose_mode_enabled)
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
@@ -3053,14 +3088,14 @@ PlaceholderUnprotectionReplacement: #placeholder-unprotect
 '''
 
 
-def cmd_to_html(cmd, cmd_file_name=None):
+def cmd_to_html(cmd, cmd_file_name=None, verbose_mode_enabled=False):
   """
   Convert CMD to HTML.
   """
   
   replacement_rules, main_content = extract_rules_and_content(cmd)
   
-  replacement_master = ReplacementMaster(cmd_file_name)
+  replacement_master = ReplacementMaster(cmd_file_name, verbose_mode_enabled)
   replacement_master.legislate(STANDARD_RULES)
   replacement_master.legislate(replacement_rules, cmd_file_name)
   html = replacement_master.execute(main_content)

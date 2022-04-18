@@ -482,7 +482,8 @@ Yet comments can remove code. <# `Like so.` #>
         # END CMD
         ################################################################
         ,
-        'test_cmd.py'
+        'test_cmd.py',
+        verbose_mode_enabled=True,
       ),
       ################################################################
       # START HTML
