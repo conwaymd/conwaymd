@@ -2882,8 +2882,35 @@ RegexDictionaryReplacement: #comments
   [>]
     -->
 
-ReplacementSequence: #whitespace
+RegexDictionaryReplacement: #boilerplate
 - queue_position: AFTER #comments
+* \A -->
+    <!DOCTYPE html>
+      <html lang="%lang">
+        <head>
+          <meta charset="utf-8">
+          %head-elements-before-viewport
+          <meta name="viewport" content="%viewport-content">
+          %head-elements-after-viewport
+          <title>%title</title>
+          <style>%styles</style>
+        </head>
+      <body>
+* \Z -->
+      </body>
+    </html>
+
+OrdinaryDictionaryReplacement: #default-properties
+- queue_position: AFTER #boilerplate
+* %lang --> en
+* %head-elements-before-viewport -->
+* %viewport-content --> width=device-width, initial-scale=1
+* %head-elements-after-viewport -->
+* %title --> Title
+* %styles -->
+
+ReplacementSequence: #whitespace
+- queue_position: AFTER #default-properties
 - replacements:
     #reduce-whitespace
 

@@ -473,7 +473,17 @@ Yet comments can remove code. <# `Like so.` #>
       ################################################################
       # START HTML
       ################################################################
-r'''
+r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Title</title>
+<style></style>
+</head>
+<body>
 # <code>test_cmd_to_html</code>
 <code title="&amp;&lt;&gt;&quot;">Attribute specification escape test.</code>
 <pre title="`?`"><code>Attribute specification prevail test.
@@ -511,7 +521,8 @@ Even <code>inline with ``backticks within``</code>.
 ## <code>#comments</code>
 <code>Code prevails over &lt;## comments ##&gt;.</code>
 Yet comments can remove code.
-'''
+</body>
+</html>'''
       ################################################################
       # END HTML
       ################################################################
