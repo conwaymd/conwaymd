@@ -3143,7 +3143,11 @@ def extract_cmd_name(cmd_file_name_argument):
   return cmd_name
 
 
-def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
+def generate_html_file(
+  cmd_file_name_argument,
+  verbose_mode_enabled,
+  uses_command_line_argument
+):
   
   cmd_name = extract_cmd_name(cmd_file_name_argument)
   cmd_file_name = f'{cmd_name}.cmd'
@@ -3168,7 +3172,7 @@ def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
               )
       raise FileNotFoundError(error_message) from file_not_found_error
   
-  html = cmd_to_html(cmd, cmd_file_name)
+  html = cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled)
   
   html_file_name = f'{cmd_name}.html'
   try:
@@ -3188,6 +3192,9 @@ CMD_FILE_NAME_HELP = '''
   Abbreviate as `file` or `file.` for increased productivity.
   Omit to convert all CMD files under the working directory.
 '''
+VERBOSE_MODE_HELP = '''
+  run in verbose mode (prints every replacement applied)
+'''
 
 
 def parse_command_line_arguments():
@@ -3197,6 +3204,12 @@ def parse_command_line_arguments():
     '-v', '--version',
     action='version',
     version=f'{argument_parser.prog} {__version__}',
+  )
+  argument_parser.add_argument(
+    '-x', '--verbose',
+    dest='verbose_mode_enabled',
+    action='store_true',
+    help=VERBOSE_MODE_HELP,
   )
   argument_parser.add_argument(
     'cmd_file_name_argument',
@@ -3213,16 +3226,25 @@ def main():
   
   parsed_arguments = parse_command_line_arguments()
   cmd_file_name_argument = parsed_arguments.cmd_file_name_argument
+  verbose_mode_enabled = parsed_arguments.verbose_mode_enabled
   
   if cmd_file_name_argument != '':
-    generate_html_file(cmd_file_name_argument, uses_command_line_argument=True)
+    generate_html_file(
+      cmd_file_name_argument,
+      verbose_mode_enabled,
+      uses_command_line_argument=True,
+    )
     return
   else:
     for path, _, file_names in os.walk(os.curdir):
       for file_name in file_names:
         if is_cmd_file(file_name):
           cmd_file_name = os.path.join(path, file_name)
-          generate_html_file(cmd_file_name, uses_command_line_argument=False)
+          generate_html_file(
+            cmd_file_name,
+            verbose_mode_enabled,
+            uses_command_line_argument=False,
+          )
 
 
 if __name__ == '__main__':
