@@ -422,9 +422,9 @@ OrdinaryDictionaryReplacement: #boilerplate-properties-override
 # `test_cmd_to_html`
 
 ``{title=&<>"} Attribute specification escape test. ``
-```{title="`?` <`` <`!`> ``>"}
+``{title="`?` <`` <`!`> ``>"}
   Attribute specification prevail test.
-```
+``
 
 ## `#placeholder-markers`
 
