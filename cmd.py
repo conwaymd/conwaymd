@@ -1032,8 +1032,10 @@ class ReplacementMaster:
     
     print(
       'error: '
-      f'{source_file}, {line_number_range}: '
-      f'{message}'
+        f'{source_file}, {line_number_range}: '
+        f'{message}'
+      ,
+      file=sys.stderr,
     )
   
   @staticmethod
@@ -3098,6 +3100,8 @@ def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
         'error: '
         f'argument `{cmd_file_name_argument}`: '
         f'file `{cmd_file_name}` not found'
+        ,
+        file=sys.stderr,
       )
       sys.exit(COMMAND_LINE_ERROR_EXIT_CODE)
     else:
@@ -3116,7 +3120,7 @@ def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
       html_file.write(html)
       print(f'success: wrote to `{html_file_name}`')
   except IOError:
-    print(f'error: cannot write to `{html_file_name}`')
+    print(f'error: cannot write to `{html_file_name}`', file=sys.stderr)
     sys.exit(GENERIC_ERROR_EXIT_CODE)
 
 
