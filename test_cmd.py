@@ -561,7 +561,7 @@ The quick brown fox jumps over the lazy dog.
 Everything is everything, and everything is dumb.
 '''
         ,
-        'test_cmd.py'
+        'test_cmd.py',
       ),
       ''
     )

@@ -1325,7 +1325,8 @@ class ReplacementMaster:
       if invalid_syntax is not None:
         ReplacementMaster.print_error(
           f'invalid specification `{invalid_syntax}`'
-          ' for attribute `allowed_flags`',
+            ' for attribute `allowed_flags`'
+          ,
           rules_file_name,
           line_number_range_start,
           line_number,
@@ -1379,7 +1380,8 @@ class ReplacementMaster:
     if invalid_value is not None:
       ReplacementMaster.print_error(
         f'invalid value `{invalid_value}`'
-        ' for attribute `attribute_specifications`',
+          ' for attribute `attribute_specifications`'
+        ,
         rules_file_name,
         line_number_range_start,
         line_number,
@@ -1490,7 +1492,8 @@ class ReplacementMaster:
       if invalid_syntax is not None:
         ReplacementMaster.print_error(
           f'invalid specification `{invalid_syntax}`'
-          ' for attribute `concluding_replacements`',
+            ' for attribute `concluding_replacements`'
+          ,
           rules_file_name,
           line_number_range_start,
           line_number,
@@ -1566,7 +1569,8 @@ class ReplacementMaster:
       if invalid_syntax is not None:
         ReplacementMaster.print_error(
           f'invalid specification `{invalid_syntax}`'
-          ' for attribute `content_replacements`',
+            ' for attribute `content_replacements`'
+          ,
           rules_file_name,
           line_number_range_start,
           line_number,
@@ -1633,7 +1637,8 @@ class ReplacementMaster:
     if invalid_value is not None:
       ReplacementMaster.print_error(
         f'invalid value `{invalid_value}` not a character repeated'
-        ' for attribute `extensible_delimiter`',
+          ' for attribute `extensible_delimiter`'
+        ,
         rules_file_name,
         line_number_range_start,
         line_number,
@@ -1838,7 +1843,8 @@ class ReplacementMaster:
       if self._root_replacement_id is not None:
         ReplacementMaster.print_error(
           'root replacement already declared'
-          f' (`#{self._root_replacement_id}`)',
+            f' (`#{self._root_replacement_id}`)'
+          ,
           rules_file_name,
           line_number_range_start,
           line_number,
@@ -1923,7 +1929,8 @@ class ReplacementMaster:
       if invalid_syntax is not None:
         ReplacementMaster.print_error(
           f'invalid specification `{invalid_syntax}`'
-          ' for attribute `replacements`',
+            ' for attribute `replacements`'
+          ,
           rules_file_name,
           line_number_range_start,
           line_number,
@@ -3098,8 +3105,8 @@ def generate_html_file(cmd_file_name_argument, uses_command_line_argument):
     if uses_command_line_argument:
       print(
         'error: '
-        f'argument `{cmd_file_name_argument}`: '
-        f'file `{cmd_file_name}` not found'
+          f'argument `{cmd_file_name_argument}`: '
+          f'file `{cmd_file_name}` not found'
         ,
         file=sys.stderr,
       )
