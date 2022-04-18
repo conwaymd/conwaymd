@@ -403,7 +403,21 @@ Whitespace before closing delimiter:
         ################################################################
         # START CMD
         ################################################################
-r'''%%%
+r'''# Da Rules
+
+OrdinaryDictionaryReplacement: #default-properties-override
+- queue_position: BEFORE #default-properties
+* %lang --> en-AU
+* %title --> This be a test
+* %styles -->
+    #good {
+      font-family: sans-serif;
+    }
+    #bad {
+      font-family: serif;
+    }
+
+%%%
 
 # `test_cmd_to_html`
 
@@ -474,12 +488,19 @@ Yet comments can remove code. <# `Like so.` #>
       # START HTML
       ################################################################
 r'''<!DOCTYPE html>
-<html lang="en">
+<html lang="en-AU">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Title</title>
-<style></style>
+<title>This be a test</title>
+<style>
+#good {
+font-family: sans-serif;
+}
+#bad {
+font-family: serif;
+}
+</style>
 </head>
 <body>
 # <code>test_cmd_to_html</code>

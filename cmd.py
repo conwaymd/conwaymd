@@ -2893,7 +2893,9 @@ RegexDictionaryReplacement: #boilerplate
           <meta name="viewport" content="%viewport-content">
           %head-elements-after-viewport
           <title>%title</title>
-          <style>%styles</style>
+          <style>
+            %styles
+          </style>
         </head>
       <body>
 * \Z -->
