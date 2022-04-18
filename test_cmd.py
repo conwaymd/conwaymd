@@ -408,7 +408,7 @@ r'''%%%
 # `test_cmd_to_html`
 
 ``{title=&<>"} Attribute specification escape test. ``
-```{title="`?`"}
+```{title="`?` <`` <`!`> ``>"}
   Attribute specification prevail test.
 ```
 
@@ -484,7 +484,7 @@ r'''<!DOCTYPE html>
 <body>
 # <code>test_cmd_to_html</code>
 <code title="&amp;&lt;&gt;&quot;">Attribute specification escape test.</code>
-<pre title="`?`"><code>Attribute specification prevail test.
+<pre title="`?` &lt;`!`&gt;"><code>Attribute specification prevail test.
 </code></pre>
 ## <code>#placeholder-markers</code>
 If implemented properly, the following shall confound not:
