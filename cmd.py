@@ -242,6 +242,7 @@ class Replacement(abc.ABC):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
+  - concluding_replacements: (def) NONE | #«id» [...]
   ````
   """
   
@@ -252,6 +253,7 @@ class Replacement(abc.ABC):
     self._queue_reference_replacement = None
     self._positive_flag_name = None
     self._negative_flag_name = None
+    self._concluding_replacements = []
   
   @property
   @abc.abstractmethod
@@ -310,17 +312,35 @@ class Replacement(abc.ABC):
       )
     self._negative_flag_name = value
   
+  @property
+  def concluding_replacements(self):
+    return self._concluding_replacements
+  
+  @concluding_replacements.setter
+  def concluding_replacements(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `concluding_replacements` after `commit()`'
+      )
+    self._concluding_replacements = value
+  
   def commit(self):
     self._validate_mandatory_attributes()
     self._set_apply_method_variables()
     self._is_committed = True
   
   def apply(self, string):
+    
     if not self._is_committed:
       raise UncommittedApplyException(
         'error: cannot call `apply(string)` before `commit()`'
       )
-    return self._apply(string)
+    
+    string = self._apply(string)
+    for replacement in self._concluding_replacements:
+      string = replacement.apply(string)
+    
+    return string
   
   @abc.abstractmethod
   def _validate_mandatory_attributes(self):
@@ -529,6 +549,7 @@ class OrdinaryDictionaryReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
+  - concluding_replacements: (def) NONE | #«id» [...]
   * «pattern» --> «substitute»
   [...]
   ````
@@ -545,6 +566,7 @@ class OrdinaryDictionaryReplacement(Replacement):
       'queue_position',
       'positive_flag',
       'negative_flag',
+      'concluding_replacements',
     )
   
   def add_substitution(self, pattern, substitute):
@@ -603,6 +625,7 @@ class RegexDictionaryReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
+  - concluding_replacements: (def) NONE | #«id» [...]
   * «pattern» --> «substitute»
   [...]
   ````
@@ -617,6 +640,7 @@ class RegexDictionaryReplacement(Replacement):
       'queue_position',
       'positive_flag',
       'negative_flag',
+      'concluding_replacements',
     )
   
   def add_substitution(self, pattern, substitute):
@@ -1417,6 +1441,83 @@ class ReplacementMaster:
     replacement.closing_delimiter = closing_delimiter
   
   @staticmethod
+  def compute_concluding_replacement_matches(attribute_value):
+    return re.finditer(
+      r'''
+        (?P<whitespace_only> \A [\s]* \Z )
+          |
+        (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+          |
+        (?:
+          [#] (?P<id_> [a-z-]+ ) (?= [\s] | \Z )
+            |
+          (?P<invalid_syntax> [\S]+ )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  def stage_concluding_replacements(
+    self,
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    concluding_replacements = []
+    
+    for concluding_replacement_match \
+    in ReplacementMaster\
+      .compute_concluding_replacement_matches(attribute_value):
+      
+      if concluding_replacement_match.group('whitespace_only') is not None:
+        ReplacementMaster.print_error(
+          f'invalid specification `` for attribute `concluding_replacements`',
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      invalid_syntax = concluding_replacement_match.group('invalid_syntax')
+      if invalid_syntax is not None:
+        ReplacementMaster.print_error(
+          f'invalid specification `{invalid_syntax}`'
+          ' for attribute `concluding_replacements`',
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      if concluding_replacement_match.group('none_keyword') is not None:
+        return
+      
+      concluding_replacement_id = concluding_replacement_match.group('id_')
+      if concluding_replacement_id == replacement.id_:
+        concluding_replacement = replacement
+      else:
+        try:
+          concluding_replacement = \
+            self._replacement_from_id[concluding_replacement_id]
+        except KeyError:
+          ReplacementMaster.print_error(
+            f'undefined replacement `#{concluding_replacement_id}`',
+            rules_file_name,
+            line_number_range_start,
+            line_number,
+          )
+          sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      concluding_replacements.append(concluding_replacement)
+    
+    replacement.concluding_replacements = concluding_replacements
+  
+  @staticmethod
   def compute_content_replacement_matches(attribute_value):
     return re.finditer(
       r'''
@@ -2095,6 +2196,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'closing_delimiter':
         ReplacementMaster.stage_closing_delimiter(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'concluding_replacements':
+        self.stage_concluding_replacements(
           replacement,
           attribute_value,
           rules_file_name,
