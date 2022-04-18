@@ -405,8 +405,8 @@ Whitespace before closing delimiter:
         ################################################################
 r'''# Da Rules
 
-OrdinaryDictionaryReplacement: #default-properties-override
-- queue_position: BEFORE #default-properties
+OrdinaryDictionaryReplacement: #boilerplate-properties-override
+- queue_position: BEFORE #boilerplate-properties
 * %lang --> en-AU
 * %title --> This be a test
 * %styles -->

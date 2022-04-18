@@ -2902,7 +2902,7 @@ RegexDictionaryReplacement: #boilerplate
       </body>
     </html>
 
-OrdinaryDictionaryReplacement: #default-properties
+OrdinaryDictionaryReplacement: #boilerplate-properties
 - queue_position: AFTER #boilerplate
 * %lang --> en
 * %head-elements-before-viewport -->
@@ -2912,7 +2912,7 @@ OrdinaryDictionaryReplacement: #default-properties
 * %styles -->
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #default-properties
+- queue_position: AFTER #boilerplate-properties
 - replacements:
     #reduce-whitespace
 
