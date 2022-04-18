@@ -655,6 +655,7 @@ class RegexDictionaryReplacement(Replacement):
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
     self._substitute_from_pattern = {}
+    self._substitute_function_from_pattern = {}
   
   def attribute_names(self):
     return (
@@ -675,18 +676,37 @@ class RegexDictionaryReplacement(Replacement):
     pass
   
   def _set_apply_method_variables(self):
-    pass
+    
+    for pattern, substitute in self._substitute_from_pattern.items():
+      
+      substitute_function = self.build_substitute_function(substitute)
+      self._substitute_function_from_pattern[pattern] = substitute_function
   
   def _apply(self, string):
-    for pattern, substitute in self._substitute_from_pattern.items():
+    
+    for pattern, substitute_function \
+    in self._substitute_function_from_pattern.items():
       string = \
               re.sub(
                 pattern,
-                substitute,
+                substitute_function,
                 string,
                 flags=re.ASCII | re.MULTILINE | re.VERBOSE,
               )
     return string
+  
+  def build_substitute_function(self, substitute):
+    
+    def substitute_function(match):
+      
+      substitute_result = match.expand(substitute)
+      
+      for replacement in self._concluding_replacements:
+        substitute_result = replacement.apply(substitute_result)
+      
+      return substitute_result
+    
+    return substitute_function
 
 
 class ExtensibleFenceReplacement(Replacement):
