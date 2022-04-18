@@ -473,8 +473,8 @@ Yet comments can remove code. <# `Like so.` #>
       ################################################################
 r'''
 # <code>test_cmd_to_html</code>
-<code title="&<>"">Attribute specification escape test.</code>
-<code title="">Attribute specification prevail test.</code>
+<code title="&amp;&lt;&gt;&quot;">Attribute specification escape test.</code>
+<code title="&lt;# comment #&gt;">Attribute specification prevail test.</code>
 ## <code>#placeholder-markers</code>
 If implemented properly, the following shall confound not:
 <code>'\uF8FF\uE069\uE420\uE000\uF8FE\uE064\uF8FF'</code>: 

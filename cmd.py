@@ -2678,6 +2678,7 @@ def build_attributes_sequence(attribute_specifications):
     if value is None:
       attribute_sequence += f' {name}'
     else:
+      value = escape_attribute_value_html(value)
       attribute_sequence += f' {name}="{value}"'
   
   return attribute_sequence
