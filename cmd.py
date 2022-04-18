@@ -359,7 +359,7 @@ class Replacement(abc.ABC):
       print('=' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + no_change_indicator)
       print(string_after)
       print('>' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' AFTER #{self._id}')
-      print()
+      print('\n\n\n\n')
     
     return string_after
   
