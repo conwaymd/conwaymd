@@ -3029,10 +3029,14 @@ RegexDictionaryReplacement: #boilerplate-protect
 * <style>[\s\S]*?</style> --> \g<0>
 * <head>[\s\S]*?</head> --> \g<0>
 
+RegexDictionaryReplacement: #ensure-trailing-newline
+* (?<! \n ) \Z --> \n
+
 ReplacementSequence: #whitespace
 - queue_position: AFTER #boilerplate-protect
 - replacements:
     #reduce-whitespace
+    #ensure-trailing-newline
 
 PlaceholderUnprotectionReplacement: #placeholder-unprotect
 - queue_position: AFTER #whitespace
