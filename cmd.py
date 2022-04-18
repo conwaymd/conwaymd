@@ -349,11 +349,11 @@ class Replacement(abc.ABC):
     
     if self._verbose_mode_enabled:
       
-      print("<" * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' BEFORE #{self._id}')
+      print('<' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' BEFORE #{self._id}')
       print(string_before)
-      print("=" * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT)
+      print('=' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT)
       print(string_after)
-      print(">" * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' AFTER #{self._id}')
+      print('>' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' AFTER #{self._id}')
       print()
     
     return string_after
