@@ -2812,10 +2812,10 @@ RegexDictionaryReplacement: #trim-whitespace
 
 RegexDictionaryReplacement: #reduce-whitespace
 - positive_flag: REDUCE_WHITESPACE
-* [\n]+ --> \n
 * ^ [^\S\n]+ -->
 * [^\S\n]+ $ -->
 * [\s]+ (?= <br> ) -->
+* [\n]+ --> \n
 
 ExtensibleFenceReplacement: #literals
 - queue_position: AFTER #placeholder-markers
