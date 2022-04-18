@@ -3020,8 +3020,17 @@ OrdinaryDictionaryReplacement: #boilerplate-properties
 * %title --> Title
 * %styles -->
 
-ReplacementSequence: #whitespace
+RegexDictionaryReplacement: #boilerplate-protect
 - queue_position: AFTER #boilerplate-properties
+- concluding_replacements:
+    #reduce-whitespace
+    #placeholder-protect
+* <style>[\s]*?</style> -->
+* <style>[\s\S]*?</style> --> \g<0>
+* <head>[\s\S]*?</head> --> \g<0>
+
+ReplacementSequence: #whitespace
+- queue_position: AFTER #boilerplate-protect
 - replacements:
     #reduce-whitespace
 
