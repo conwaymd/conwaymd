@@ -30,6 +30,10 @@ it will not be turned into a proper Python package.
    - Abbreviate `file.cmd` as `file` or `file.` for increased productivity.
    - Omit `file.cmd` to convert all CMD files under the working directory.
 
+If you are using Windows but insist on not using Git BASH,
+then add the folder containing `cmd.py` to the `%PATH%` variable
+and invoke `cmd.py`.
+
 
 ## Features
 
