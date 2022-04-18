@@ -602,7 +602,7 @@ class OrdinaryDictionaryReplacement(Replacement):
               self._substitute_from_pattern,
             )
     self._substitute_function = \
-            OrdinaryDictionaryReplacement.build_substitute_function(
+            self.build_substitute_function(
               self._substitute_from_pattern,
             )
   
@@ -617,12 +617,16 @@ class OrdinaryDictionaryReplacement(Replacement):
   def build_regex_pattern(substitute_from_pattern):
     return '|'.join(re.escape(pattern) for pattern in substitute_from_pattern)
   
-  @staticmethod
-  def build_substitute_function(substitute_from_pattern):
+  def build_substitute_function(self, substitute_from_pattern):
     
     def substitute_function(match):
+      
       pattern = match.group()
       substitute = substitute_from_pattern[pattern]
+      
+      for replacement in self._concluding_replacements:
+        substitute = replacement.apply(substitute)
+      
       return substitute
     
     return substitute_function
