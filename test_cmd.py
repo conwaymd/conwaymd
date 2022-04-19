@@ -489,6 +489,18 @@ Yet comments can remove code. <# `Like so.` #>
   Child 2.
   ||
 ||||
+
+## `#blockquotes`
+
+""""{.four}
+"""{.three}
+""{.two}
+||
+"One is not a blockquote"
+||
+""
+"""
+""""
 '''
         ################################################################
         # END CMD
@@ -563,6 +575,16 @@ Child 1.
 Child 2.
 </div>
 </div>
+## <code>#blockquotes</code>
+<blockquote class="four">
+<blockquote class="three">
+<blockquote class="two">
+<div>
+"One is not a blockquote"
+</div>
+</blockquote>
+</blockquote>
+</blockquote>
 </body>
 </html>
 '''

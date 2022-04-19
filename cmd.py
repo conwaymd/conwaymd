@@ -3112,11 +3112,21 @@ ExtensibleFenceReplacement: #divisions
     #prepend-newline
 - tag_name: div
 
+ExtensibleFenceReplacement: #blockquotes
+- queue_position: AFTER #divisions
+- syntax_type: BLOCK
+- extensible_delimiter: ""
+- attribute_specifications: EMPTY
+- content_replacements:
+    #blockquotes
+    #prepend-newline
+- tag_name: blockquote
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #divisions
+- queue_position: AFTER #blockquotes
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
