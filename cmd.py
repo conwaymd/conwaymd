@@ -1015,10 +1015,10 @@ class PartitioningReplacement(Replacement):
   ````
   PartitioningReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
-  - starting_pattern: «regex»
+  - starting_pattern: «regex» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
   - content_replacements: (def) NONE | #«id» [...]
-  - ending_pattern: «regex»
+  - ending_pattern: «regex» (mandatory)
   - tag_name: (def) NONE | «name»
   ````
   """
@@ -1101,6 +1101,14 @@ class PartitioningReplacement(Replacement):
         'error: cannot set `tag_name` after `commit()`'
       )
     self._tag_name = value
+  
+  def _validate_mandatory_attributes(self):
+    
+    if self._starting_pattern is None:
+      raise MissingAttributeException('starting_pattern')
+    
+    if self._ending_pattern is None:
+      raise MissingAttributeException('ending_pattern')
 
 
 CMD_REPLACEMENT_SYNTAX_HELP = \
