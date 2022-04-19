@@ -501,6 +501,18 @@ Yet comments can remove code. <# `Like so.` #>
 ""
 """
 """"
+
+## `#paragraphs`
+
+--------{.eight}
+This be a paragraph.
+--
+NOTE: nested paragraphs are illegal.
+--
+--------
+--{.two}
+This be another paragraph.
+--
 '''
         ################################################################
         # END CMD
@@ -585,6 +597,16 @@ Child 2.
 </blockquote>
 </blockquote>
 </blockquote>
+## <code>#paragraphs</code>
+<p class="eight">
+This be a paragraph.
+--
+NOTE: nested paragraphs are illegal.
+--
+</p>
+<p class="two">
+This be another paragraph.
+</p>
 </body>
 </html>
 '''

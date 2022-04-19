@@ -3122,11 +3122,20 @@ ExtensibleFenceReplacement: #blockquotes
     #prepend-newline
 - tag_name: blockquote
 
+ExtensibleFenceReplacement: #paragraphs
+- queue_position: AFTER #blockquotes
+- syntax_type: BLOCK
+- extensible_delimiter: --
+- attribute_specifications: EMPTY
+- content_replacements:
+    #prepend-newline
+- tag_name: p
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #blockquotes
+- queue_position: AFTER #paragraphs
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
