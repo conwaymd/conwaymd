@@ -1005,6 +1005,104 @@ class ExtensibleFenceReplacement(Replacement):
     return substitute_function
 
 
+class PartitioningReplacement(Replacement):
+  """
+  A generalised partitioning replacement rule.
+  
+  Does partitioning by consuming everything from a
+  starting pattern up to but not including an ending pattern.
+  CMD replacement rule syntax:
+  ````
+  PartitioningReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - starting_pattern: «regex»
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  - content_replacements: (def) NONE | #«id» [...]
+  - ending_pattern: «regex»
+  - tag_name: (def) NONE | «name»
+  ````
+  """
+  
+  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._placeholder_master = placeholder_master
+    self._starting_pattern = None
+    self._attribute_specifications = None
+    self._content_replacements = []
+    self._ending_pattern = None
+    self._tag_name = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'starting_pattern',
+      'attribute_specifications',
+      'content_replacements',
+      'ending_pattern',
+      'tag_name',
+    )
+  
+  @property
+  def starting_pattern(self):
+    return self._starting_pattern
+  
+  @starting_pattern.setter
+  def starting_pattern(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `starting_pattern` after `commit()`'
+      )
+    self._starting_pattern = value
+  
+  @property
+  def attribute_specifications(self):
+    return self._attribute_specifications
+  
+  @attribute_specifications.setter
+  def attribute_specifications(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `attribute_specifications` after `commit()`'
+      )
+    self._attribute_specifications = value
+  
+  @property
+  def content_replacements(self):
+    return self._content_replacements
+  
+  @content_replacements.setter
+  def content_replacements(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `content_replacements` after `commit()`'
+      )
+    self._content_replacements = copy.copy(value)
+  
+  @property
+  def ending_pattern(self):
+    return self._ending_pattern
+  
+  @ending_pattern.setter
+  def ending_pattern(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `ending_pattern` after `commit()`'
+      )
+    self._ending_pattern = value
+  
+  @property
+  def tag_name(self):
+    return self._tag_name
+  
+  @tag_name.setter
+  def tag_name(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `tag_name` after `commit()`'
+      )
+    self._tag_name = value
+
+
 CMD_REPLACEMENT_SYNTAX_HELP = \
 '''\
 In CMD replacement rule syntax, a line must be one of the following:
