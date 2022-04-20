@@ -1018,7 +1018,6 @@ class PartitioningReplacement(Replacement):
   - starting_pattern: «regex» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
   - content_replacements: (def) NONE | #«id» [...]
-  - ending_pattern: «regex» (mandatory)
   - tag_name: (def) NONE | «name»
   ````
   """
@@ -1029,7 +1028,6 @@ class PartitioningReplacement(Replacement):
     self._starting_pattern = None
     self._attribute_specifications = None
     self._content_replacements = []
-    self._ending_pattern = None
     self._tag_name = None
     self._regex_pattern = None
     self._substitute_function = None
@@ -1040,7 +1038,6 @@ class PartitioningReplacement(Replacement):
       'starting_pattern',
       'attribute_specifications',
       'content_replacements',
-      'ending_pattern',
       'tag_name',
     )
   
@@ -1081,18 +1078,6 @@ class PartitioningReplacement(Replacement):
     self._content_replacements = copy.copy(value)
   
   @property
-  def ending_pattern(self):
-    return self._ending_pattern
-  
-  @ending_pattern.setter
-  def ending_pattern(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `ending_pattern` after `commit()`'
-      )
-    self._ending_pattern = value
-  
-  @property
   def tag_name(self):
     return self._tag_name
   
@@ -1108,9 +1093,6 @@ class PartitioningReplacement(Replacement):
     
     if self._starting_pattern is None:
       raise MissingAttributeException('starting_pattern')
-    
-    if self._ending_pattern is None:
-      raise MissingAttributeException('ending_pattern')
   
   def _set_apply_method_variables(self):
     
