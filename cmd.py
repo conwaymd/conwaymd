@@ -1109,6 +1109,52 @@ class PartitioningReplacement(Replacement):
     
     if self._ending_pattern is None:
       raise MissingAttributeException('ending_pattern')
+  
+  @staticmethod
+  def build_regex_pattern(starting_pattern, attribute_specifications):
+    
+    anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True)
+    starting_regex = f'(?: {starting_pattern} )'
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block=False,
+            )
+    if attribute_specifications_regex == '':
+      attribute_specifications_or_whitespace_regex = r'[\s]+'
+    else:
+      attribute_specifications_or_whitespace_regex = \
+              fr'(?: {attribute_specifications_regex} | [\s]+ )'
+    content_regex = build_content_regex()
+    attribute_specifications_no_capture_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block=False,
+              capture_attribute_specifications=False,
+            )
+    if attribute_specifications_no_capture_regex == '':
+      attribute_specifications_no_capture_or_whitespace_regex = r'[\s]+'
+    else:
+      attribute_specifications_no_capture_or_whitespace_regex = \
+              fr'(?: {attribute_specifications_no_capture_regex} | [\s]+ )'
+    ending_lookahead_regex = \
+            (
+              '(?= '
+                + anchoring_regex
+                + starting_regex
+                + attribute_specifications_no_capture_or_whitespace_regex
+              + r' | \Z )'
+            )
+    
+    return ''.join(
+      [
+        anchoring_regex,
+        starting_regex,
+        attribute_specifications_or_whitespace_regex,
+        content_regex,
+        ending_lookahead_regex,
+      ]
+    )
 
 
 CMD_REPLACEMENT_SYNTAX_HELP = \
@@ -3007,11 +3053,16 @@ def build_extensible_delimiter_opening_regex(
 def build_attribute_specifications_regex(
   attribute_specifications,
   syntax_type_is_block,
+  capture_attribute_specifications=True,
 ):
   
   if attribute_specifications is not None:
-    optional_braced_sequence_regex = \
-      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+    if capture_attribute_specifications:
+      optional_braced_sequence_regex = \
+              r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+    else:
+      optional_braced_sequence_regex = \
+              r'(?: \{ [^}]*? \} )?'
   else:
     optional_braced_sequence_regex = ''
   

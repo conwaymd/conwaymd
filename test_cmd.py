@@ -221,6 +221,32 @@ class TestCmd(unittest.TestCase):
       '(?P=extensible_delimiter)'
     )
   
+  def test_partitioning_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.PartitioningReplacement.build_regex_pattern(
+        starting_pattern='[-+*]',
+        attribute_specifications='',
+      ),
+      r'^[^\S\n]*'
+      '(?: [-+*] )'
+      r'(?: (?: \{ (?P<attribute_specifications> [^}]*? ) \} )? | [\s]+ )'
+      r'(?P<content> [\s\S]*? )'
+      r'(?= ^[^\S\n]*(?: [-+*] )(?: (?: \{ [^}]*? \} )? | [\s]+ ) | \Z )'
+    )
+    
+    self.assertEqual(
+      cmd.PartitioningReplacement.build_regex_pattern(
+        starting_pattern='HELLO[:]',
+        attribute_specifications=None,
+      ),
+      r'^[^\S\n]*'
+      '(?: HELLO[:] )'
+      r'[\s]+'
+      r'(?P<content> [\s\S]*? )'
+      r'(?= ^[^\S\n]*(?: HELLO[:] )[\s]+ | \Z )'
+    )
+  
   def test_compute_longest_common_prefix(self):
     self.assertEqual(
       cmd.compute_longest_common_prefix(['a', 'b', 'c', 'd']),
