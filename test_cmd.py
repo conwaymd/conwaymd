@@ -540,6 +540,56 @@ NOTE: nested paragraphs are illegal.
 This be another paragraph.
 --
 '''
+"""
+## `#tables`
+
+''''
+<caption>Why the hell would you have table inception?</caption>
+|^
+  //
+    ; `starting_match`
+    ; `tag_name`
+|:
+  //
+    , `|^`
+    , `thead`
+  //
+    , `|:`
+    , `tbody`
+  //
+    , `|_`
+    , `tfoot`
+|_
+  //
+    ,{}
+      ''{.nested-with-parts}
+        |^
+          //
+            ; No
+            ; Logic
+        |:
+          //
+            ,{c2} A
+            , 1
+          //
+            , 2
+          //
+            ,{r2}
+      ''
+    ,{style="background: yellow"}
+      ''{.nested-without-parts}
+        //
+          ; Who
+          , Me
+        //
+          ; What
+          , Yes
+        //
+          ;{style="font-weight: bold"} When
+          , Didn't Ask
+      ''
+''''
+"""
         ################################################################
         # END CMD
         ################################################################
@@ -633,6 +683,58 @@ NOTE: nested paragraphs are illegal.
 <p class="two">
 This be another paragraph.
 </p>
+## <code>#tables</code>
+<table>
+<caption>Why the hell would you have table inception?</caption>
+<part>
+//
+; <code>starting_match</code>
+; <code>tag_name</code>
+</part>
+<part>
+//
+, <code>|^</code>
+, <code>thead</code>
+//
+, <code>|:</code>
+, <code>tbody</code>
+//
+, <code>|_</code>
+, <code>tfoot</code>
+</part>
+<part>
+//
+,{}
+<table class="nested-with-parts">
+<part>
+//
+; No
+; Logic
+</part>
+<part>
+//
+,{c2} A
+, 1
+//
+, 2
+//
+,{r2}
+</part>
+</table>
+,{style="background: yellow"}
+<table class="nested-without-parts">
+//
+; Who
+, Me
+//
+; What
+, Yes
+//
+;{style="font-weight: bold"} When
+, Didn't Ask
+</table>
+</part>
+</table>
 </body>
 </html>
 '''

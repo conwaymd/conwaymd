@@ -1188,7 +1188,7 @@ class PartitioningReplacement(Replacement):
       if tag_name is None:
         return content
       else:
-        return f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
+        return f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>\n'
     
     return substitute_function
 
@@ -1399,6 +1399,13 @@ class ReplacementMaster:
     elif class_name == 'ExtensibleFenceReplacement':
       replacement = \
               ExtensibleFenceReplacement(
+                id_,
+                self._placeholder_master,
+                self._verbose_mode_enabled,
+              )
+    elif class_name == 'PartitioningReplacement':
+      replacement = \
+              PartitioningReplacement(
                 id_,
                 self._placeholder_master,
                 self._verbose_mode_enabled,
@@ -2209,6 +2216,73 @@ class ReplacementMaster:
     replacement.replacements = matched_replacements
   
   @staticmethod
+  def compute_starting_pattern_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<starting_pattern> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_starting_pattern(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    starting_pattern_match = \
+            ReplacementMaster.compute_starting_pattern_match(attribute_value)
+    
+    invalid_value = starting_pattern_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `starting_pattern`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    starting_pattern = starting_pattern_match.group('starting_pattern')
+    
+    try:
+      starting_pattern_compiled = \
+              re.compile(
+                starting_pattern,
+                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              )
+    except re.error as pattern_exception:
+      ReplacementMaster.print_error(
+        f'bad regex pattern `{starting_pattern}`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      ReplacementMaster.print_traceback(pattern_exception)
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if len(starting_pattern_compiled.groupindex) > 0:
+      ReplacementMaster.print_error(
+        f'named capture groups not allowed in `starting_pattern`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    replacement.starting_pattern = starting_pattern
+  
+  @staticmethod
   def compute_syntax_type_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -2518,6 +2592,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'replacements':
         self.stage_replacements(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'starting_pattern':
+        ReplacementMaster.stage_starting_pattern(
           replacement,
           attribute_value,
           rules_file_name,
@@ -3324,11 +3406,28 @@ ExtensibleFenceReplacement: #paragraphs
     #prepend-newline
 - tag_name: p
 
+PartitioningReplacement: #table-parts
+- starting_pattern: [|][\^:_]
+- attribute_specifications: EMPTY
+- content_replacements: NONE
+- tag_name: part
+
+ExtensibleFenceReplacement: #tables
+- queue_position: AFTER #paragraphs
+- syntax_type: BLOCK
+- extensible_delimiter: ''
+- attribute_specifications: EMPTY
+- content_replacements:
+    #tables
+    #table-parts
+    #prepend-newline
+- tag_name: table
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #paragraphs
+- queue_position: AFTER #tables
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
