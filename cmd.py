@@ -566,9 +566,9 @@ class OrdinaryDictionaryReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  - concluding_replacements: (def) NONE | #«id» [...]
   * «pattern» --> «substitute»
   [...]
+  - concluding_replacements: (def) NONE | #«id» [...]
   ````
   """
   
@@ -646,9 +646,9 @@ class RegexDictionaryReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  - concluding_replacements: (def) NONE | #«id» [...]
   * «pattern» --> «substitute»
   [...]
+  - concluding_replacements: (def) NONE | #«id» [...]
   ````
   """
   
@@ -3471,12 +3471,12 @@ OrdinaryDictionaryReplacement: #boilerplate-properties
 
 RegexDictionaryReplacement: #boilerplate-protect
 - queue_position: AFTER #boilerplate-properties
-- concluding_replacements:
-    #reduce-whitespace
-    #placeholder-protect
 * <style>[\s]*?</style> -->
 * <style>[\s\S]*?</style> --> \g<0>
 * <head>[\s\S]*?</head> --> \g<0>
+- concluding_replacements:
+    #reduce-whitespace
+    #placeholder-protect
 
 RegexDictionaryReplacement: #prepend-newline
 * \A --> \n
