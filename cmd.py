@@ -3519,6 +3519,13 @@ PartitioningReplacement: #table-body
 - content_replacements: NONE
 - tag_name: tbody
 
+PartitioningReplacement: #table-foot
+- starting_pattern: [|][_]
+- attribute_specifications: EMPTY
+- ending_pattern: NONE
+- content_replacements: NONE
+- tag_name: tfoot
+
 ExtensibleFenceReplacement: #tables
 - queue_position: AFTER #paragraphs
 - syntax_type: BLOCK
@@ -3528,6 +3535,7 @@ ExtensibleFenceReplacement: #tables
     #tables
     #table-head
     #table-body
+    #table-foot
     #prepend-newline
 - tag_name: table
 

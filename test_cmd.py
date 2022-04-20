@@ -591,6 +591,36 @@ This be another paragraph.
           , Didn't Ask
       ''
 ''''
+Empty:
+''
+''
+Head:
+''
+|^
+''
+Body:
+''
+|:
+''
+Foot:
+''
+|_
+''
+Head-body:
+''
+|^
+|:
+''
+Head-foot:
+''
+|^
+|_
+''
+Body-foot:
+''
+|:
+|_
+''
 """
         ################################################################
         # END CMD
@@ -704,7 +734,7 @@ This be another paragraph.
 , <code>|_</code>
 , <code>tfoot</code>
 </tbody>
-|_
+<tfoot>
 //
 ,{}
 <table class="nested-with-parts">
@@ -735,6 +765,46 @@ This be another paragraph.
 ;{style="font-weight: bold"} When
 , Didn't Ask
 </table>
+</tfoot>
+</table>
+Empty:
+<table>
+</table>
+Head:
+<table>
+<thead>
+</thead>
+</table>
+Body:
+<table>
+<tbody>
+</tbody>
+</table>
+Foot:
+<table>
+<tfoot>
+</tfoot>
+</table>
+Head-body:
+<table>
+<thead>
+</thead>
+<tbody>
+</tbody>
+</table>
+Head-foot:
+<table>
+<thead>
+</thead>
+<tfoot>
+</tfoot>
+</table>
+Body-foot:
+<table>
+<tbody>
+</tbody>
+<tfoot>
+</tfoot>
 </table>
 </body>
 </html>
