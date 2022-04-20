@@ -621,6 +621,12 @@ Body-foot:
 |:
 |_
 ''
+Data-before-header (though, why would you have this?):
+'''
+//
+  , Data
+  ; Header
+'''
 """
         ################################################################
         # END CMD
@@ -815,6 +821,13 @@ Body-foot:
 </tbody>
 <tfoot>
 </tfoot>
+</table>
+Data-before-header (though, why would you have this?):
+<table>
+<tr>
+<td>Data</td>
+<th>Header</th>
+</tr>
 </table>
 </body>
 </html>
