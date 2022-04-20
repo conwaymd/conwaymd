@@ -720,62 +720,60 @@ This be another paragraph.
 <caption>Why the hell would you have table inception?</caption>
 <thead>
 <tr>
-; <code>starting_match</code>
-; <code>tag_name</code>
+<th><code>starting_match</code></th>
+<th><code>tag_name</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-, <code>|^</code>
-, <code>thead</code>
+<td><code>|^</code></td>
+<td><code>thead</code></td>
 </tr>
 <tr>
-, <code>|:</code>
-, <code>tbody</code>
+<td><code>|:</code></td>
+<td><code>tbody</code></td>
 </tr>
 <tr>
-, <code>|_</code>
-, <code>tfoot</code>
+<td><code>|_</code></td>
+<td><code>tfoot</code></td>
 </tr>
 </tbody>
 <tfoot>
 <tr>
-,{}
-<table class="nested-with-parts">
+<td><table class="nested-with-parts">
 <thead>
 <tr>
-; No
-; Logic
+<th>No</th>
+<th>Logic</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-,{c2} A
-, 1
+<td colspan="2">A</td>
+<td>1</td>
 </tr>
 <tr>
-, 2
+<td>2</td>
 </tr>
 <tr>
-,{r2}
+<td rowspan="2"></td>
 </tr>
 </tbody>
-</table>
-,{style="background: yellow"}
-<table class="nested-without-parts">
+</table></td>
+<td style="background: yellow"><table class="nested-without-parts">
 <tr>
-; Who
-, Me
+<th>Who</th>
+<td>Me</td>
 </tr>
 <tr>
-; What
-, Yes
+<th>What</th>
+<td>Yes</td>
 </tr>
 <tr>
-;{style="font-weight: bold"} When
-, Didn't Ask
+<th style="font-weight: bold">When</th>
+<td>Didn't Ask</td>
 </tr>
-</table>
+</table></td>
 </tr>
 </tfoot>
 </table>

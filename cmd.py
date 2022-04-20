@@ -3510,11 +3510,29 @@ ExtensibleFenceReplacement: #paragraphs
     #prepend-newline
 - tag_name: p
 
+PartitioningReplacement: #table-headers
+- starting_pattern: [;]
+- attribute_specifications: EMPTY
+- content_replacements:
+    #trim-whitespace
+- ending_pattern: [;,]
+- tag_name: th
+
+PartitioningReplacement: #table-data
+- starting_pattern: [,]
+- attribute_specifications: EMPTY
+- content_replacements:
+    #trim-whitespace
+- ending_pattern: [;,]
+- tag_name: td
+
 PartitioningReplacement: #table-rows
 - starting_pattern: [/]{2}
 - attribute_specifications: EMPTY
 - ending_pattern: [/]{2}
-- content_replacements: NONE
+- content_replacements:
+    #table-headers
+    #table-data
 - tag_name: tr
 
 PartitioningReplacement: #table-head
