@@ -3512,6 +3512,13 @@ PartitioningReplacement: #table-head
 - content_replacements: NONE
 - tag_name: thead
 
+PartitioningReplacement: #table-body
+- starting_pattern: [|][:]
+- attribute_specifications: EMPTY
+- ending_pattern: [|][_]
+- content_replacements: NONE
+- tag_name: tbody
+
 ExtensibleFenceReplacement: #tables
 - queue_position: AFTER #paragraphs
 - syntax_type: BLOCK
@@ -3520,6 +3527,7 @@ ExtensibleFenceReplacement: #tables
 - content_replacements:
     #tables
     #table-head
+    #table-body
     #prepend-newline
 - tag_name: table
 

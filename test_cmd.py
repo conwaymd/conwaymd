@@ -693,7 +693,7 @@ This be another paragraph.
 ; <code>starting_match</code>
 ; <code>tag_name</code>
 </thead>
-|:
+<tbody>
 //
 , <code>|^</code>
 , <code>thead</code>
@@ -703,6 +703,7 @@ This be another paragraph.
 //
 , <code>|_</code>
 , <code>tfoot</code>
+</tbody>
 |_
 //
 ,{}
@@ -712,7 +713,7 @@ This be another paragraph.
 ; No
 ; Logic
 </thead>
-|:
+<tbody>
 //
 ,{c2} A
 , 1
@@ -720,6 +721,7 @@ This be another paragraph.
 , 2
 //
 ,{r2}
+</tbody>
 </table>
 ,{style="background: yellow"}
 <table class="nested-without-parts">
