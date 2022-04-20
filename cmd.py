@@ -3510,24 +3510,31 @@ ExtensibleFenceReplacement: #paragraphs
     #prepend-newline
 - tag_name: p
 
+PartitioningReplacement: #table-rows
+- starting_pattern: [/]{2}
+- attribute_specifications: EMPTY
+- ending_pattern: [/]{2}
+- content_replacements: NONE
+- tag_name: tr
+
 PartitioningReplacement: #table-head
 - starting_pattern: [|][\^]
 - attribute_specifications: EMPTY
 - ending_pattern: [|][:_]
-- content_replacements: NONE
+- content_replacements: #table-rows
 - tag_name: thead
 
 PartitioningReplacement: #table-body
 - starting_pattern: [|][:]
 - attribute_specifications: EMPTY
 - ending_pattern: [|][_]
-- content_replacements: NONE
+- content_replacements: #table-rows
 - tag_name: tbody
 
 PartitioningReplacement: #table-foot
 - starting_pattern: [|][_]
 - attribute_specifications: EMPTY
-- content_replacements: NONE
+- content_replacements: #table-rows
 - tag_name: tfoot
 
 ExtensibleFenceReplacement: #tables
@@ -3540,6 +3547,7 @@ ExtensibleFenceReplacement: #tables
     #table-head
     #table-body
     #table-foot
+    #table-rows
     #prepend-newline
 - tag_name: table
 

@@ -719,52 +719,64 @@ This be another paragraph.
 <table>
 <caption>Why the hell would you have table inception?</caption>
 <thead>
-//
+<tr>
 ; <code>starting_match</code>
 ; <code>tag_name</code>
+</tr>
 </thead>
 <tbody>
-//
+<tr>
 , <code>|^</code>
 , <code>thead</code>
-//
+</tr>
+<tr>
 , <code>|:</code>
 , <code>tbody</code>
-//
+</tr>
+<tr>
 , <code>|_</code>
 , <code>tfoot</code>
+</tr>
 </tbody>
 <tfoot>
-//
+<tr>
 ,{}
 <table class="nested-with-parts">
 <thead>
-//
+<tr>
 ; No
 ; Logic
+</tr>
 </thead>
 <tbody>
-//
+<tr>
 ,{c2} A
 , 1
-//
+</tr>
+<tr>
 , 2
-//
+</tr>
+<tr>
 ,{r2}
+</tr>
 </tbody>
 </table>
 ,{style="background: yellow"}
 <table class="nested-without-parts">
-//
+<tr>
 ; Who
 , Me
-//
+</tr>
+<tr>
 ; What
 , Yes
-//
+</tr>
+<tr>
 ;{style="font-weight: bold"} When
 , Didn't Ask
+</tr>
 </table>
+</tr>
 </tfoot>
 </table>
 Empty:
