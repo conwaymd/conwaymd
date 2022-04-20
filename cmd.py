@@ -350,12 +350,25 @@ class Replacement(abc.ABC):
       else:
         no_change_indicator = ''
       
-      print('<' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' BEFORE #{self._id}')
-      print(string_before)
-      print('=' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + no_change_indicator)
-      print(string_after)
-      print('>' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' AFTER #{self._id}')
-      print('\n\n\n\n')
+      try:
+        print('<' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' BEFORE #{self._id}')
+        print(string_before)
+        print('=' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + no_change_indicator)
+        print(string_after)
+        print('>' * VERBOSE_MODE_DIVIDER_SYMBOL_COUNT + f' AFTER #{self._id}')
+        print('\n\n\n\n')
+      except UnicodeEncodeError as unicode_encode_error:
+        # caused by Private Use Area code points used for placeholders
+        error_message = \
+                (
+                  'bad print due to non-Unicode terminal encoding, '
+                  'likely `cp1252` on Git BASH for Windows. '
+                  'Try setting the `PYTHONIOENCODING` environment variable '
+                  'to `utf-8` (add `export PYTHONIOENCODING=utf-8` '
+                  'to `.bash_profile` and then source it). '
+                  'See <https://stackoverflow.com/a/7865013>.'
+                )
+        raise FileNotFoundError(error_message) from unicode_encode_error
     
     return string_after
   
