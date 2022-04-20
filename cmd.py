@@ -100,7 +100,7 @@ class PlaceholderMaster:
   _COUNTER_ENCODED_DIGIT_MAX = chr(_COUNTER_CODE_POINT_MAX)
   _MARKER = chr(_MARKER_CODE_POINT)
   
-  _PLACEHOLDER_PATTERN = \
+  _PLACEHOLDER_PATTERN_COMPILED = \
           re.compile(
             f'''
               {_MARKER}
@@ -174,7 +174,7 @@ class PlaceholderMaster:
     """
     
     return re.sub(
-      PlaceholderMaster._PLACEHOLDER_PATTERN,
+      PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED,
       self._unprotect_substitute_function,
       string,
     )
