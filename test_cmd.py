@@ -240,13 +240,13 @@ class TestCmd(unittest.TestCase):
       cmd.PartitioningReplacement.build_regex_pattern(
         starting_pattern='HELLO[:]',
         attribute_specifications=None,
-        ending_pattern='(HELLO | GOODBYE)[:]',
+        ending_pattern=None,
       ),
       r'^[^\S\n]*'
       '(?: HELLO[:] )'
       r'[\s]+'
       r'(?P<content> [\s\S]*? )'
-      r'(?= ^[^\S\n]*(?: (HELLO | GOODBYE)[:] )[\s]+ | \Z )'
+      r'(?= \Z )'
     )
   
   def test_compute_longest_common_prefix(self):

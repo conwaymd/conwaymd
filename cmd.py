@@ -1018,7 +1018,7 @@ class PartitioningReplacement(Replacement):
   - starting_pattern: «regex» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
   - content_replacements: (def) NONE | #«id» [...]
-  - ending_pattern: «regex» (mandatory)
+  - ending_pattern: (def) NONE | «regex»
   - tag_name: (def) NONE | «name»
   ````
   """
@@ -1108,9 +1108,6 @@ class PartitioningReplacement(Replacement):
     
     if self._starting_pattern is None:
       raise MissingAttributeException('starting_pattern')
-    
-    if self._ending_pattern is None:
-      raise MissingAttributeException('ending_pattern')
   
   def _set_apply_method_variables(self):
     
@@ -1165,15 +1162,18 @@ class PartitioningReplacement(Replacement):
     else:
       attribute_specifications_no_capture_or_whitespace_regex = \
               fr'(?: {attribute_specifications_no_capture_regex} | [\s]+ )'
-    ending_regex = f'(?: {ending_pattern} )'
-    ending_lookahead_regex = \
-            (
-              '(?= '
-                + anchoring_regex
-                + ending_regex
-                + attribute_specifications_no_capture_or_whitespace_regex
-              + r' | \Z )'
-            )
+    if ending_pattern is None:
+      ending_lookahead_regex = r'(?= \Z )'
+    else:
+      ending_regex = f'(?: {ending_pattern} )'
+      ending_lookahead_regex = \
+              (
+                '(?= '
+                  + anchoring_regex
+                  + ending_regex
+                  + attribute_specifications_no_capture_or_whitespace_regex
+                + r' | \Z )'
+              )
     
     return ''.join(
       [
@@ -1885,6 +1885,8 @@ class ReplacementMaster:
       r'''
         [\s]*
         (?:
+          (?P<none_keyword> NONE )
+            |
           (?P<ending_pattern> [\S][\s\S]*? )
             |
           (?P<invalid_value> [\s\S]*? )
@@ -1916,6 +1918,9 @@ class ReplacementMaster:
         line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if ending_pattern_match.group('none_keyword') is not None:
+      return
     
     ending_pattern = ending_pattern_match.group('ending_pattern')
     
@@ -3522,7 +3527,6 @@ PartitioningReplacement: #table-body
 PartitioningReplacement: #table-foot
 - starting_pattern: [|][_]
 - attribute_specifications: EMPTY
-- ending_pattern: NONE
 - content_replacements: NONE
 - tag_name: tfoot
 
