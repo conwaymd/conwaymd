@@ -1118,6 +1118,7 @@ class PartitioningReplacement(Replacement):
             PartitioningReplacement.build_regex_pattern(
               self._starting_pattern,
               self._attribute_specifications,
+              self._ending_pattern,
             )
     self._substitute_function = \
             self.build_substitute_function(
@@ -1134,7 +1135,11 @@ class PartitioningReplacement(Replacement):
     )
   
   @staticmethod
-  def build_regex_pattern(starting_pattern, attribute_specifications):
+  def build_regex_pattern(
+    starting_pattern,
+    attribute_specifications,
+    ending_pattern,
+  ):
     
     anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True)
     starting_regex = f'(?: {starting_pattern} )'
@@ -1160,11 +1165,12 @@ class PartitioningReplacement(Replacement):
     else:
       attribute_specifications_no_capture_or_whitespace_regex = \
               fr'(?: {attribute_specifications_no_capture_regex} | [\s]+ )'
+    ending_regex = f'(?: {ending_pattern} )'
     ending_lookahead_regex = \
             (
               '(?= '
                 + anchoring_regex
-                + starting_regex
+                + ending_regex
                 + attribute_specifications_no_capture_or_whitespace_regex
               + r' | \Z )'
             )
@@ -1874,6 +1880,73 @@ class ReplacementMaster:
     replacement.content_replacements = content_replacements
   
   @staticmethod
+  def compute_ending_pattern_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<ending_pattern> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_ending_pattern(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    ending_pattern_match = \
+            ReplacementMaster.compute_ending_pattern_match(attribute_value)
+    
+    invalid_value = ending_pattern_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `ending_pattern`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    ending_pattern = ending_pattern_match.group('ending_pattern')
+    
+    try:
+      ending_pattern_compiled = \
+              re.compile(
+                ending_pattern,
+                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              )
+    except re.error as pattern_exception:
+      ReplacementMaster.print_error(
+        f'bad regex pattern `{ending_pattern}`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      ReplacementMaster.print_traceback(pattern_exception)
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if len(ending_pattern_compiled.groupindex) > 0:
+      ReplacementMaster.print_error(
+        f'named capture groups not allowed in `ending_pattern`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    replacement.ending_pattern = ending_pattern
+  
+  @staticmethod
   def compute_extensible_delimiter_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -2562,6 +2635,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'content_replacements':
         self.stage_content_replacements(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'ending_pattern':
+        ReplacementMaster.stage_ending_pattern(
           replacement,
           attribute_value,
           rules_file_name,
@@ -3424,11 +3505,12 @@ ExtensibleFenceReplacement: #paragraphs
     #prepend-newline
 - tag_name: p
 
-PartitioningReplacement: #table-parts
-- starting_pattern: [|][\^:_]
+PartitioningReplacement: #table-head
+- starting_pattern: [|][\^]
 - attribute_specifications: EMPTY
+- ending_pattern: [|][:_]
 - content_replacements: NONE
-- tag_name: part
+- tag_name: thead
 
 ExtensibleFenceReplacement: #tables
 - queue_position: AFTER #paragraphs
@@ -3437,7 +3519,7 @@ ExtensibleFenceReplacement: #tables
 - attribute_specifications: EMPTY
 - content_replacements:
     #tables
-    #table-parts
+    #table-head
     #prepend-newline
 - tag_name: table
 

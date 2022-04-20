@@ -227,24 +227,26 @@ class TestCmd(unittest.TestCase):
       cmd.PartitioningReplacement.build_regex_pattern(
         starting_pattern='[-+*]',
         attribute_specifications='',
+        ending_pattern='[-]',
       ),
       r'^[^\S\n]*'
       '(?: [-+*] )'
       r'(?: (?: \{ (?P<attribute_specifications> [^}]*? ) \} )? | [\s]+ )'
       r'(?P<content> [\s\S]*? )'
-      r'(?= ^[^\S\n]*(?: [-+*] )(?: (?: \{ [^}]*? \} )? | [\s]+ ) | \Z )'
+      r'(?= ^[^\S\n]*(?: [-] )(?: (?: \{ [^}]*? \} )? | [\s]+ ) | \Z )'
     )
     
     self.assertEqual(
       cmd.PartitioningReplacement.build_regex_pattern(
         starting_pattern='HELLO[:]',
         attribute_specifications=None,
+        ending_pattern='(HELLO | GOODBYE)[:]',
       ),
       r'^[^\S\n]*'
       '(?: HELLO[:] )'
       r'[\s]+'
       r'(?P<content> [\s\S]*? )'
-      r'(?= ^[^\S\n]*(?: HELLO[:] )[\s]+ | \Z )'
+      r'(?= ^[^\S\n]*(?: (HELLO | GOODBYE)[:] )[\s]+ | \Z )'
     )
   
   def test_compute_longest_common_prefix(self):
@@ -686,12 +688,12 @@ This be another paragraph.
 ## <code>#tables</code>
 <table>
 <caption>Why the hell would you have table inception?</caption>
-<part>
+<thead>
 //
 ; <code>starting_match</code>
 ; <code>tag_name</code>
-</part>
-<part>
+</thead>
+|:
 //
 , <code>|^</code>
 , <code>thead</code>
@@ -701,17 +703,16 @@ This be another paragraph.
 //
 , <code>|_</code>
 , <code>tfoot</code>
-</part>
-<part>
+|_
 //
 ,{}
 <table class="nested-with-parts">
-<part>
+<thead>
 //
 ; No
 ; Logic
-</part>
-<part>
+</thead>
+|:
 //
 ,{c2} A
 , 1
@@ -719,7 +720,6 @@ This be another paragraph.
 , 2
 //
 ,{r2}
-</part>
 </table>
 ,{style="background: yellow"}
 <table class="nested-without-parts">
@@ -733,7 +733,6 @@ This be another paragraph.
 ;{style="font-weight: bold"} When
 , Didn't Ask
 </table>
-</part>
 </table>
 </body>
 </html>
