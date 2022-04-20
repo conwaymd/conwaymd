@@ -1155,6 +1155,37 @@ class PartitioningReplacement(Replacement):
         ending_lookahead_regex,
       ]
     )
+  
+  def build_substitute_function(self, attribute_specifications, tag_name):
+    
+    def substitute_function(match):
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                (
+                  attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
+        attributes_sequence = \
+                self._placeholder_master.protect(
+                  build_attributes_sequence(combined_attribute_specifications)
+                )
+      else:
+        attributes_sequence = ''
+      
+      content = match.group('content')
+      for replacement in self._content_replacements:
+        content = replacement.apply(content)
+      
+      if tag_name is None:
+        return content
+      else:
+        return f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
+    
+    return substitute_function
 
 
 CMD_REPLACEMENT_SYNTAX_HELP = \
