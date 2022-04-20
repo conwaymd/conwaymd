@@ -1031,6 +1031,8 @@ class PartitioningReplacement(Replacement):
     self._content_replacements = []
     self._ending_pattern = None
     self._tag_name = None
+    self._regex_pattern = None
+    self._substitute_function = None
   
   def attribute_names(self):
     return (
@@ -1109,6 +1111,27 @@ class PartitioningReplacement(Replacement):
     
     if self._ending_pattern is None:
       raise MissingAttributeException('ending_pattern')
+  
+  def _set_apply_method_variables(self):
+    
+    self._regex_pattern = \
+            PartitioningReplacement.build_regex_pattern(
+              self._starting_pattern,
+              self._attribute_specifications,
+            )
+    self._substitute_function = \
+            self.build_substitute_function(
+              self._attribute_specifications,
+              self.tag_name,
+            )
+  
+  def _apply(self, string):
+    return re.sub(
+      self._regex_pattern,
+      self._substitute_function,
+      string,
+      flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+    )
   
   @staticmethod
   def build_regex_pattern(starting_pattern, attribute_specifications):
