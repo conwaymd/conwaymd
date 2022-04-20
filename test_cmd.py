@@ -221,6 +221,34 @@ class TestCmd(unittest.TestCase):
       '(?P=extensible_delimiter)'
     )
   
+  def test_partitioning_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.PartitioningReplacement.build_regex_pattern(
+        starting_pattern='[-+*]',
+        attribute_specifications='',
+        ending_pattern='[-]',
+      ),
+      r'^[^\S\n]*'
+      '(?: [-+*] )'
+      r'(?: (?: \{ (?P<attribute_specifications> [^}]*? ) \} )? | [\s]+ )'
+      r'(?P<content> [\s\S]*? )'
+      r'(?= ^[^\S\n]*(?: [-] )(?: (?: \{ [^}]*? \} )? | [\s]+ ) | \Z )'
+    )
+    
+    self.assertEqual(
+      cmd.PartitioningReplacement.build_regex_pattern(
+        starting_pattern='HELLO[:]',
+        attribute_specifications=None,
+        ending_pattern=None,
+      ),
+      r'^[^\S\n]*'
+      '(?: HELLO[:] )'
+      r'[\s]+'
+      r'(?P<content> [\s\S]*? )'
+      r'(?= \Z )'
+    )
+  
   def test_compute_longest_common_prefix(self):
     self.assertEqual(
       cmd.compute_longest_common_prefix(['a', 'b', 'c', 'd']),
@@ -514,6 +542,97 @@ NOTE: nested paragraphs are illegal.
 This be another paragraph.
 --
 '''
+"""
+## `#tables`
+
+''''
+<caption>Why the hell would you have table inception?</caption>
+|^
+  //
+    ; `starting_match`
+    ; `tag_name`
+|:
+  //
+    , `|^`
+    , `thead`
+  //
+    , `|:`
+    , `tbody`
+  //
+    , `|_`
+    , `tfoot`
+|_
+  //
+    ,{}
+      ''{.nested-with-parts}
+        |^
+          //
+            ; No
+            ; Logic
+        |:
+          //
+            ,{r2} A
+            , 1
+          //
+            , 2
+          //
+            ,{c2}
+      ''
+    ,{style="background: yellow"}
+      ''{.nested-without-parts}
+        //
+          ; Who
+          , Me
+        //
+          ; What
+          , Yes
+        //
+          ;{style="font-weight: bold"} When
+          , Didn't Ask
+      ''
+''''
+Empty:
+''
+''
+Head:
+''
+|^
+''
+Body:
+''
+|:
+''
+Foot:
+''
+|_
+''
+Head-body:
+''
+|^
+|:
+''
+Head-foot:
+''
+|^
+|_
+''
+Body-foot:
+''
+|:
+|_
+''
+Header-after-data (seriously, why would you have this?):
+'''
+//
+  , Data
+  ; Header
+  ; Header2
+//
+  , Data
+  ; Header
+  , Data2
+'''
+"""
         ################################################################
         # END CMD
         ################################################################
@@ -607,6 +726,120 @@ NOTE: nested paragraphs are illegal.
 <p class="two">
 This be another paragraph.
 </p>
+## <code>#tables</code>
+<table>
+<caption>Why the hell would you have table inception?</caption>
+<thead>
+<tr>
+<th><code>starting_match</code></th>
+<th><code>tag_name</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>|^</code></td>
+<td><code>thead</code></td>
+</tr>
+<tr>
+<td><code>|:</code></td>
+<td><code>tbody</code></td>
+</tr>
+<tr>
+<td><code>|_</code></td>
+<td><code>tfoot</code></td>
+</tr>
+</tbody>
+<tfoot>
+<tr>
+<td><table class="nested-with-parts">
+<thead>
+<tr>
+<th>No</th>
+<th>Logic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="2">A</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+</tr>
+<tr>
+<td colspan="2"></td>
+</tr>
+</tbody>
+</table></td>
+<td style="background: yellow"><table class="nested-without-parts">
+<tr>
+<th>Who</th>
+<td>Me</td>
+</tr>
+<tr>
+<th>What</th>
+<td>Yes</td>
+</tr>
+<tr>
+<th style="font-weight: bold">When</th>
+<td>Didn't Ask</td>
+</tr>
+</table></td>
+</tr>
+</tfoot>
+</table>
+Empty:
+<table>
+</table>
+Head:
+<table>
+<thead>
+</thead>
+</table>
+Body:
+<table>
+<tbody>
+</tbody>
+</table>
+Foot:
+<table>
+<tfoot>
+</tfoot>
+</table>
+Head-body:
+<table>
+<thead>
+</thead>
+<tbody>
+</tbody>
+</table>
+Head-foot:
+<table>
+<thead>
+</thead>
+<tfoot>
+</tfoot>
+</table>
+Body-foot:
+<table>
+<tbody>
+</tbody>
+<tfoot>
+</tfoot>
+</table>
+Header-after-data (seriously, why would you have this?):
+<table>
+<tr>
+<td>Data
+<th>Header</th>
+<th>Header2</th>
+</tr>
+<tr>
+<td>Data
+<th>Header</th>
+<td>Data2</td>
+</tr>
+</table>
 </body>
 </html>
 '''

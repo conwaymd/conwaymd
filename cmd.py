@@ -100,7 +100,7 @@ class PlaceholderMaster:
   _COUNTER_ENCODED_DIGIT_MAX = chr(_COUNTER_CODE_POINT_MAX)
   _MARKER = chr(_MARKER_CODE_POINT)
   
-  _PLACEHOLDER_PATTERN = \
+  _PLACEHOLDER_PATTERN_COMPILED = \
           re.compile(
             f'''
               {_MARKER}
@@ -174,7 +174,7 @@ class PlaceholderMaster:
     """
     
     return re.sub(
-      PlaceholderMaster._PLACEHOLDER_PATTERN,
+      PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED,
       self._unprotect_substitute_function,
       string,
     )
@@ -579,9 +579,9 @@ class OrdinaryDictionaryReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  - concluding_replacements: (def) NONE | #«id» [...]
   * «pattern» --> «substitute»
   [...]
+  - concluding_replacements: (def) NONE | #«id» [...]
   ````
   """
   
@@ -659,9 +659,9 @@ class RegexDictionaryReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  - concluding_replacements: (def) NONE | #«id» [...]
   * «pattern» --> «substitute»
   [...]
+  - concluding_replacements: (def) NONE | #«id» [...]
   ````
   """
   
@@ -1018,6 +1018,218 @@ class ExtensibleFenceReplacement(Replacement):
     return substitute_function
 
 
+class PartitioningReplacement(Replacement):
+  """
+  A generalised partitioning replacement rule.
+  
+  Does partitioning by consuming everything from a
+  starting pattern up to but not including an ending pattern.
+  CMD replacement rule syntax:
+  ````
+  PartitioningReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - starting_pattern: «regex» (mandatory)
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  - content_replacements: (def) NONE | #«id» [...]
+  - ending_pattern: (def) NONE | «regex»
+  - tag_name: (def) NONE | «name»
+  ````
+  """
+  
+  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._placeholder_master = placeholder_master
+    self._starting_pattern = None
+    self._attribute_specifications = None
+    self._content_replacements = []
+    self._ending_pattern = None
+    self._tag_name = None
+    self._regex_pattern = None
+    self._substitute_function = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'starting_pattern',
+      'attribute_specifications',
+      'content_replacements',
+      'ending_pattern',
+      'tag_name',
+    )
+  
+  @property
+  def starting_pattern(self):
+    return self._starting_pattern
+  
+  @starting_pattern.setter
+  def starting_pattern(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `starting_pattern` after `commit()`'
+      )
+    self._starting_pattern = value
+  
+  @property
+  def attribute_specifications(self):
+    return self._attribute_specifications
+  
+  @attribute_specifications.setter
+  def attribute_specifications(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `attribute_specifications` after `commit()`'
+      )
+    self._attribute_specifications = value
+  
+  @property
+  def content_replacements(self):
+    return self._content_replacements
+  
+  @content_replacements.setter
+  def content_replacements(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `content_replacements` after `commit()`'
+      )
+    self._content_replacements = copy.copy(value)
+  
+  @property
+  def ending_pattern(self):
+    return self._ending_pattern
+  
+  @ending_pattern.setter
+  def ending_pattern(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `ending_pattern` after `commit()`'
+      )
+    self._ending_pattern = value
+  
+  @property
+  def tag_name(self):
+    return self._tag_name
+  
+  @tag_name.setter
+  def tag_name(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `tag_name` after `commit()`'
+      )
+    self._tag_name = value
+  
+  def _validate_mandatory_attributes(self):
+    
+    if self._starting_pattern is None:
+      raise MissingAttributeException('starting_pattern')
+  
+  def _set_apply_method_variables(self):
+    
+    self._regex_pattern = \
+            PartitioningReplacement.build_regex_pattern(
+              self._starting_pattern,
+              self._attribute_specifications,
+              self._ending_pattern,
+            )
+    self._substitute_function = \
+            self.build_substitute_function(
+              self._attribute_specifications,
+              self.tag_name,
+            )
+  
+  def _apply(self, string):
+    return re.sub(
+      self._regex_pattern,
+      self._substitute_function,
+      string,
+      flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def build_regex_pattern(
+    starting_pattern,
+    attribute_specifications,
+    ending_pattern,
+  ):
+    
+    anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True)
+    starting_regex = f'(?: {starting_pattern} )'
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block=False,
+            )
+    if attribute_specifications_regex == '':
+      attribute_specifications_or_whitespace_regex = r'[\s]+'
+    else:
+      attribute_specifications_or_whitespace_regex = \
+              fr'(?: {attribute_specifications_regex} | [\s]+ )'
+    content_regex = build_content_regex()
+    attribute_specifications_no_capture_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block=False,
+              capture_attribute_specifications=False,
+            )
+    if attribute_specifications_no_capture_regex == '':
+      attribute_specifications_no_capture_or_whitespace_regex = r'[\s]+'
+    else:
+      attribute_specifications_no_capture_or_whitespace_regex = \
+              fr'(?: {attribute_specifications_no_capture_regex} | [\s]+ )'
+    if ending_pattern is None:
+      ending_lookahead_regex = r'(?= \Z )'
+    else:
+      ending_regex = f'(?: {ending_pattern} )'
+      ending_lookahead_regex = \
+              (
+                '(?= '
+                  + anchoring_regex
+                  + ending_regex
+                  + attribute_specifications_no_capture_or_whitespace_regex
+                + r' | \Z )'
+              )
+    
+    return ''.join(
+      [
+        anchoring_regex,
+        starting_regex,
+        attribute_specifications_or_whitespace_regex,
+        content_regex,
+        ending_lookahead_regex,
+      ]
+    )
+  
+  def build_substitute_function(self, attribute_specifications, tag_name):
+    
+    def substitute_function(match):
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                (
+                  attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
+        attributes_sequence = \
+                self._placeholder_master.protect(
+                  build_attributes_sequence(combined_attribute_specifications)
+                )
+      else:
+        attributes_sequence = ''
+      
+      content = match.group('content')
+      for replacement in self._content_replacements:
+        content = replacement.apply(content)
+      
+      if tag_name is None:
+        return content
+      else:
+        return f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>\n'
+    
+    return substitute_function
+
+
 CMD_REPLACEMENT_SYNTAX_HELP = \
 '''\
 In CMD replacement rule syntax, a line must be one of the following:
@@ -1224,6 +1436,13 @@ class ReplacementMaster:
     elif class_name == 'ExtensibleFenceReplacement':
       replacement = \
               ExtensibleFenceReplacement(
+                id_,
+                self._placeholder_master,
+                self._verbose_mode_enabled,
+              )
+    elif class_name == 'PartitioningReplacement':
+      replacement = \
+              PartitioningReplacement(
                 id_,
                 self._placeholder_master,
                 self._verbose_mode_enabled,
@@ -1674,6 +1893,78 @@ class ReplacementMaster:
     replacement.content_replacements = content_replacements
   
   @staticmethod
+  def compute_ending_pattern_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none_keyword> NONE )
+            |
+          (?P<ending_pattern> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_ending_pattern(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    ending_pattern_match = \
+            ReplacementMaster.compute_ending_pattern_match(attribute_value)
+    
+    invalid_value = ending_pattern_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `ending_pattern`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if ending_pattern_match.group('none_keyword') is not None:
+      return
+    
+    ending_pattern = ending_pattern_match.group('ending_pattern')
+    
+    try:
+      ending_pattern_compiled = \
+              re.compile(
+                ending_pattern,
+                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              )
+    except re.error as pattern_exception:
+      ReplacementMaster.print_error(
+        f'bad regex pattern `{ending_pattern}`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      ReplacementMaster.print_traceback(pattern_exception)
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if len(ending_pattern_compiled.groupindex) > 0:
+      ReplacementMaster.print_error(
+        f'named capture groups not allowed in `ending_pattern`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    replacement.ending_pattern = ending_pattern
+  
+  @staticmethod
   def compute_extensible_delimiter_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -2034,6 +2325,73 @@ class ReplacementMaster:
     replacement.replacements = matched_replacements
   
   @staticmethod
+  def compute_starting_pattern_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<starting_pattern> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_starting_pattern(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    starting_pattern_match = \
+            ReplacementMaster.compute_starting_pattern_match(attribute_value)
+    
+    invalid_value = starting_pattern_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `starting_pattern`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    starting_pattern = starting_pattern_match.group('starting_pattern')
+    
+    try:
+      starting_pattern_compiled = \
+              re.compile(
+                starting_pattern,
+                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              )
+    except re.error as pattern_exception:
+      ReplacementMaster.print_error(
+        f'bad regex pattern `{starting_pattern}`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      ReplacementMaster.print_traceback(pattern_exception)
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if len(starting_pattern_compiled.groupindex) > 0:
+      ReplacementMaster.print_error(
+        f'named capture groups not allowed in `starting_pattern`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    replacement.starting_pattern = starting_pattern
+  
+  @staticmethod
   def compute_syntax_type_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -2301,6 +2659,14 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
+      elif attribute_name == 'ending_pattern':
+        ReplacementMaster.stage_ending_pattern(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
       elif attribute_name == 'extensible_delimiter':
         ReplacementMaster.stage_extensible_delimiter(
           replacement,
@@ -2343,6 +2709,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'replacements':
         self.stage_replacements(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'starting_pattern':
+        ReplacementMaster.stage_starting_pattern(
           replacement,
           attribute_value,
           rules_file_name,
@@ -2914,11 +3288,16 @@ def build_extensible_delimiter_opening_regex(
 def build_attribute_specifications_regex(
   attribute_specifications,
   syntax_type_is_block,
+  capture_attribute_specifications=True,
 ):
   
   if attribute_specifications is not None:
-    optional_braced_sequence_regex = \
-      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+    if capture_attribute_specifications:
+      optional_braced_sequence_regex = \
+              r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+    else:
+      optional_braced_sequence_regex = \
+              r'(?: \{ [^}]*? \} )?'
   else:
     optional_braced_sequence_regex = ''
   
@@ -3105,12 +3484,12 @@ OrdinaryDictionaryReplacement: #boilerplate-properties
 
 RegexDictionaryReplacement: #boilerplate-protect
 - queue_position: AFTER #boilerplate-properties
-- concluding_replacements:
-    #reduce-whitespace
-    #placeholder-protect
 * <style>[\s]*?</style> -->
 * <style>[\s\S]*?</style> --> \g<0>
 * <head>[\s\S]*?</head> --> \g<0>
+- concluding_replacements:
+    #reduce-whitespace
+    #placeholder-protect
 
 RegexDictionaryReplacement: #prepend-newline
 * \A --> \n
@@ -3144,11 +3523,75 @@ ExtensibleFenceReplacement: #paragraphs
     #prepend-newline
 - tag_name: p
 
+PartitioningReplacement: #table-headers
+- starting_pattern: [;]
+- attribute_specifications: EMPTY
+- content_replacements:
+    #trim-whitespace
+- ending_pattern: [;,]
+- tag_name: th
+
+PartitioningReplacement: #table-data
+- starting_pattern: [,]
+- attribute_specifications: EMPTY
+- content_replacements:
+    #trim-whitespace
+- ending_pattern: [;,]
+- tag_name: td
+
+OrdinaryDictionaryReplacement: #table-header-after-data-fix
+* </th></td> --> </th>
+# (Not ideal, but will validate.)
+
+PartitioningReplacement: #table-rows
+- starting_pattern: [/]{2}
+- attribute_specifications: EMPTY
+- ending_pattern: [/]{2}
+- content_replacements:
+    #table-headers
+    #table-data
+    #table-header-after-data-fix
+- tag_name: tr
+
+PartitioningReplacement: #table-head
+- starting_pattern: [|][\^]
+- attribute_specifications: EMPTY
+- ending_pattern: [|][:_]
+- content_replacements: #table-rows
+- tag_name: thead
+
+PartitioningReplacement: #table-body
+- starting_pattern: [|][:]
+- attribute_specifications: EMPTY
+- ending_pattern: [|][_]
+- content_replacements: #table-rows
+- tag_name: tbody
+
+PartitioningReplacement: #table-foot
+- starting_pattern: [|][_]
+- attribute_specifications: EMPTY
+- content_replacements: #table-rows
+- tag_name: tfoot
+
+ExtensibleFenceReplacement: #tables
+- queue_position: AFTER #paragraphs
+- syntax_type: BLOCK
+- extensible_delimiter: ''
+- attribute_specifications: EMPTY
+- content_replacements:
+    #tables
+    #table-head
+    #table-body
+    #table-foot
+    #table-rows
+    #prepend-newline
+- tag_name: table
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #paragraphs
+- queue_position: AFTER #tables
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
