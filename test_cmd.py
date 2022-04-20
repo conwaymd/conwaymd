@@ -621,11 +621,16 @@ Body-foot:
 |:
 |_
 ''
-Data-before-header (though, why would you have this?):
+Header-after-data (seriously, why would you have this?):
 '''
 //
   , Data
   ; Header
+  ; Header2
+//
+  , Data
+  ; Header
+  , Data2
 '''
 """
         ################################################################
@@ -822,11 +827,17 @@ Body-foot:
 <tfoot>
 </tfoot>
 </table>
-Data-before-header (though, why would you have this?):
+Header-after-data (seriously, why would you have this?):
 <table>
 <tr>
-<td>Data</td>
+<td>Data
 <th>Header</th>
+<th>Header2</th>
+</tr>
+<tr>
+<td>Data
+<th>Header</th>
+<td>Data2</td>
 </tr>
 </table>
 </body>

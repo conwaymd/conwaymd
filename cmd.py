@@ -3526,6 +3526,10 @@ PartitioningReplacement: #table-data
 - ending_pattern: [;,]
 - tag_name: td
 
+OrdinaryDictionaryReplacement: #table-header-after-data-fix
+* </th></td> --> </th>
+# (Not ideal, but will validate.)
+
 PartitioningReplacement: #table-rows
 - starting_pattern: [/]{2}
 - attribute_specifications: EMPTY
@@ -3533,6 +3537,7 @@ PartitioningReplacement: #table-rows
 - content_replacements:
     #table-headers
     #table-data
+    #table-header-after-data-fix
 - tag_name: tr
 
 PartitioningReplacement: #table-head
