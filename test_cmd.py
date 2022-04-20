@@ -571,12 +571,12 @@ This be another paragraph.
             ; Logic
         |:
           //
-            ,{c2} A
+            ,{r2} A
             , 1
           //
             , 2
           //
-            ,{r2}
+            ,{c2}
       ''
     ,{style="background: yellow"}
       ''{.nested-without-parts}
@@ -749,14 +749,14 @@ This be another paragraph.
 </thead>
 <tbody>
 <tr>
-<td colspan="2">A</td>
+<td rowspan="2">A</td>
 <td>1</td>
 </tr>
 <tr>
 <td>2</td>
 </tr>
 <tr>
-<td rowspan="2"></td>
+<td colspan="2"></td>
 </tr>
 </tbody>
 </table></td>
