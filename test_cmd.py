@@ -830,12 +830,12 @@ Body-foot:
 Header-after-data (seriously, why would you have this?):
 <table>
 <tr>
-<td>Data
+<td>Data</td>
 <th>Header</th>
 <th>Header2</th>
 </tr>
 <tr>
-<td>Data
+<td>Data</td>
 <th>Header</th>
 <td>Data2</td>
 </tr>

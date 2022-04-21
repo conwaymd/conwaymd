@@ -3538,6 +3538,11 @@ ExtensibleFenceReplacement: #paragraphs
     #prepend-newline
 - tag_name: p
 
+RegexDictionaryReplacement: #mark-table-headers-for-preceding-table-data
+* \A --> ;{}
+# Replaces `<th«attributes_sequence»>` with `;{}<th«attributes_sequence»>`,
+# so that #table-data will know to stop before it.
+
 PartitioningReplacement: #table-headers
 - starting_pattern: [;]
 - attribute_specifications: EMPTY
@@ -3545,6 +3550,8 @@ PartitioningReplacement: #table-headers
     #trim-whitespace
 - ending_pattern: [;,]
 - tag_name: th
+- concluding_replacements:
+    #mark-table-headers-for-preceding-table-data
 
 PartitioningReplacement: #table-data
 - starting_pattern: [,]
@@ -3554,9 +3561,12 @@ PartitioningReplacement: #table-data
 - ending_pattern: [;,]
 - tag_name: td
 
-OrdinaryDictionaryReplacement: #table-header-after-data-fix
-* </th></td> --> </th>
-# (Not ideal, but will validate.)
+RegexDictionaryReplacement: #unmark-table-headers-for-preceding-table-data
+* ^ [;] \{ \} <th (?P<bracket_or_placeholder_marker> [>\uF8FF] )
+    -->
+  <th\g<bracket_or_placeholder_marker>
+# Replaces `;{}<th«attributes_sequence»>` with `<th«attributes_sequence»>`
+# so that #mark-table-headers-for-preceding-table-data is undone.
 
 PartitioningReplacement: #table-rows
 - starting_pattern: [/]{2}
@@ -3565,7 +3575,7 @@ PartitioningReplacement: #table-rows
 - content_replacements:
     #table-headers
     #table-data
-    #table-header-after-data-fix
+    #unmark-table-headers-for-preceding-table-data
 - tag_name: tr
 
 PartitioningReplacement: #table-head
