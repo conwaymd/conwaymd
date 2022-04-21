@@ -3620,26 +3620,33 @@ PartitioningReplacement: #table-rows
     #table-headers
     #table-data
     #unmark-table-headers-for-preceding-table-data
+    #prepend-newline
 - tag_name: tr
 
 PartitioningReplacement: #table-head
 - starting_pattern: [|][\^]
 - attribute_specifications: EMPTY
 - ending_pattern: [|][:_]
-- content_replacements: #table-rows
+- content_replacements:
+    #table-rows
+    #prepend-newline
 - tag_name: thead
 
 PartitioningReplacement: #table-body
 - starting_pattern: [|][:]
 - attribute_specifications: EMPTY
 - ending_pattern: [|][_]
-- content_replacements: #table-rows
+- content_replacements:
+    #table-rows
+    #prepend-newline
 - tag_name: tbody
 
 PartitioningReplacement: #table-foot
 - starting_pattern: [|][_]
 - attribute_specifications: EMPTY
-- content_replacements: #table-rows
+- content_replacements:
+    #table-rows
+    #prepend-newline
 - tag_name: tfoot
 
 ExtensibleFenceReplacement: #tables
