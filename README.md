@@ -1,7 +1,11 @@
 # Conway-Markdown (CMD), v4
 
-A replacement-driven markup language inspired by Markdown.
+Conway-Markdown is:
 
+- A replacement-driven markup language inspired by Markdown.
+- A demonstration of the folly of throwing regex at a parsing problem.
+- The result of someone joking that
+  "the filenames would look like Windows executables from the 90s".
 - Implemented in [Python 3.{whatever Debian stable is at}][python3].
 - Licensed under "MIT No Attribution" (MIT-0), see [LICENSE].
 
@@ -62,6 +66,9 @@ it will not be turned into a proper Python package.
      -v, --version  show program's version number and exit
      -x, --verbose  run in verbose mode (prints every replacement applied)
    ```
+
+**WARNING: on Windows, be careful not to run the `.cmd` files by accident;
+they might break your computer. God save!**
 
 ## Features
 
