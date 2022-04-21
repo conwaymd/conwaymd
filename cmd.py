@@ -1166,6 +1166,7 @@ class PartitioningReplacement(Replacement):
             build_attribute_specifications_regex(
               attribute_specifications,
               syntax_type_is_block=False,
+              allow_omission=False,
             )
     if attribute_specifications_regex == '':
       attribute_specifications_or_whitespace_regex = r'[\s]+'
@@ -1178,6 +1179,7 @@ class PartitioningReplacement(Replacement):
               attribute_specifications,
               syntax_type_is_block=False,
               capture_attribute_specifications=False,
+              allow_omission=False,
             )
     if attribute_specifications_no_capture_regex == '':
       attribute_specifications_no_capture_or_whitespace_regex = r'[\s]+'
@@ -3304,24 +3306,28 @@ def build_attribute_specifications_regex(
   attribute_specifications,
   syntax_type_is_block,
   capture_attribute_specifications=True,
+  allow_omission=True,
 ):
   
   if attribute_specifications is not None:
+    
     if capture_attribute_specifications:
-      optional_braced_sequence_regex = \
-              r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+      braced_sequence_regex = r'\{ (?P<attribute_specifications> [^}]*? ) \}'
     else:
-      optional_braced_sequence_regex = \
-              r'(?: \{ [^}]*? \} )?'
+      braced_sequence_regex = r'\{ [^}]*? \}'
+    
+    if allow_omission:
+      braced_sequence_regex = f'(?: {braced_sequence_regex} )?'
+    
   else:
-    optional_braced_sequence_regex = ''
+    braced_sequence_regex = ''
   
   if syntax_type_is_block:
     block_newline_regex = r'\n'
   else:
     block_newline_regex = ''
   
-  return optional_braced_sequence_regex + block_newline_regex
+  return braced_sequence_regex + block_newline_regex
 
 
 def build_content_regex():

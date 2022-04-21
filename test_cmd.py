@@ -231,9 +231,9 @@ class TestCmd(unittest.TestCase):
       ),
       r'^[^\S\n]*'
       '(?: [-+*] )'
-      r'(?: (?: \{ (?P<attribute_specifications> [^}]*? ) \} )? | [\s]+ )'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} | [\s]+ )'
       r'(?P<content> [\s\S]*? )'
-      r'(?= ^[^\S\n]*(?: [-] )(?: (?: \{ [^}]*? \} )? | [\s]+ ) | \Z )'
+      r'(?= ^[^\S\n]*(?: [-] )(?: \{ [^}]*? \} | [\s]+ ) | \Z )'
     )
     
     self.assertEqual(
