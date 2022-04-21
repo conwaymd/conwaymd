@@ -541,6 +541,24 @@ NOTE: nested paragraphs are illegal.
 --{.two}
 This be another paragraph.
 --
+
+## `#unordered-lists`
+===={.four}
+-
+  ==={.three}
+  - Dash.
+  + Plus.
+  * Asterisk.
+  1. Not number.
+    =={.two}
+    - Yes.
+    ==
+  ===
+- Hello!
+====
+Empty list:
+======
+======
 '''
 """
 ## `#tables`
@@ -726,6 +744,34 @@ NOTE: nested paragraphs are illegal.
 <p class="two">
 This be another paragraph.
 </p>
+## <code>#unordered-lists</code>
+<ul class="four">
+<li>
+<ul class="three">
+<li>
+Dash.
+</li>
+<li>
+Plus.
+</li>
+<li>
+Asterisk.
+1. Not number.
+<ul class="two">
+<li>
+Yes.
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+Hello!
+</li>
+</ul>
+Empty list:
+<ul>
+</ul>
 ## <code>#tables</code>
 <table>
 <caption>Why the hell would you have table inception?</caption>

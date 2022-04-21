@@ -3538,6 +3538,25 @@ ExtensibleFenceReplacement: #paragraphs
     #prepend-newline
 - tag_name: p
 
+PartitioningReplacement: #unordered-list-items
+- starting_pattern: [-+*]
+- attribute_specifications: EMPTY
+- content_replacements:
+    #prepend-newline
+- ending_pattern: [-+*]
+- tag_name: li
+
+ExtensibleFenceReplacement: #unordered-lists
+- queue_position: AFTER #paragraphs
+- syntax_type: BLOCK
+- extensible_delimiter: ==
+- attribute_specifications: EMPTY
+- content_replacements:
+    #unordered-lists
+    #unordered-list-items
+    #prepend-newline
+- tag_name: ul
+
 RegexDictionaryReplacement: #mark-table-headers-for-preceding-table-data
 * \A --> ;{}
 # Replaces `<th«attributes_sequence»>` with `;{}<th«attributes_sequence»>`,
@@ -3599,7 +3618,7 @@ PartitioningReplacement: #table-foot
 - tag_name: tfoot
 
 ExtensibleFenceReplacement: #tables
-- queue_position: AFTER #paragraphs
+- queue_position: AFTER #unordered-lists
 - syntax_type: BLOCK
 - extensible_delimiter: ''
 - attribute_specifications: EMPTY
