@@ -739,6 +739,7 @@ class ExtensibleFenceReplacement(Replacement):
   - content_replacements: (def) NONE | #«id» [...]
   - closing_delimiter: (def) NONE | «string»
   - tag_name: (def) NONE | «name»
+  - concluding_replacements: (def) NONE | #«id» [...]
   ````
   """
   
@@ -769,6 +770,7 @@ class ExtensibleFenceReplacement(Replacement):
       'content_replacements',
       'closing_delimiter',
       'tag_name',
+      'concluding_replacements',
     )
   
   @property
@@ -1011,9 +1013,14 @@ class ExtensibleFenceReplacement(Replacement):
         content = replacement.apply(content)
       
       if tag_name is None:
-        return content
+        substitute = content
       else:
-        return f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
+        substitute = f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
+      
+      for replacement in self._concluding_replacements:
+        substitute = replacement.apply(substitute)
+      
+      return substitute
     
     return substitute_function
 
