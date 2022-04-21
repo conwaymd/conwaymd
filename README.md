@@ -14,14 +14,16 @@ A replacement-driven markup language inspired by Markdown.
 Since this is just a shitty single-file script,
 it will not be turned into a proper Python package.
 
-1. Make an alias for `cmd.py` (use Git BASH if you are using Windows)
+### Linux terminals, macOS Terminal, Git BASH for Windows
+
+1. Make an alias for `cmd.py`
    in whatever dotfile you configure your aliases in:
 
    ```bashrc
    alias cmd='path/to/cmd.py'
    ```
 
-2. Call the script using the alias to convert a CMD file to HTML:
+2. Invoke the alias to convert a CMD file to HTML:
 
    ```bash
    $ cmd [file.cmd]
@@ -30,10 +32,18 @@ it will not be turned into a proper Python package.
    - Abbreviate `file.cmd` as `file` or `file.` for increased productivity.
    - Omit `file.cmd` to convert all CMD files under the working directory.
 
-If you are using Windows but insist on not using Git BASH,
-then add the folder containing `cmd.py` to the `%PATH%` variable
-and invoke `cmd.py`.
+### Windows Command Prompt
 
+1. Add the folder containing `cmd.py` to the `%PATH%` variable
+
+2. Invoke `cmd.py` to convert a CMD file to HTML:
+
+   ```cmd
+   > cmd.py [file.cmd]
+   ```
+
+   - Abbreviate `file.cmd` as `file` or `file.` for increased productivity.
+   - Omit `file.cmd` to convert all CMD files under the working directory.
 
 ## Features
 
