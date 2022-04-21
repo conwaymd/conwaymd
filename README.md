@@ -26,11 +26,20 @@ it will not be turned into a proper Python package.
 2. Invoke the alias to convert a CMD file to HTML:
 
    ```bash
-   $ cmd [file.cmd]
-   ```
+   $ cmd [-h] [-v] [-x] [file.cmd]
 
-   - Abbreviate `file.cmd` as `file` or `file.` for increased productivity.
-   - Omit `file.cmd` to convert all CMD files under the working directory.
+   Convert Conway-Markdown (CMD) to HTML.
+
+   positional arguments:
+     file.cmd       Name of CMD file to be converted. Abbreviate as `file` or
+                    `file.` for increased productivity. Omit to convert all CMD
+                    files under the working directory.
+
+   optional arguments:
+     -h, --help     show this help message and exit
+     -v, --version  show program's version number and exit
+     -x, --verbose  run in verbose mode (prints every replacement applied)
+   ```
 
 ### Windows Command Prompt
 
@@ -39,11 +48,20 @@ it will not be turned into a proper Python package.
 2. Invoke `cmd.py` to convert a CMD file to HTML:
 
    ```cmd
-   > cmd.py [file.cmd]
-   ```
+   > cmd.py [-h] [-v] [-x] [file.cmd]
 
-   - Abbreviate `file.cmd` as `file` or `file.` for increased productivity.
-   - Omit `file.cmd` to convert all CMD files under the working directory.
+   Convert Conway-Markdown (CMD) to HTML.
+
+   positional arguments:
+     file.cmd       Name of CMD file to be converted. Abbreviate as `file` or
+                    `file.` for increased productivity. Omit to convert all CMD
+                    files under the working directory.
+
+   optional arguments:
+     -h, --help     show this help message and exit
+     -v, --version  show program's version number and exit
+     -x, --verbose  run in verbose mode (prints every replacement applied)
+   ```
 
 ## Features
 
