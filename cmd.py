@@ -1040,6 +1040,7 @@ class PartitioningReplacement(Replacement):
   - content_replacements: (def) NONE | #«id» [...]
   - ending_pattern: (def) NONE | «regex»
   - tag_name: (def) NONE | «name»
+  - concluding_replacements: (def) NONE | #«id» [...]
   ````
   """
   
@@ -1062,6 +1063,7 @@ class PartitioningReplacement(Replacement):
       'content_replacements',
       'ending_pattern',
       'tag_name',
+      'concluding_replacements',
     )
   
   @property
@@ -1230,9 +1232,15 @@ class PartitioningReplacement(Replacement):
         content = replacement.apply(content)
       
       if tag_name is None:
-        return content
+        substitute = content
       else:
-        return f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>\n'
+        substitute = \
+                f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>\n'
+      
+      for replacement in self._concluding_replacements:
+        substitute = replacement.apply(substitute)
+      
+      return substitute
     
     return substitute_function
 
