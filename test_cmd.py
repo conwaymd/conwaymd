@@ -559,6 +559,24 @@ This be another paragraph.
 Empty list:
 ======
 ======
+
+## `#ordered-lists`
+++++
+0. Yes.
+00. Yep.
+000000000000000000000000000. Yeah.
+- Nah.
+======
+- Try.
+  +++
+  123456789. Still 1.
+  2. Indeed 2.
+     ++{start=50}
+     50. 50/50?
+     ++
+  +++
+======
+++++
 '''
 """
 ## `#tables`
@@ -772,6 +790,37 @@ Hello!
 Empty list:
 <ul>
 </ul>
+## <code>#ordered-lists</code>
+<ol>
+<li>
+Yes.
+</li>
+<li>
+Yep.
+</li>
+<li>
+Yeah.
+- Nah.
+<ul>
+<li>
+Try.
+<ol>
+<li>
+Still 1.
+</li>
+<li>
+Indeed 2.
+<ol start="50">
+<li>
+50/50?
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ol>
 ## <code>#tables</code>
 <table>
 <caption>Why the hell would you have table inception?</caption>
