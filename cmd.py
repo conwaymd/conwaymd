@@ -1711,6 +1711,8 @@ class ReplacementMaster:
     elif class_name == 'OrdinaryDictionaryReplacement':
       replacement = \
               OrdinaryDictionaryReplacement(id_, self._verbose_mode_enabled)
+    elif class_name == 'RegexDictionaryReplacement':
+      replacement = RegexDictionaryReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'ExtensibleFenceReplacement':
       replacement = \
               ExtensibleFenceReplacement(
@@ -1725,8 +1727,6 @@ class ReplacementMaster:
                 self._placeholder_master,
                 self._verbose_mode_enabled,
               )
-    elif class_name == 'RegexDictionaryReplacement':
-      replacement = RegexDictionaryReplacement(id_, self._verbose_mode_enabled)
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
