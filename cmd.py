@@ -2913,14 +2913,6 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
-      elif attribute_name == 'epilogue_delimiter':
-        ReplacementMaster.stage_epilogue_delimiter(
-          replacement,
-          attribute_value,
-          rules_file_name,
-          line_number_range_start,
-          line_number,
-        )
       elif attribute_name == 'concluding_replacements':
         self.stage_concluding_replacements(
           replacement,
@@ -2945,6 +2937,14 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
+      elif attribute_name == 'epilogue_delimiter':
+        ReplacementMaster.stage_epilogue_delimiter(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
       elif attribute_name == 'extensible_delimiter':
         ReplacementMaster.stage_extensible_delimiter(
           replacement,
@@ -2961,16 +2961,16 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
-      elif attribute_name == 'prologue_delimiter':
-        ReplacementMaster.stage_prologue_delimiter(
+      elif attribute_name == 'positive_flag':
+        ReplacementMaster.stage_positive_flag(
           replacement,
           attribute_value,
           rules_file_name,
           line_number_range_start,
           line_number,
         )
-      elif attribute_name == 'positive_flag':
-        ReplacementMaster.stage_positive_flag(
+      elif attribute_name == 'prologue_delimiter':
+        ReplacementMaster.stage_prologue_delimiter(
           replacement,
           attribute_value,
           rules_file_name,
