@@ -734,6 +734,13 @@ r'''
 \\\3 \\\\4 \\\\\5 \\\\\\6
 [space]\ [space]
 [tab]\t[tab]
+
+## `#backslash-continuations`
+
+This be \
+    continuation.
+This be not \\
+    continuation, for the backslash is escaped.
 '''
         ################################################################
         # END CMD
@@ -1010,6 +1017,10 @@ Header-after-data (seriously, why would you have this?):
 \\3 \\4 \\\5 \\\6
 [space] [space]
 [tab]	[tab]
+## <code>#backslash-continuations</code>
+This be continuation.
+This be not \
+continuation, for the backslash is escaped.
 </body>
 </html>
 '''

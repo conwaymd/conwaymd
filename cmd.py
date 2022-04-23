@@ -4100,11 +4100,15 @@ OrdinaryDictionaryReplacement: #backslash-escapes
 - concluding_replacements:
     #placeholder-protect
 
+RegexDictionaryReplacement: #backslash-continuations
+- queue_position: AFTER #backslash-escapes
+* \\ \n [^\S\n]+ -->
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #backslash-escapes
+- queue_position: AFTER #backslash-continuations
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
