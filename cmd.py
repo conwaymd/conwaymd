@@ -1970,52 +1970,6 @@ class ReplacementMaster:
     replacement.attribute_specifications = attribute_specifications
   
   @staticmethod
-  def compute_epilogue_delimiter_match(attribute_value):
-    return re.fullmatch(
-      r'''
-        [\s]*
-        (?:
-          (?P<none_keyword> NONE )
-            |
-          (?P<epilogue_delimiter> [\S][\s\S]*? )
-            |
-          (?P<invalid_value> [\s\S]*? )
-        )
-        [\s]*
-      ''',
-      attribute_value,
-      flags=re.ASCII | re.VERBOSE,
-    )
-  
-  @staticmethod
-  def stage_epilogue_delimiter(
-    replacement,
-    attribute_value,
-    rules_file_name,
-    line_number_range_start,
-    line_number,
-  ):
-    
-    epilogue_delimiter_match = \
-            ReplacementMaster.compute_epilogue_delimiter_match(attribute_value)
-    
-    invalid_value = epilogue_delimiter_match.group('invalid_value')
-    if invalid_value is not None:
-      ReplacementMaster.print_error(
-        f'invalid value `{invalid_value}` for attribute `epilogue_delimiter`',
-        rules_file_name,
-        line_number_range_start,
-        line_number,
-      )
-      sys.exit(GENERIC_ERROR_EXIT_CODE)
-    
-    if epilogue_delimiter_match.group('none_keyword') is not None:
-      return
-    
-    epilogue_delimiter = epilogue_delimiter_match.group('epilogue_delimiter')
-    replacement.epilogue_delimiter = epilogue_delimiter
-  
-  @staticmethod
   def compute_concluding_replacement_matches(attribute_value):
     return re.finditer(
       r'''
@@ -2241,6 +2195,52 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     replacement.ending_pattern = ending_pattern
+  
+  @staticmethod
+  def compute_epilogue_delimiter_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none_keyword> NONE )
+            |
+          (?P<epilogue_delimiter> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_epilogue_delimiter(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    epilogue_delimiter_match = \
+            ReplacementMaster.compute_epilogue_delimiter_match(attribute_value)
+    
+    invalid_value = epilogue_delimiter_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `epilogue_delimiter`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if epilogue_delimiter_match.group('none_keyword') is not None:
+      return
+    
+    epilogue_delimiter = epilogue_delimiter_match.group('epilogue_delimiter')
+    replacement.epilogue_delimiter = epilogue_delimiter
   
   @staticmethod
   def compute_extensible_delimiter_match(attribute_value):
