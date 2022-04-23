@@ -793,7 +793,7 @@ class FixedDelimitersReplacement(Replacement):
   
   @property
   def opening_delimiter(self):
-    return self.opening_delimiter
+    return self._opening_delimiter
   
   @opening_delimiter.setter
   def opening_delimiter(self, value):

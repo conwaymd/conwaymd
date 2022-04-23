@@ -484,6 +484,19 @@ OrdinaryDictionaryReplacement: #boilerplate-properties-override
       font-family: serif;
     }
 
+FixedDelimitersReplacement: #comment-breaker
+- queue_position: BEFORE #comments
+- syntax_type: INLINE
+- allowed_flags:
+    u=KEEP_HTML_UNESCAPED
+- opening_delimiter: <|
+- attribute_specifications: EMPTY
+- content_replacements:
+    #escape-html
+    #trim-whitespace
+    #placeholder-protect
+- closing_delimiter: |>
+
 %%%
 
 # `test_cmd_to_html`
@@ -539,6 +552,11 @@ BEFORE{ <`` Literal & < > ``> }AFTER
 This be `inline code`.
 u``{.classy} Whitespace stripped, and <b>unescaped</b>. ``
 Even ```inline with ``backticks within`` ```.
+
+## `#comment-breaker` (custom)
+
+<| <## Sundered |> be <| this. ##> |>
+u<| <strong>Unescaped!</strong> |>
 
 ## `#comments`
 
@@ -768,6 +786,9 @@ and even whitespace before a break element:<br>
 This be <code>inline code</code>.
 <code class="classy">Whitespace stripped, and <b>unescaped</b>.</code>
 Even <code>inline with ``backticks within``</code>.
+## <code>#comment-breaker</code> (custom)
+&lt;## Sundered be this. ##&gt;
+<strong>Unescaped!</strong>
 ## <code>#comments</code>
 <code>Code prevails over &lt;## comments ##&gt;.</code>
 Yet comments can remove code.
