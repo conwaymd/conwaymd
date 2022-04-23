@@ -729,8 +729,7 @@ Header-after-data (seriously, why would you have this?):
 r'''
 ## `#backslash-escapes`
 
-\\ \! \" \# \$ \% \& \' \( \) \* \+ \, \- \. \/
-\: \; \< \= \> \? \@ \[ \] \^ \_ \` \{ \| \} \~
+\\ \# \& \( \) \* \< \> \[ \] \_ \{ \| \}
 \\\3 \\\\4 \\\\\5 \\\\\\6
 [space]\ [space]
 [tab]\t[tab]
@@ -1012,8 +1011,7 @@ Header-after-data (seriously, why would you have this?):
 </tr>
 </table>
 ## <code>#backslash-escapes</code>
-\ ! " # $ % &amp; ' ( ) * + , - . /
-: ; &lt; = &gt; ? @ [ ] ^ _ ` { | } ~
+\ # &amp; ( ) * &lt; &gt; [ ] _ { | }
 \\3 \\4 \\\5 \\\6
 [space] [space]
 [tab]	[tab]

@@ -4064,37 +4064,19 @@ ExtensibleFenceReplacement: #tables
 OrdinaryDictionaryReplacement: #backslash-escapes
 - queue_position: AFTER #tables
 * \\ --> \
-* \! --> !
-* \" --> "
 * \# --> #
-* \$ --> $
-* \% --> %
 * \& --> &amp;
-* \' --> '
 * \( --> (
 * \) --> )
 * \* --> *
-* \+ --> +
-* \, --> ,
-* \- --> -
-* \. --> .
-* \/ --> /
-* \: --> :
-* \; --> ;
 * \< --> &lt;
-* \= --> =
 * \> --> &gt;
-* \? --> ?
-* \@ --> @
 * \[ --> [
 * \] --> ]
-* \^ --> ^
 * \_ --> _
-* \` --> `
 * \{ --> {
 * \| --> |
 * \} --> }
-* \~ --> ~
 * "\ " --> " "
 * \t --> "	"
 - concluding_replacements:
