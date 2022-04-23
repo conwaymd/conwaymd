@@ -805,7 +805,7 @@ class ExtensibleFenceReplacement(Replacement):
   def opening_delimiter(self, value):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot set `flag_name_from_letter` after `commit()`'
+        'error: cannot set `opening_delimiter` after `commit()`'
       )
     self._opening_delimiter = value
   
