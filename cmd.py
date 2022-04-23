@@ -766,6 +766,90 @@ class FixedDelimiterReplacement(Replacement):
       'tag_name',
       'concluding_replacements',
     )
+  
+  @property
+  def syntax_type_is_block(self):
+    return self._syntax_type_is_block
+  
+  @syntax_type_is_block.setter
+  def syntax_type_is_block(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `syntax_type_is_block` after `commit()`'
+      )
+    self._syntax_type_is_block = value
+  
+  @property
+  def flag_name_from_letter(self):
+    return self._flag_name_from_letter
+  
+  @flag_name_from_letter.setter
+  def flag_name_from_letter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `flag_name_from_letter` after `commit()`'
+      )
+    self._flag_name_from_letter = copy.copy(value)
+  
+  @property
+  def opening_delimiter(self):
+    return self.opening_delimiter
+  
+  @opening_delimiter.setter
+  def opening_delimiter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `opening_delimiter` after `commit()`'
+      )
+    self._opening_delimiter = value
+  
+  @property
+  def attribute_specifications(self):
+    return self._attribute_specifications
+  
+  @attribute_specifications.setter
+  def attribute_specifications(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `attribute_specifications` after `commit()`'
+      )
+    self._attribute_specifications = value
+  
+  @property
+  def content_replacements(self):
+    return self._content_replacements
+  
+  @content_replacements.setter
+  def content_replacements(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `content_replacements` after `commit()`'
+      )
+    self._content_replacements = copy.copy(value)
+  
+  @property
+  def closing_delimiter(self):
+    return self._closing_delimiter
+  
+  @closing_delimiter.setter
+  def closing_delimiter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `closing_delimiter` after `commit()`'
+      )
+    self._closing_delimiter = value
+  
+  @property
+  def tag_name(self):
+    return self._tag_name
+  
+  @tag_name.setter
+  def tag_name(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `tag_name` after `commit()`'
+      )
+    self._tag_name = value
 
 
 class ExtensibleFenceReplacement(Replacement):
