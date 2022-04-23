@@ -1713,6 +1713,13 @@ class ReplacementMaster:
               OrdinaryDictionaryReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'RegexDictionaryReplacement':
       replacement = RegexDictionaryReplacement(id_, self._verbose_mode_enabled)
+    elif class_name == 'FixedDelimitersReplacement':
+      replacement = \
+              FixedDelimitersReplacement(
+                id_,
+                self._placeholder_master,
+                self._verbose_mode_enabled,
+              )
     elif class_name == 'ExtensibleFenceReplacement':
       replacement = \
               ExtensibleFenceReplacement(
