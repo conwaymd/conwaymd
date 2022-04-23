@@ -861,6 +861,119 @@ class FixedDelimiterReplacement(Replacement):
     
     if self._closing_delimiter is None:
       raise MissingAttributeException('closing_delimiter')
+  
+  def _set_apply_method_variables(self):
+    
+    self._has_flags = len(self._flag_name_from_letter) > 0
+    self._regex_pattern = \
+            FixedDelimiterReplacement.build_regex_pattern(
+              self._syntax_type_is_block,
+              self._flag_name_from_letter,
+              self._has_flags,
+              self.opening_delimiter,
+              self._attribute_specifications,
+              self._closing_delimiter,
+            )
+    self._substitute_function = \
+            self.build_substitute_function(
+              self._flag_name_from_letter,
+              self._has_flags,
+              self._attribute_specifications,
+              self._tag_name,
+            )
+  
+  @staticmethod
+  def build_regex_pattern(
+    syntax_type_is_block,
+    flag_name_from_letter,
+    has_flags,
+    opening_delimiter,
+    attribute_specifications,
+    closing_delimiter,
+  ):
+    
+    block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block)
+    flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
+    opening_delimiter_regex = re.escape(opening_delimiter)
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block,
+            )
+    content_regex = build_content_regex()
+    closing_delimiter_regex = re.escape(closing_delimiter)
+    
+    return ''.join(
+      [
+        block_anchoring_regex,
+        flags_regex,
+        opening_delimiter_regex,
+        attribute_specifications_regex,
+        content_regex,
+        block_anchoring_regex,
+        closing_delimiter_regex
+      ]
+    )
+  
+  def build_substitute_function(
+    self,
+    flag_name_from_letter,
+    has_flags,
+    attribute_specifications,
+    tag_name,
+  ):
+    
+    def substitute_function(match):
+      
+      enabled_flag_names = set()
+      if has_flags:
+        flags = match.group('flags')
+        for flag_letter, flag_name in flag_name_from_letter.items():
+          if flag_letter in flags:
+            enabled_flag_names.add(flag_name)
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                (
+                  attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
+        attributes_sequence = \
+                self._placeholder_master.protect(
+                  build_attributes_sequence(combined_attribute_specifications)
+                )
+      else:
+        attributes_sequence = ''
+      
+      content = match.group('content')
+      for replacement in self._content_replacements:
+        
+        positive_flag_name = replacement.positive_flag_name
+        if positive_flag_name is not None \
+        and positive_flag_name not in enabled_flag_names:
+          continue
+        
+        negative_flag_name = replacement.negative_flag_name
+        if negative_flag_name is not None \
+        and negative_flag_name in enabled_flag_names:
+          continue
+        
+        content = replacement.apply(content)
+      
+      if tag_name is None:
+        substitute = content
+      else:
+        substitute = f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
+      
+      for replacement in self._concluding_replacements:
+        substitute = replacement.apply(substitute)
+      
+      return substitute
+    
+    return substitute_function
 
 
 class ExtensibleFenceReplacement(Replacement):

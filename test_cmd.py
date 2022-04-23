@@ -177,6 +177,45 @@ class TestCmd(unittest.TestCase):
       r'a|b|c|\#\$\&\*\+\-\.\^\\\|\~'
     )
   
+  def test_fixed_delimiter_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.FixedDelimiterReplacement.build_regex_pattern(
+        syntax_type_is_block=False,
+        flag_name_from_letter={
+          'u': 'KEEP_HTML_UNESCAPED',
+          'i': 'KEEP_INDENTED',
+        },
+        has_flags=True,
+        opening_delimiter='<|',
+        attribute_specifications='',
+        closing_delimiter='|>',
+      ),
+      '(?P<flags> [ui]* )'
+      r'<\|'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+      r'(?P<content> [\s\S]*? )'
+      r'\|>'
+    )
+    
+    self.assertEqual(
+      cmd.FixedDelimiterReplacement.build_regex_pattern(
+        syntax_type_is_block=True,
+        flag_name_from_letter={},
+        has_flags=False,
+        opening_delimiter='($',
+        attribute_specifications='',
+        closing_delimiter='$)',
+      ),
+      r'^[^\S\n]*'
+      r'\(\$'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+      r'\n'
+      r'(?P<content> [\s\S]*? )'
+      r'^[^\S\n]*'
+      r'\$\)'
+    )
+  
   def test_extensible_fence_replacement_build_regex_pattern(self):
     
     self.assertEqual(
