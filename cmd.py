@@ -579,7 +579,7 @@ class OrdinaryDictionaryReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  * «pattern» --> «substitute»
+  * "«pattern»" | «pattern» --> "«substitute»" | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -659,7 +659,7 @@ class RegexDictionaryReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  * «pattern» --> «substitute»
+  * "«pattern»" | «pattern» --> "«substitute»" | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -2855,11 +2855,19 @@ class ReplacementMaster:
     return re.fullmatch(
       fr'''
         [\s]*
-          (?P<pattern> [\S][\s\S]*? )
+          (?:
+            "(?P<quoted_pattern> [\s\S]*? )"
+              |
+            (?P<bare_pattern> [\s\S]*? )
+          )
         [\s]*
           {re.escape(longest_substitution_delimiter)}
         [\s]*
-          (?P<substitute> [\s\S]*? )
+          (?:
+            "(?P<quoted_substitute> [\s\S]*? )"
+              |
+            (?P<bare_substitute> [\s\S]*? )
+          )
         [\s]*
       ''',
       substitution,
@@ -2886,8 +2894,17 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    pattern = substitution_match.group('pattern')
-    substitute = substitution_match.group('substitute')
+    quoted_pattern = substitution_match.group('quoted_pattern')
+    if quoted_pattern is not None:
+      pattern = quoted_pattern
+    else:
+      pattern = substitution_match.group('bare_pattern')
+    
+    quoted_substitute = substitution_match.group('quoted_substitute')
+    if quoted_substitute is not None:
+      substitute = quoted_substitute
+    else:
+      substitute = substitution_match.group('bare_substitute')
     
     replacement.add_substitution(pattern, substitute)
   
@@ -2911,8 +2928,17 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    pattern = substitution_match.group('pattern')
-    substitute = substitution_match.group('substitute')
+    quoted_pattern = substitution_match.group('quoted_pattern')
+    if quoted_pattern is not None:
+      pattern = quoted_pattern
+    else:
+      pattern = substitution_match.group('bare_pattern')
+    
+    quoted_substitute = substitution_match.group('quoted_substitute')
+    if quoted_substitute is not None:
+      substitute = quoted_substitute
+    else:
+      substitute = substitution_match.group('bare_substitute')
     
     try:
       re.sub(pattern, '', '', flags=re.ASCII | re.MULTILINE | re.VERBOSE)

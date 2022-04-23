@@ -475,7 +475,7 @@ r'''# Da Rules
 OrdinaryDictionaryReplacement: #boilerplate-properties-override
 - queue_position: BEFORE #boilerplate-properties
 * %lang --> en-AU
-* %title --> This be a __test__
+* %title --> "This be a __test__ "
 * %styles -->
     #good {
       font-family: sans-serif;
@@ -748,7 +748,7 @@ r'''<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>This be a __test__</title>
+<title>This be a __test__ </title>
 <style>
 #good {
 font-family: sans-serif;
