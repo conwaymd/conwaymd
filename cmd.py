@@ -1970,6 +1970,47 @@ class ReplacementMaster:
     replacement.attribute_specifications = attribute_specifications
   
   @staticmethod
+  def compute_closing_delimiter_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<closing_delimiter> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_closing_delimiter(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    closing_delimiter_match = \
+            ReplacementMaster.compute_closing_delimiter_match(attribute_value)
+    
+    invalid_value = closing_delimiter_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `closing_delimiter`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    closing_delimiter = closing_delimiter_match.group('closing_delimiter')
+    replacement.closing_delimiter = closing_delimiter
+  
+  @staticmethod
   def compute_concluding_replacement_matches(attribute_value):
     return re.finditer(
       r'''
@@ -2907,6 +2948,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'attribute_specifications':
         ReplacementMaster.stage_attribute_specifications(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'closing_delimiter':
+        self.stage_closing_delimiter(
           replacement,
           attribute_value,
           rules_file_name,
