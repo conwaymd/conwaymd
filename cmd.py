@@ -753,6 +753,19 @@ class FixedDelimiterReplacement(Replacement):
     self._tag_name = None
     self._regex_pattern = None
     self._substitute_function = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'syntax_type',
+      'allowed_flags',
+      'opening_delimiter',
+      'attribute_specifications',
+      'content_replacements',
+      'closing_delimiter',
+      'tag_name',
+      'concluding_replacements',
+    )
 
 
 class ExtensibleFenceReplacement(Replacement):
