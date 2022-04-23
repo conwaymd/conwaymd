@@ -1175,7 +1175,7 @@ class ExtensibleFenceReplacement(Replacement):
   
   @staticmethod
   def build_regex_pattern(
-    syntax_is_block,
+    syntax_type_is_block,
     flag_name_from_letter,
     has_flags,
     prologue_delimiter,
@@ -1185,7 +1185,7 @@ class ExtensibleFenceReplacement(Replacement):
     epilogue_delimiter,
   ):
     
-    block_anchoring_regex = build_block_anchoring_regex(syntax_is_block)
+    block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block)
     flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
     prologue_delimiter_regex = re.escape(prologue_delimiter)
     extensible_delimiter_opening_regex = \
@@ -1196,7 +1196,7 @@ class ExtensibleFenceReplacement(Replacement):
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_is_block,
+              syntax_type_is_block,
             )
     content_regex = build_content_regex()
     extensible_delimiter_closing_regex = \

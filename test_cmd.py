@@ -220,7 +220,7 @@ class TestCmd(unittest.TestCase):
     
     self.assertEqual(
       cmd.ExtensibleFenceReplacement.build_regex_pattern(
-        syntax_is_block=False,
+        syntax_type_is_block=False,
         flag_name_from_letter={
           'u': 'KEEP_HTML_UNESCAPED',
           'i': 'KEEP_INDENTED',
@@ -242,7 +242,7 @@ class TestCmd(unittest.TestCase):
     
     self.assertEqual(
       cmd.ExtensibleFenceReplacement.build_regex_pattern(
-        syntax_is_block=True,
+        syntax_type_is_block=True,
         flag_name_from_letter={},
         has_flags=False,
         prologue_delimiter='',
