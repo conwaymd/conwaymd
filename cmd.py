@@ -1072,8 +1072,7 @@ class ExtensibleFenceReplacement(Replacement):
     epilogue_delimiter,
   ):
     
-    block_anchoring_regex = \
-            build_block_anchoring_regex(syntax_is_block)
+    block_anchoring_regex = build_block_anchoring_regex(syntax_is_block)
     flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
     prologue_delimiter_regex = re.escape(prologue_delimiter)
     extensible_delimiter_opening_regex = \
