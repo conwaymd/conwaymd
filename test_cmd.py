@@ -207,12 +207,12 @@ class TestCmd(unittest.TestCase):
         attribute_specifications='',
         closing_delimiter='$)',
       ),
-      r'^[^\S\n]*'
+      r'^ [^\S\n]*'
       r'\(\$'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
       r'\n'
       r'(?P<content> [\s\S]*? )'
-      r'^[^\S\n]*'
+      r'^ [^\S\n]*'
       r'\$\)'
     )
   
@@ -251,12 +251,12 @@ class TestCmd(unittest.TestCase):
         attribute_specifications='',
         epilogue_delimiter='',
       ),
-      r'^[^\S\n]*'
+      r'^ [^\S\n]*'
       r'(?P<extensible_delimiter> \${4,} )'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
       r'\n'
       r'(?P<content> [\s\S]*? )'
-      r'^[^\S\n]*'
+      r'^ [^\S\n]*'
       '(?P=extensible_delimiter)'
     )
   
@@ -268,11 +268,11 @@ class TestCmd(unittest.TestCase):
         attribute_specifications='',
         ending_pattern='[-]',
       ),
-      r'^[^\S\n]*'
+      r'^ [^\S\n]*'
       '(?: [-+*] )'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} | [\s]+ )'
       r'(?P<content> [\s\S]*? )'
-      r'(?= ^[^\S\n]*(?: [-] )(?: \{ [^}]*? \} | [\s]+ ) | \Z )'
+      r'(?= ^ [^\S\n]*(?: [-] )(?: \{ [^}]*? \} | [\s]+ ) | \Z )'
     )
     
     self.assertEqual(
@@ -281,7 +281,7 @@ class TestCmd(unittest.TestCase):
         attribute_specifications=None,
         ending_pattern=None,
       ),
-      r'^[^\S\n]*'
+      r'^ [^\S\n]*'
       '(?: HELLO[:] )'
       r'[\s]+'
       r'(?P<content> [\s\S]*? )'

@@ -3645,7 +3645,7 @@ def build_block_anchoring_regex(
     if capture_anchoring_whitespace:
       return r'^ (?P<anchoring_whitespace> [^\S\n]* )'
     else:
-      return r'^[^\S\n]*'
+      return r'^ [^\S\n]*'
   
   return ''
 
