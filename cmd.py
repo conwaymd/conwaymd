@@ -2343,52 +2343,6 @@ class ReplacementMaster:
     replacement.negative_flag_name = negative_flag_name
   
   @staticmethod
-  def compute_prologue_delimiter_match(attribute_value):
-    return re.fullmatch(
-      r'''
-        [\s]*
-        (?:
-          (?P<none_keyword> NONE )
-            |
-          (?P<prologue_delimiter> [\S][\s\S]*? )
-            |
-          (?P<invalid_value> [\s\S]*? )
-        )
-        [\s]*
-      ''',
-      attribute_value,
-      flags=re.ASCII | re.VERBOSE,
-    )
-  
-  @staticmethod
-  def stage_prologue_delimiter(
-    replacement,
-    attribute_value,
-    rules_file_name,
-    line_number_range_start,
-    line_number,
-  ):
-    
-    prologue_delimiter_match = \
-            ReplacementMaster.compute_prologue_delimiter_match(attribute_value)
-    
-    invalid_value = prologue_delimiter_match.group('invalid_value')
-    if invalid_value is not None:
-      ReplacementMaster.print_error(
-        f'invalid value `{invalid_value}` for attribute `prologue_delimiter`',
-        rules_file_name,
-        line_number_range_start,
-        line_number,
-      )
-      sys.exit(GENERIC_ERROR_EXIT_CODE)
-    
-    if prologue_delimiter_match.group('none_keyword') is not None:
-      return
-    
-    prologue_delimiter = prologue_delimiter_match.group('prologue_delimiter')
-    replacement.prologue_delimiter = prologue_delimiter
-  
-  @staticmethod
   def compute_positive_flag_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -2433,6 +2387,52 @@ class ReplacementMaster:
     
     positive_flag_name = positive_flag_match.group('positive_flag_name')
     replacement.positive_flag_name = positive_flag_name
+  
+  @staticmethod
+  def compute_prologue_delimiter_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none_keyword> NONE )
+            |
+          (?P<prologue_delimiter> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_prologue_delimiter(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    prologue_delimiter_match = \
+            ReplacementMaster.compute_prologue_delimiter_match(attribute_value)
+    
+    invalid_value = prologue_delimiter_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `prologue_delimiter`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if prologue_delimiter_match.group('none_keyword') is not None:
+      return
+    
+    prologue_delimiter = prologue_delimiter_match.group('prologue_delimiter')
+    replacement.prologue_delimiter = prologue_delimiter
   
   @staticmethod
   def compute_queue_position_match(attribute_value):
