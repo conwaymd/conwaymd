@@ -3577,6 +3577,8 @@ def compute_attribute_specification_matches(attribute_specifications):
           |
         [h] (?P<height> [0-9]+ )
           |
+        [-] (?P<omitted_attribute> [\S]+ )
+          |
         (?P<boolean_attribute> [\S]+ )
       ) ?
       [\s]*
@@ -3600,6 +3602,15 @@ ATTRIBUTE_NAME_FROM_ABBREVIATION = \
 
 
 def extract_attribute_name_and_value(attribute_specification_match):
+  """
+  Extract (at most) name and value.
+  
+  Specifically:
+  - («name», «value») for a non-boolean attribute
+  - («name», None) for a boolean attribute
+  - («name»,) for an attribute to be omitted
+  - None for an invalid attribute specification
+  """
   
   name = attribute_specification_match.group('name')
   if name is not None:
@@ -3641,11 +3652,15 @@ def extract_attribute_name_and_value(attribute_specification_match):
   if height is not None:
     return 'height', height
   
+  omitted_attribute = attribute_specification_match.group('omitted_attribute')
+  if omitted_attribute is not None:
+    return omitted_attribute,
+  
   boolean_attribute = attribute_specification_match.group('boolean_attribute')
   if boolean_attribute is not None:
     return boolean_attribute, None
   
-  return None, None
+  return None
 
 
 def build_attributes_sequence(attribute_specifications):
@@ -3662,6 +3677,7 @@ def build_attributes_sequence(attribute_specifications):
   c«colspan»
   w«width»
   h«height»
+  -«omitted_attribute»
   «boolean_attribute»
   ````
   In the two forms with an explicit equals sign,
@@ -3689,24 +3705,30 @@ def build_attributes_sequence(attribute_specifications):
   for attribute_specification_match \
   in compute_attribute_specification_matches(attribute_specifications):
     
-    name, value = \
+    name_and_value = \
             extract_attribute_name_and_value(attribute_specification_match)
     
-    if name is None:
+    if name_and_value is None: # invalid attribute specification
       continue
     
-    if name == 'class':
-      try:
-        attribute_value_from_name['class'] += f' {value}'
-      except KeyError:
-        attribute_value_from_name['class'] = value
-    else:
-      attribute_value_from_name[name] = value
+    try:
+      name, value = name_and_value
+      if name == 'class':
+        try:
+          attribute_value_from_name['class'] += f' {value}'
+        except KeyError:
+          attribute_value_from_name['class'] = value
+      else:
+        attribute_value_from_name[name] = value
+    except ValueError: # attribute to be omitted
+      name, = name_and_value
+      if name in attribute_value_from_name:
+        attribute_value_from_name.pop(name)
   
   attribute_sequence = ''
   
   for name, value in attribute_value_from_name.items():
-    if value is None:
+    if value is None: # boolean attribute
       attribute_sequence += f' {name}'
     else:
       value = escape_attribute_value_html(value)

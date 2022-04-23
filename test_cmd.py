@@ -406,6 +406,18 @@ Whitespace before closing delimiter:
       ' qv="quoted value" bv="bare-value"'
     )
     self.assertEqual(
+      cmd.build_attributes_sequence('-before before after -after'),
+      ' before'
+    )
+    self.assertEqual(
+      cmd.build_attributes_sequence('-before before=no after=yes -after'),
+      ' before="no"'
+    )
+    self.assertEqual(
+      cmd.build_attributes_sequence('.1 .2 .3 .4 #a #b #c -id -class'),
+      ''
+    )
+    self.assertEqual(
       cmd.build_attributes_sequence('#=top .=good    l=en    r=3    c=2'),
       ' id="top" class="good" lang="en" rowspan="3" colspan="2"'
     )
