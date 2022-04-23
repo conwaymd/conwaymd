@@ -4095,6 +4095,8 @@ OrdinaryDictionaryReplacement: #backslash-escapes
 * \| --> |
 * \} --> }
 * \~ --> ~
+* "\ " --> " "
+* \t --> "	"
 - concluding_replacements:
     #placeholder-protect
 
