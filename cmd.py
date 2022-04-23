@@ -733,7 +733,7 @@ class ExtensibleFenceReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - syntax_type: BLOCK | INLINE (mandatory)
   - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
-  - opening_delimiter: (def) NONE | «string»
+  - prologue_delimiter: (def) NONE | «string»
   - extensible_delimiter: «character_repeated» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
   - content_replacements: (def) NONE | #«id» [...]
@@ -749,7 +749,7 @@ class ExtensibleFenceReplacement(Replacement):
     self._syntax_type_is_block = None
     self._flag_name_from_letter = {}
     self._has_flags = False
-    self._opening_delimiter = ''
+    self._prologue_delimiter = ''
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
     self._attribute_specifications = None
@@ -764,7 +764,7 @@ class ExtensibleFenceReplacement(Replacement):
       'queue_position',
       'syntax_type',
       'allowed_flags',
-      'opening_delimiter',
+      'prologue_delimiter',
       'extensible_delimiter',
       'attribute_specifications',
       'content_replacements',
@@ -798,16 +798,16 @@ class ExtensibleFenceReplacement(Replacement):
     self._flag_name_from_letter = copy.copy(value)
   
   @property
-  def opening_delimiter(self):
-    return self._opening_delimiter
+  def prologue_delimiter(self):
+    return self._prologue_delimiter
   
-  @opening_delimiter.setter
-  def opening_delimiter(self, value):
+  @prologue_delimiter.setter
+  def prologue_delimiter(self, value):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot set `opening_delimiter` after `commit()`'
+        'error: cannot set `prologue_delimiter` after `commit()`'
       )
-    self._opening_delimiter = value
+    self._prologue_delimiter = value
   
   @property
   def extensible_delimiter_character(self):
@@ -897,7 +897,7 @@ class ExtensibleFenceReplacement(Replacement):
               self._syntax_type_is_block,
               self._flag_name_from_letter,
               self._has_flags,
-              self._opening_delimiter,
+              self._prologue_delimiter,
               self._extensible_delimiter_character,
               self._extensible_delimiter_min_count,
               self._attribute_specifications,
@@ -924,7 +924,7 @@ class ExtensibleFenceReplacement(Replacement):
     syntax_is_block,
     flag_name_from_letter,
     has_flags,
-    opening_delimiter,
+    prologue_delimiter,
     extensible_delimiter_character,
     extensible_delimiter_min_count,
     attribute_specifications,
@@ -934,7 +934,7 @@ class ExtensibleFenceReplacement(Replacement):
     block_anchoring_regex = \
             build_block_anchoring_regex(syntax_is_block)
     flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
-    opening_delimiter_regex = re.escape(opening_delimiter)
+    prologue_delimiter_regex = re.escape(prologue_delimiter)
     extensible_delimiter_opening_regex = \
             build_extensible_delimiter_opening_regex(
               extensible_delimiter_character,
@@ -954,7 +954,7 @@ class ExtensibleFenceReplacement(Replacement):
       [
         block_anchoring_regex,
         flags_regex,
-        opening_delimiter_regex,
+        prologue_delimiter_regex,
         extensible_delimiter_opening_regex,
         attribute_specifications_regex,
         content_regex,
@@ -2082,14 +2082,14 @@ class ReplacementMaster:
     replacement.negative_flag_name = negative_flag_name
   
   @staticmethod
-  def compute_opening_delimiter_match(attribute_value):
+  def compute_prologue_delimiter_match(attribute_value):
     return re.fullmatch(
       r'''
         [\s]*
         (?:
           (?P<none_keyword> NONE )
             |
-          (?P<opening_delimiter> [\S][\s\S]*? )
+          (?P<prologue_delimiter> [\S][\s\S]*? )
             |
           (?P<invalid_value> [\s\S]*? )
         )
@@ -2100,7 +2100,7 @@ class ReplacementMaster:
     )
   
   @staticmethod
-  def stage_opening_delimiter(
+  def stage_prologue_delimiter(
     replacement,
     attribute_value,
     rules_file_name,
@@ -2108,24 +2108,24 @@ class ReplacementMaster:
     line_number,
   ):
     
-    opening_delimiter_match = \
-            ReplacementMaster.compute_opening_delimiter_match(attribute_value)
+    prologue_delimiter_match = \
+            ReplacementMaster.compute_prologue_delimiter_match(attribute_value)
     
-    invalid_value = opening_delimiter_match.group('invalid_value')
+    invalid_value = prologue_delimiter_match.group('invalid_value')
     if invalid_value is not None:
       ReplacementMaster.print_error(
-        f'invalid value `{invalid_value}` for attribute `opening_delimiter`',
+        f'invalid value `{invalid_value}` for attribute `prologue_delimiter`',
         rules_file_name,
         line_number_range_start,
         line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    if opening_delimiter_match.group('none_keyword') is not None:
+    if prologue_delimiter_match.group('none_keyword') is not None:
       return
     
-    opening_delimiter = opening_delimiter_match.group('opening_delimiter')
-    replacement.opening_delimiter = opening_delimiter
+    prologue_delimiter = prologue_delimiter_match.group('prologue_delimiter')
+    replacement.prologue_delimiter = prologue_delimiter
   
   @staticmethod
   def compute_positive_flag_match(attribute_value):
@@ -2700,8 +2700,8 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
-      elif attribute_name == 'opening_delimiter':
-        ReplacementMaster.stage_opening_delimiter(
+      elif attribute_name == 'prologue_delimiter':
+        ReplacementMaster.stage_prologue_delimiter(
           replacement,
           attribute_value,
           rules_file_name,
@@ -3416,7 +3416,7 @@ ExtensibleFenceReplacement: #literals
     u=KEEP_HTML_UNESCAPED
     i=KEEP_INDENTED
     w=REDUCE_WHITESPACE
-- opening_delimiter: <
+- prologue_delimiter: <
 - extensible_delimiter: `
 - content_replacements:
     #escape-html
