@@ -3636,10 +3636,16 @@ def build_attributes_sequence(attribute_specifications):
   return attribute_sequence
 
 
-def build_block_anchoring_regex(syntax_type_is_block):
+def build_block_anchoring_regex(
+  syntax_type_is_block,
+  capture_anchoring_whitespace=False,
+):
   
   if syntax_type_is_block:
-    return r'^[^\S\n]*'
+    if capture_anchoring_whitespace:
+      return r'^ (?P<anchoring_whitespace> [^\S\n]* )'
+    else:
+      return r'^[^\S\n]*'
   
   return ''
 
