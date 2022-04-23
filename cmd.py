@@ -4035,11 +4035,48 @@ ExtensibleFenceReplacement: #tables
     #prepend-newline
 - tag_name: table
 
+OrdinaryDictionaryReplacement: #backslash-escapes
+- queue_position: AFTER #tables
+* \\ --> \
+* \! --> !
+* \" --> "
+* \# --> #
+* \$ --> $
+* \% --> %
+* \& --> &amp;
+* \' --> '
+* \( --> (
+* \) --> )
+* \* --> *
+* \+ --> +
+* \, --> ,
+* \- --> -
+* \. --> .
+* \/ --> /
+* \: --> :
+* \; --> ;
+* \< --> &lt;
+* \= --> =
+* \> --> &gt;
+* \? --> ?
+* \@ --> @
+* \[ --> [
+* \] --> ]
+* \^ --> ^
+* \_ --> _
+* \` --> `
+* \{ --> {
+* \| --> |
+* \} --> }
+* \~ --> ~
+- concluding_replacements:
+    #placeholder-protect
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #tables
+- queue_position: AFTER #backslash-escapes
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline

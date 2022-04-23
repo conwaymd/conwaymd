@@ -726,6 +726,13 @@ Header-after-data (seriously, why would you have this?):
   , Data2
 '''
 """
+r'''
+## `#backslash-escapes`
+
+\\ \! \" \# \$ \% \& \' \( \) \* \+ \, \- \. \/
+\: \; \< \= \> \? \@ \[ \] \^ \_ \` \{ \| \} \~
+\\\3 \\\\4 \\\\\5 \\\\\\6
+'''
         ################################################################
         # END CMD
         ################################################################
@@ -995,6 +1002,10 @@ Header-after-data (seriously, why would you have this?):
 <td>Data2</td>
 </tr>
 </table>
+## <code>#backslash-escapes</code>
+\ ! " # $ % &amp; ' ( ) * + , - . /
+: ; &lt; = &gt; ? @ [ ] ^ _ ` { | } ~
+\\3 \\4 \\\5 \\\6
 </body>
 </html>
 '''
