@@ -722,12 +722,12 @@ class RegexDictionaryReplacement(Replacement):
     return substitute_function
 
 
-class FixedDelimiterReplacement(Replacement):
+class FixedDelimitersReplacement(Replacement):
   """
-  A fixed-delimiter replacement rule.
+  A fixed-delimiters replacement rule.
   
   ````
-  FixedDelimiterReplacement: #«id»
+  FixedDelimitersReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - syntax_type: BLOCK | INLINE (mandatory)
   - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
@@ -866,7 +866,7 @@ class FixedDelimiterReplacement(Replacement):
     
     self._has_flags = len(self._flag_name_from_letter) > 0
     self._regex_pattern = \
-            FixedDelimiterReplacement.build_regex_pattern(
+            FixedDelimitersReplacement.build_regex_pattern(
               self._syntax_type_is_block,
               self._flag_name_from_letter,
               self._has_flags,

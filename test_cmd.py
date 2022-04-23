@@ -180,7 +180,7 @@ class TestCmd(unittest.TestCase):
   def test_fixed_delimiter_replacement_build_regex_pattern(self):
     
     self.assertEqual(
-      cmd.FixedDelimiterReplacement.build_regex_pattern(
+      cmd.FixedDelimitersReplacement.build_regex_pattern(
         syntax_type_is_block=False,
         flag_name_from_letter={
           'u': 'KEEP_HTML_UNESCAPED',
@@ -199,7 +199,7 @@ class TestCmd(unittest.TestCase):
     )
     
     self.assertEqual(
-      cmd.FixedDelimiterReplacement.build_regex_pattern(
+      cmd.FixedDelimitersReplacement.build_regex_pattern(
         syntax_type_is_block=True,
         flag_name_from_letter={},
         has_flags=False,
