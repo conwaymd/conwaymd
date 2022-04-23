@@ -850,6 +850,17 @@ class FixedDelimiterReplacement(Replacement):
         'error: cannot set `tag_name` after `commit()`'
       )
     self._tag_name = value
+  
+  def _validate_mandatory_attributes(self):
+    
+    if self._syntax_type_is_block is None:
+      raise MissingAttributeException('syntax_type')
+    
+    if self._opening_delimiter is None:
+      raise MissingAttributeException('opening_delimiter')
+    
+    if self._closing_delimiter is None:
+      raise MissingAttributeException('closing_delimiter')
 
 
 class ExtensibleFenceReplacement(Replacement):
