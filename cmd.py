@@ -3722,8 +3722,7 @@ def build_attributes_sequence(attribute_specifications):
         attribute_value_from_name[name] = value
     except ValueError: # attribute to be omitted
       name, = name_and_value
-      if name in attribute_value_from_name:
-        attribute_value_from_name.pop(name)
+      attribute_value_from_name.pop(name, None)
   
   attribute_sequence = ''
   
