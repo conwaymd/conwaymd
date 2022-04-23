@@ -2384,6 +2384,47 @@ class ReplacementMaster:
     replacement.negative_flag_name = negative_flag_name
   
   @staticmethod
+  def compute_opening_delimiter_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<opening_delimiter> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_opening_delimiter(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    opening_delimiter_match = \
+            ReplacementMaster.compute_opening_delimiter_match(attribute_value)
+    
+    invalid_value = opening_delimiter_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `opening_delimiter`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    opening_delimiter = opening_delimiter_match.group('opening_delimiter')
+    replacement.opening_delimiter = opening_delimiter
+  
+  @staticmethod
   def compute_positive_flag_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -3004,6 +3045,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'negative_flag':
         ReplacementMaster.stage_negative_flag(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'opening_delimiter':
+        ReplacementMaster.stage_opening_delimiter(
           replacement,
           attribute_value,
           rules_file_name,
