@@ -737,7 +737,7 @@ class ExtensibleFenceReplacement(Replacement):
   - extensible_delimiter: «character_repeated» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
   - content_replacements: (def) NONE | #«id» [...]
-  - closing_delimiter: (def) NONE | «string»
+  - epilogue_delimiter: (def) NONE | «string»
   - tag_name: (def) NONE | «name»
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -754,7 +754,7 @@ class ExtensibleFenceReplacement(Replacement):
     self._extensible_delimiter_min_count = None
     self._attribute_specifications = None
     self._content_replacements = []
-    self._closing_delimiter = ''
+    self._epilogue_delimiter = ''
     self._tag_name = None
     self._regex_pattern = None
     self._substitute_function = None
@@ -768,7 +768,7 @@ class ExtensibleFenceReplacement(Replacement):
       'extensible_delimiter',
       'attribute_specifications',
       'content_replacements',
-      'closing_delimiter',
+      'epilogue_delimiter',
       'tag_name',
       'concluding_replacements',
     )
@@ -858,16 +858,16 @@ class ExtensibleFenceReplacement(Replacement):
     self._content_replacements = copy.copy(value)
   
   @property
-  def closing_delimiter(self):
-    return self._closing_delimiter
+  def epilogue_delimiter(self):
+    return self._epilogue_delimiter
   
-  @closing_delimiter.setter
-  def closing_delimiter(self, value):
+  @epilogue_delimiter.setter
+  def epilogue_delimiter(self, value):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot set `closing_delimiter` after `commit()`'
+        'error: cannot set `epilogue_delimiter` after `commit()`'
       )
-    self._closing_delimiter = value
+    self._epilogue_delimiter = value
   
   @property
   def tag_name(self):
@@ -901,7 +901,7 @@ class ExtensibleFenceReplacement(Replacement):
               self._extensible_delimiter_character,
               self._extensible_delimiter_min_count,
               self._attribute_specifications,
-              self._closing_delimiter,
+              self._epilogue_delimiter,
             )
     self._substitute_function = \
             self.build_substitute_function(
@@ -928,7 +928,7 @@ class ExtensibleFenceReplacement(Replacement):
     extensible_delimiter_character,
     extensible_delimiter_min_count,
     attribute_specifications,
-    closing_delimiter,
+    epilogue_delimiter,
   ):
     
     block_anchoring_regex = \
@@ -948,7 +948,7 @@ class ExtensibleFenceReplacement(Replacement):
     content_regex = build_content_regex()
     extensible_delimiter_closing_regex = \
             build_extensible_delimiter_closing_regex()
-    closing_delimiter_regex = re.escape(closing_delimiter)
+    epilogue_delimiter_regex = re.escape(epilogue_delimiter)
     
     return ''.join(
       [
@@ -960,7 +960,7 @@ class ExtensibleFenceReplacement(Replacement):
         content_regex,
         block_anchoring_regex,
         extensible_delimiter_closing_regex,
-        closing_delimiter_regex,
+        epilogue_delimiter_regex,
       ]
     )
   
@@ -1709,14 +1709,14 @@ class ReplacementMaster:
     replacement.attribute_specifications = attribute_specifications
   
   @staticmethod
-  def compute_closing_delimiter_match(attribute_value):
+  def compute_epilogue_delimiter_match(attribute_value):
     return re.fullmatch(
       r'''
         [\s]*
         (?:
           (?P<none_keyword> NONE )
             |
-          (?P<closing_delimiter> [\S][\s\S]*? )
+          (?P<epilogue_delimiter> [\S][\s\S]*? )
             |
           (?P<invalid_value> [\s\S]*? )
         )
@@ -1727,7 +1727,7 @@ class ReplacementMaster:
     )
   
   @staticmethod
-  def stage_closing_delimiter(
+  def stage_epilogue_delimiter(
     replacement,
     attribute_value,
     rules_file_name,
@@ -1735,24 +1735,24 @@ class ReplacementMaster:
     line_number,
   ):
     
-    closing_delimiter_match = \
-            ReplacementMaster.compute_closing_delimiter_match(attribute_value)
+    epilogue_delimiter_match = \
+            ReplacementMaster.compute_epilogue_delimiter_match(attribute_value)
     
-    invalid_value = closing_delimiter_match.group('invalid_value')
+    invalid_value = epilogue_delimiter_match.group('invalid_value')
     if invalid_value is not None:
       ReplacementMaster.print_error(
-        f'invalid value `{invalid_value}` for attribute `closing_delimiter`',
+        f'invalid value `{invalid_value}` for attribute `epilogue_delimiter`',
         rules_file_name,
         line_number_range_start,
         line_number,
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    if closing_delimiter_match.group('none_keyword') is not None:
+    if epilogue_delimiter_match.group('none_keyword') is not None:
       return
     
-    closing_delimiter = closing_delimiter_match.group('closing_delimiter')
-    replacement.closing_delimiter = closing_delimiter
+    epilogue_delimiter = epilogue_delimiter_match.group('epilogue_delimiter')
+    replacement.epilogue_delimiter = epilogue_delimiter
   
   @staticmethod
   def compute_concluding_replacement_matches(attribute_value):
@@ -2652,8 +2652,8 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
-      elif attribute_name == 'closing_delimiter':
-        ReplacementMaster.stage_closing_delimiter(
+      elif attribute_name == 'epilogue_delimiter':
+        ReplacementMaster.stage_epilogue_delimiter(
           replacement,
           attribute_value,
           rules_file_name,
@@ -3424,7 +3424,7 @@ ExtensibleFenceReplacement: #literals
     #trim-whitespace
     #reduce-whitespace
     #placeholder-protect
-- closing_delimiter: >
+- epilogue_delimiter: >
 
 RegexDictionaryReplacement: #code-tag-wrap
 * \A --> <code>
