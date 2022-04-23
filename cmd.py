@@ -722,6 +722,39 @@ class RegexDictionaryReplacement(Replacement):
     return substitute_function
 
 
+class FixedDelimiterReplacement(Replacement):
+  """
+  A fixed-delimiter replacement rule.
+  
+  ````
+  FixedDelimiterReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - syntax_type: BLOCK | INLINE (mandatory)
+  - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
+  - opening_delimiter: «string» (mandatory)
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  - content_replacements: (def) NONE | #«id» [...]
+  - closing_delimiter: «string» (mandatory)
+  - tag_name: (def) NONE | «name»
+  - concluding_replacements: (def) NONE | #«id» [...]
+  ````
+  """
+  
+  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._placeholder_master = placeholder_master
+    self._syntax_type_is_block = None
+    self._flag_name_from_letter = {}
+    self._has_flags = False
+    self._opening_delimiter = None
+    self._attribute_specifications = None
+    self._content_replacements = []
+    self._closing_delimiter = None
+    self._tag_name = None
+    self._regex_pattern = None
+    self._substitute_function = None
+
+
 class ExtensibleFenceReplacement(Replacement):
   """
   A generalised extensible-fence-style replacement rule.
