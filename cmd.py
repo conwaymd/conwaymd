@@ -233,6 +233,59 @@ class PlaceholderMaster:
     return f'{marker}{encoded_counter}{marker}'
 
 
+class Reference:
+  """
+  A reference to be used by links and images.
+  
+  For a given «label» (normalised to lower case),
+  a reference consists of
+  - «attribute specifications»
+  - «uri»
+  - «title»
+  where «uri» is `href` for links and `src` for images.
+  """
+  
+  def __init__(self, attribute_specifications, uri, title):
+    self._attribute_specifications = attribute_specifications
+    self._uri = uri
+    self._title = title
+  
+  @property
+  def attribute_specifications(self):
+    return self._attribute_specifications
+  
+  @property
+  def uri(self):
+    return self._uri
+  
+  @property
+  def title(self):
+    return self._title
+
+
+class ReferenceMaster:
+  """
+  Object storing references to be used by links and images.
+  """
+  
+  def __init__(self):
+    self._reference_from_label = {}
+  
+  def write_definition(self, label, attribute_specifications, uri, title):
+    self._reference_from_label[label] = \
+            Reference(attribute_specifications, uri, title)
+  
+  def read_definition(self, label):
+    
+    reference = self._reference_from_label[label]
+    
+    attribute_specifications = reference.label
+    uri = reference.uri
+    title = reference.title
+    
+    return attribute_specifications, uri, title
+
+
 class Replacement(abc.ABC):
   """
   Base class for a replacement rule.
