@@ -1006,7 +1006,7 @@ class FixedDelimitersReplacement(Replacement):
         substitute = f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
       
       for replacement in self._concluding_replacements:
-        substitute = replacement.apply(substitute)
+        substitute = replacement.apply(substitute, enabled_flag_names)
       
       return substitute
     
@@ -1298,7 +1298,7 @@ class ExtensibleFenceReplacement(Replacement):
         substitute = f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
       
       for replacement in self._concluding_replacements:
-        substitute = replacement.apply(substitute)
+        substitute = replacement.apply(substitute, enabled_flag_names)
       
       return substitute
     
