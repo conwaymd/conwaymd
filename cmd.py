@@ -1330,7 +1330,7 @@ class PartitioningReplacement(Replacement):
     self._content_replacements = []
     self._ending_pattern = None
     self._tag_name = None
-    self._regex_pattern = None
+    self._regex_pattern_compiled = None
     self._substitute_function = None
   
   def attribute_names(self):
@@ -1411,11 +1411,14 @@ class PartitioningReplacement(Replacement):
   
   def _set_apply_method_variables(self):
     
-    self._regex_pattern = \
-            PartitioningReplacement.build_regex_pattern(
-              self._starting_pattern,
-              self._attribute_specifications,
-              self._ending_pattern,
+    self._regex_pattern_compiled = \
+            re.compile(
+              PartitioningReplacement.build_regex_pattern(
+                self._starting_pattern,
+                self._attribute_specifications,
+                self._ending_pattern,
+              ),
+              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
             )
     self._substitute_function = \
             self.build_substitute_function(
@@ -1425,10 +1428,9 @@ class PartitioningReplacement(Replacement):
   
   def _apply(self, string):
     return re.sub(
-      self._regex_pattern,
+      self._regex_pattern_compiled,
       self._substitute_function,
       string,
-      flags=re.ASCII | re.MULTILINE | re.VERBOSE,
     )
   
   @staticmethod
