@@ -1527,6 +1527,134 @@ class PartitioningReplacement(Replacement):
     return substitute_function
 
 
+class ReferenceDefinitionReplacement(Replacement):
+  """
+  A replacement rule for consuming reference definitions.
+  
+  CMD replacement rule syntax:
+  ````
+  ReferenceDefinitionReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._attribute_specifications = None
+    self._regex_pattern_compiled = None
+    self._substitute_function = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'attribute_specifications',
+    )
+  
+  @property
+  def attribute_specifications(self):
+    return self._attribute_specifications
+  
+  @attribute_specifications.setter
+  def attribute_specifications(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `attribute_specifications` after `commit()`'
+      )
+    self._attribute_specifications = value
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    
+    self._regex_pattern_compiled = \
+            re.compile(
+              ReferenceDefinitionReplacement.build_regex_pattern(
+                self._attribute_specifications,
+              ),
+              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+            )
+    self._substitute_function = \
+            self.build_substitute_function(self._attribute_specifications)
+  
+  def _apply(self, string):
+    return re.sub(
+      self._regex_pattern_compiled,
+      self._substitute_function,
+      string,
+    )
+  
+  @staticmethod
+  def build_regex_pattern(attribute_specifications):
+    
+    syntax_type_is_block = True
+    
+    block_anchoring_regex = \
+            build_block_anchoring_regex(
+              syntax_type_is_block,
+              capture_anchoring_whitespace=True,
+            )
+    label_regex = r'\[ (?P<label> [\s\S]*? ) \]'
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block
+            )
+    colon_regex = '[:]'
+    block_continuation_regex = build_block_continuation_regex()
+    uri_regex = build_uri_regex()
+    title_regex = build_title_regex()
+    
+    return ''.join(
+      [
+        block_anchoring_regex,
+        label_regex,
+        attribute_specifications_regex,
+        colon_regex,
+        block_continuation_regex,
+        uri_regex,
+        block_continuation_regex,
+        title_regex,
+      ]
+    )
+  
+  @staticmethod
+  def build_substitute_function(attribute_specifications):
+    
+    def substitute_function(match):
+      
+      label = match.group('label')
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                (
+                  attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
+      
+      bracketed_uri = match.group('bracketed_uri')
+      if bracketed_uri is not None:
+        uri = bracketed_uri
+      else:
+        uri = match.group('bare_uri')
+      
+      double_quoted_title = match.group('double_quoted_title')
+      if double_quoted_title is not None:
+        title = double_quoted_title
+      else:
+        title = match.group('single_quoted_title')
+      
+      # {instance of ReferenceMaster}.write_definition(...)
+      
+      return ''
+    
+    return substitute_function
+
+
 CMD_REPLACEMENT_SYNTAX_HELP = \
 '''\
 In CMD replacement rule syntax, a line must be one of the following:
@@ -3726,6 +3854,10 @@ def build_block_anchoring_regex(
   return ''
 
 
+def build_block_continuation_regex():
+  return r'[^\S\n]* (?: \n (P=anchoring_whitespace) [^\S\n]+ )?'
+
+
 def build_flags_regex(allowed_flags, has_flags):
   
   if not has_flags:
@@ -3784,6 +3916,26 @@ def build_content_regex():
 
 def build_extensible_delimiter_closing_regex():
   return '(?P=extensible_delimiter)'
+
+
+def build_uri_regex():
+  return (
+    '(?: '
+      r'[<] (?P<bracketed_uri> [\s\S]*? ) [>]'
+        ' | '
+      r'(?P<bare_uri> [\S]+ )'
+    ' )'
+  )
+
+
+def build_title_regex():
+  return (
+    '(?: '
+      r'"(?P<double_quoted_title> [\s\S]*? )"'
+        ' | '
+      r"'(?P<single_quoted_title> [\s\S]*? )'"
+    ' )'
+  )
 
 
 def none_to_empty_string(string):

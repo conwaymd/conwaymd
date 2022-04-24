@@ -180,6 +180,47 @@ class TestCmd(unittest.TestCase):
       r'(?= \Z )'
     )
   
+  def text_reference_definition_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.ReferenceDefinitionReplacement.build_regex_pattern(None),
+      r'^ [^\S\n]*'
+      r'\[ (?P<label> [\s\S]*? ) \]'
+      '[:]'
+      r'[^\S\n]* (?: \n (P=anchoring_whitespace) [^\S\n]+ )?'
+      '(?: '
+        r'[<] (?P<bracketed_uri> [\s\S]*? ) [>]'
+          ' | '
+        r'(?P<bare_uri> [\S]+ )'
+      ' )'
+      r'[^\S\n]* (?: \n (P=anchoring_whitespace) [^\S\n]+ )?'
+      '(?: '
+        r'"(?P<double_quoted_title> [\s\S]*? )"'
+          ' | '
+        r"'(?P<single_quoted_title> [\s\S]*? )'"
+      ' )'
+    )
+    
+    self.assertEqual(
+      cmd.ReferenceDefinitionReplacement.build_regex_pattern(None),
+      r'^ [^\S\n]*'
+      r'\[ (?P<label> [\s\S]*? ) \]'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+      '[:]'
+      r'[^\S\n]* (?: \n (P=anchoring_whitespace) [^\S\n]+ )?'
+      '(?: '
+        r'[<] (?P<bracketed_uri> [\s\S]*? ) [>]'
+          ' | '
+        r'(?P<bare_uri> [\S]+ )'
+      ' )'
+      r'[^\S\n]* (?: \n (P=anchoring_whitespace) [^\S\n]+ )?'
+      '(?: '
+        r'"(?P<double_quoted_title> [\s\S]*? )"'
+          ' | '
+        r"'(?P<single_quoted_title> [\s\S]*? )'"
+      ' )'
+    )
+  
   def test_compute_longest_common_prefix(self):
     self.assertEqual(
       cmd.compute_longest_common_prefix(['a', 'b', 'c', 'd']),
