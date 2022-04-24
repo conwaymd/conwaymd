@@ -1878,7 +1878,7 @@ class ReferencedImageReplacement(Replacement):
     
     self._regex_pattern_compiled = \
             re.compile(
-              SpecifiedImageReplacement.build_regex_pattern(
+              ReferencedImageReplacement.build_regex_pattern(
                 self._attribute_specifications,
               ),
               flags=re.ASCII | re.MULTILINE | re.VERBOSE,

@@ -1096,7 +1096,7 @@ https://example.com
 <img alt="Spacious alt." src="spacious/src" title="spacious title">
 <img alt="A" src="S" title="T">
 ## <code>#referenced-images</code>
-![Alt text.][label]
+<img alt="Alt text." src="file.svg" title="title" class="test">
 </body>
 </html>
 '''
