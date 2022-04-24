@@ -75,8 +75,8 @@ class PlaceholderMaster:
   consisting of code points in the main Unicode Private Use Area.
   Specifically, the placeholder shall be of the form
   `«marker»«run_characters»«marker»`, where «marker» is `U+F8FF`,
-  and «run_characters» contains `U+E000` through `U+E100`
-  representing the Unicode bytes of the string.
+  and «run_characters» are between `U+E000` and `U+E0FF`
+  each representing a Unicode byte of the string.
   
   The very first call to PlaceholderMaster should be to the
   `replace_marker_occurrences(...)` method;
