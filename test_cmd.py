@@ -198,7 +198,7 @@ class TestCmd(unittest.TestCase):
         r'"(?P<double_quoted_title> [\s\S]*? )"'
           ' | '
         r"'(?P<single_quoted_title> [\s\S]*? )'"
-      ' )'
+      ' )?'
     )
     
     self.assertEqual(
@@ -218,7 +218,7 @@ class TestCmd(unittest.TestCase):
         r'"(?P<double_quoted_title> [\s\S]*? )"'
           ' | '
         r"'(?P<single_quoted_title> [\s\S]*? )'"
-      ' )'
+      ' )?'
     )
   
   def test_compute_longest_common_prefix(self):
