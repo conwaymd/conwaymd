@@ -498,6 +498,18 @@ class ReplacementWithAllowedFlags(Replacement, abc.ABC):
         'error: cannot set `flag_name_from_letter` after `commit()`'
       )
     self._flag_name_from_letter = copy.copy(value)
+  
+  @staticmethod
+  def get_enabled_flag_names(match, flag_name_from_letter, has_flags):
+    
+    enabled_flag_names = set()
+    if has_flags:
+      flags = match.group('flags')
+      for flag_letter, flag_name in flag_name_from_letter.items():
+        if flag_letter in flags:
+          enabled_flag_names.add(flag_name)
+    
+    return enabled_flag_names
 
 
 class ReplacementWithAttributeSpecifications(Replacement, abc.ABC):
@@ -1096,12 +1108,12 @@ class FixedDelimitersReplacement(
     
     def substitute_function(match):
       
-      enabled_flag_names = set()
-      if has_flags:
-        flags = match.group('flags')
-        for flag_letter, flag_name in flag_name_from_letter.items():
-          if flag_letter in flags:
-            enabled_flag_names.add(flag_name)
+      enabled_flag_names = \
+              ReplacementWithAllowedFlags.get_enabled_flag_names(
+                match,
+                flag_name_from_letter,
+                has_flags,
+              )
       
       if attribute_specifications is not None:
         matched_attribute_specifications = \
@@ -1330,12 +1342,12 @@ class ExtensibleFenceReplacement(
     
     def substitute_function(match):
       
-      enabled_flag_names = set()
-      if has_flags:
-        flags = match.group('flags')
-        for flag_letter, flag_name in flag_name_from_letter.items():
-          if flag_letter in flags:
-            enabled_flag_names.add(flag_name)
+      enabled_flag_names = \
+              ReplacementWithAllowedFlags.get_enabled_flag_names(
+                match,
+                flag_name_from_letter,
+                has_flags,
+              )
       
       if attribute_specifications is not None:
         matched_attribute_specifications = \
