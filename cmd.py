@@ -442,7 +442,7 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
 
 class ReplacementWithSyntaxType(Replacement, abc.ABC):
   """
-  Base class for a replacement rule with syntax type.
+  Base class for a replacement rule with `syntax_type`.
   
   Not to be used when authoring CMD documents.
   (Hypothetical) CMD replacement rule syntax:
@@ -469,9 +469,39 @@ class ReplacementWithSyntaxType(Replacement, abc.ABC):
     self._syntax_type_is_block = value
 
 
+class ReplacementWithAllowedFlags(Replacement, abc.ABC):
+  """
+  Base class for a replacement rule with `allowed_flags`.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  ReplacementWithAllowedFlags: #«id»
+  - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._flag_name_from_letter = {}
+    self._has_flags = False
+  
+  @property
+  def flag_name_from_letter(self):
+    return self._flag_name_from_letter
+  
+  @flag_name_from_letter.setter
+  def flag_name_from_letter(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `flag_name_from_letter` after `commit()`'
+      )
+    self._flag_name_from_letter = copy.copy(value)
+
+
 class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
   """
-  Base class for a replacement rule with concluding replacements.
+  Base class for a replacement rule with `concluding_replacements`.
   
   Not to be used when authoring CMD documents.
   (Hypothetical) CMD replacement rule syntax:
@@ -826,6 +856,7 @@ class RegexDictionaryReplacement(
 
 class FixedDelimitersReplacement(
   ReplacementWithSyntaxType,
+  ReplacementWithAllowedFlags,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -848,8 +879,6 @@ class FixedDelimitersReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._flag_name_from_letter = {}
-    self._has_flags = False
     self._opening_delimiter = None
     self._attribute_specifications = None
     self._content_replacements = []
@@ -870,18 +899,6 @@ class FixedDelimitersReplacement(
       'tag_name',
       'concluding_replacements',
     )
-  
-  @property
-  def flag_name_from_letter(self):
-    return self._flag_name_from_letter
-  
-  @flag_name_from_letter.setter
-  def flag_name_from_letter(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `flag_name_from_letter` after `commit()`'
-      )
-    self._flag_name_from_letter = copy.copy(value)
   
   @property
   def opening_delimiter(self):
@@ -1069,6 +1086,7 @@ class FixedDelimitersReplacement(
 
 class ExtensibleFenceReplacement(
   ReplacementWithSyntaxType,
+  ReplacementWithAllowedFlags,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -1094,8 +1112,6 @@ class ExtensibleFenceReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._flag_name_from_letter = {}
-    self._has_flags = False
     self._prologue_delimiter = ''
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
@@ -1119,18 +1135,6 @@ class ExtensibleFenceReplacement(
       'tag_name',
       'concluding_replacements',
     )
-  
-  @property
-  def flag_name_from_letter(self):
-    return self._flag_name_from_letter
-  
-  @flag_name_from_letter.setter
-  def flag_name_from_letter(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `flag_name_from_letter` after `commit()`'
-      )
-    self._flag_name_from_letter = copy.copy(value)
   
   @property
   def prologue_delimiter(self):
