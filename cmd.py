@@ -1605,7 +1605,7 @@ class ReferenceDefinitionReplacement(Replacement):
               syntax_type_is_block=True,
               capture_anchoring_whitespace=True,
             )
-    label_regex = r'\[ (?P<label> [\s\S]*? ) \]'
+    label_regex = r'\[ (?P<label> [^\]]*? ) \]'
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
