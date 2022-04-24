@@ -715,6 +715,10 @@ https://example.com
 
 [missing uri]:
   [indented]: https://example.com
+
+## `#specified-images`
+
+![Alt text.]()
 '''
         ################################################################
         # END CMD
@@ -1000,6 +1004,8 @@ continuation, for the backslash is escaped.
 [bad]:
 https://example.com
 [missing uri]:
+## <code>#specified-images</code>
+<img alt="Alt text." src="" title="">
 </body>
 </html>
 '''
