@@ -91,6 +91,9 @@ class PlaceholderMaster:
   in the first place, see <https://www.w3.org/TR/charmod/#C073>.
   """
   
+  def __new__(cls):
+    raise TypeError('PlaceholderMaster cannot be instantiated')
+  
   _RUN_CHARACTER_MIN = '\uE000'
   _RUN_CHARACTER_MAX = '\uE100'
   _MARKER = '\uF8FF'
@@ -462,9 +465,8 @@ class PlaceholderMarkerReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, replacement_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._replacement_master = replacement_master
   
   def attribute_names(self):
     return (
@@ -478,7 +480,7 @@ class PlaceholderMarkerReplacement(Replacement):
     pass
   
   def _apply(self, string):
-    return self._replacement_master.replace_marker_occurrences(string)
+    return PlaceholderMaster.replace_marker_occurrences(string)
 
 
 class PlaceholderProtectionReplacement(Replacement):
@@ -492,9 +494,8 @@ class PlaceholderProtectionReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, replacement_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._replacement_master = replacement_master
   
   def attribute_names(self):
     return (
@@ -508,7 +509,7 @@ class PlaceholderProtectionReplacement(Replacement):
     pass
   
   def _apply(self, string):
-    return self._replacement_master.protect(string)
+    return PlaceholderMaster.protect(string)
 
 
 class PlaceholderUnprotectionReplacement(Replacement):
@@ -521,9 +522,8 @@ class PlaceholderUnprotectionReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   """
   
-  def __init__(self, id_, replacement_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._replacement_master = replacement_master
   
   def attribute_names(self):
     return (
@@ -537,7 +537,7 @@ class PlaceholderUnprotectionReplacement(Replacement):
     pass
   
   def _apply(self, string):
-    return self._replacement_master.unprotect(string)
+    return PlaceholderMaster.unprotect(string)
 
 
 class DeIndentationReplacement(Replacement):
@@ -747,9 +747,8 @@ class FixedDelimitersReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._placeholder_master = placeholder_master
     self._syntax_type_is_block = None
     self._flag_name_from_letter = {}
     self._has_flags = False
@@ -957,7 +956,7 @@ class FixedDelimitersReplacement(Replacement):
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                self._placeholder_master.protect(
+                PlaceholderMaster.protect(
                   build_attributes_sequence(combined_attribute_specifications)
                 )
       else:
@@ -1012,9 +1011,8 @@ class ExtensibleFenceReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._placeholder_master = placeholder_master
     self._syntax_type_is_block = None
     self._flag_name_from_letter = {}
     self._has_flags = False
@@ -1259,7 +1257,7 @@ class ExtensibleFenceReplacement(Replacement):
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                self._placeholder_master.protect(
+                PlaceholderMaster.protect(
                   build_attributes_sequence(combined_attribute_specifications)
                 )
       else:
@@ -1312,9 +1310,8 @@ class PartitioningReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._placeholder_master = placeholder_master
     self._starting_pattern = None
     self._attribute_specifications = None
     self._content_replacements = []
@@ -1491,7 +1488,7 @@ class PartitioningReplacement(Replacement):
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                self._placeholder_master.protect(
+                PlaceholderMaster.protect(
                   build_attributes_sequence(combined_attribute_specifications)
                 )
       else:
@@ -1560,7 +1557,6 @@ class ReplacementMaster:
     self._replacement_from_id = {}
     self._root_replacement_id = None
     self._replacement_queue = []
-    self._placeholder_master = PlaceholderMaster()
     self._verbose_mode_enabled = verbose_mode_enabled
   
   @staticmethod
@@ -1694,23 +1690,14 @@ class ReplacementMaster:
       replacement = ReplacementSequence(id_, self._verbose_mode_enabled)
     elif class_name == 'PlaceholderMarkerReplacement':
       replacement = \
-              PlaceholderMarkerReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              PlaceholderMarkerReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'PlaceholderProtectionReplacement':
       replacement = \
-              PlaceholderProtectionReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              PlaceholderProtectionReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'PlaceholderUnprotectionReplacement':
       replacement = \
               PlaceholderUnprotectionReplacement(
                 id_,
-                self._placeholder_master,
                 self._verbose_mode_enabled,
               )
     elif class_name == 'DeIndentationReplacement':
@@ -1722,25 +1709,13 @@ class ReplacementMaster:
       replacement = RegexDictionaryReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'FixedDelimitersReplacement':
       replacement = \
-              FixedDelimitersReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              FixedDelimitersReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'ExtensibleFenceReplacement':
       replacement = \
-              ExtensibleFenceReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              ExtensibleFenceReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'PartitioningReplacement':
       replacement = \
-              PartitioningReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              PartitioningReplacement(id_, self._verbose_mode_enabled)
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
