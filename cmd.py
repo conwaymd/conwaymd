@@ -66,7 +66,7 @@ class MissingAttributeException(Exception):
 
 class PlaceholderMaster:
   """
-  Object providing placeholder protection to strings.
+  Static class providing placeholder protection to strings.
   
   There are many instances in which the result of a replacement
   should not be altered further by replacements to follow.
@@ -74,9 +74,9 @@ class PlaceholderMaster:
   it is temporarily replaced by a placeholder
   consisting of code points in the main Unicode Private Use Area.
   Specifically, the placeholder shall be of the form
-  `«marker»«encoded_counter»«marker»`, where «marker» is `U+F8FF`,
-  and «encoded_counter» is base-6399 `U+E000` through `U+F8FE`,
-  incrementing every time a new string is protected.
+  `«marker»«run_characters»«marker»`, where «marker» is `U+F8FF`,
+  and «run_characters» contains `U+E000` through `U+E100`
+  representing the Unicode bytes of the string.
   
   The very first call to PlaceholderMaster should be to the
   `replace_marker_occurrences(...)` method;
@@ -86,59 +86,64 @@ class PlaceholderMaster:
   the text (restoring the strings were protected with a placeholder).
   
   It is assumed the user will not define replacement rules that
-  tamper with strings of the form `«marker»«encoded_counter»«marker»`.
+  tamper with strings of the form `«marker»«run_characters»«marker»`.
   Note that the user should not be using Private Use Area code points
   in the first place, see <https://www.w3.org/TR/charmod/#C073>.
   """
   
-  _COUNTER_CODE_POINT_MIN = 0xE000
-  _COUNTER_CODE_POINT_MAX = 0xF8FE
-  _COUNTER_BASE = _COUNTER_CODE_POINT_MAX - _COUNTER_CODE_POINT_MIN + 1
-  _MARKER_CODE_POINT = 0xF8FF
+  def __new__(cls):
+    raise TypeError('PlaceholderMaster cannot be instantiated')
   
-  _COUNTER_ENCODED_DIGIT_MIN = chr(_COUNTER_CODE_POINT_MIN)
-  _COUNTER_ENCODED_DIGIT_MAX = chr(_COUNTER_CODE_POINT_MAX)
-  _MARKER = chr(_MARKER_CODE_POINT)
+  _RUN_CHARACTER_MIN = '\uE000'
+  _RUN_CHARACTER_MAX = '\uE100'
+  _MARKER = '\uF8FF'
+  _REPLACEMENT_CHARACTER = '\uFFFD'
+  
+  _RUN_CODE_POINT_MIN = ord(_RUN_CHARACTER_MIN)
+  _REPLACEMENT_CODE_POINT = ord(_REPLACEMENT_CHARACTER)
   
   _PLACEHOLDER_PATTERN_COMPILED = \
           re.compile(
             f'''
               {_MARKER}
-              (?P<encoded_counter>
-                [{_COUNTER_ENCODED_DIGIT_MIN}-{_COUNTER_ENCODED_DIGIT_MAX}]+
+              (?P<run_characters>
+                [{_RUN_CHARACTER_MIN}-{_RUN_CHARACTER_MAX}]*
               )
               {_MARKER}
             ''',
             flags=re.VERBOSE
           )
   
-  def _unprotect_substitute_function(self, placeholder_match):
+  @staticmethod
+  def _unprotect_substitute_function(placeholder_match):
     
-    placeholder = placeholder_match.group()
+    run_characters = placeholder_match.group('run_characters')
+    string_bytes = \
+            bytes(
+              ord(character) - PlaceholderMaster._RUN_CODE_POINT_MIN
+                for character in run_characters
+            )
+    
     try:
-      return self._string_from_placeholder[placeholder]
-    except KeyError:
-      encoded_counter = placeholder_match.group('encoded_counter')
-      counter = PlaceholderMaster.decode(encoded_counter)
+      string = string_bytes.decode()
+    except UnicodeDecodeError:
       warnings.warn(
-        'warning: placeholder encountered with unrecognised counter '
-        f'`{encoded_counter}`, denoting {counter}, '
-        f'which is greater than the current counter ({self._counter})\n\n'
+        'warning: placeholder encountered with run characters '
+        f'representing invalid byte sequence {string_bytes}; '
+        f'substituted with U+{PlaceholderMaster._REPLACEMENT_CODE_POINT:X} '
+        'REPLACEMENT CHARACTER as a fallback\n\n'
         'Possible causes:\n'
         '- Confounding occurrences of «marker» have not been removed '
-          'by calling replace_marker_occurrences(...)\n'
+        'by calling PlaceholderMaster.replace_marker_occurrences(...)\n'
         '- A replacement rule has been defined that tampers with '
-          'strings of the form `«marker»«encoded_counter»«marker»`'
+        'strings of the form `«marker»«run_characters»«marker»`'
       )
-      return placeholder
+      string = PlaceholderMaster._REPLACEMENT_CHARACTER
+    
+    return string
   
-  def __init__(self):
-    self._counter = 0
-    self._string_from_placeholder = {}
-    self._placeholder_from_string = {}
-    self._marker_placeholder = self.protect(PlaceholderMaster._MARKER)
-  
-  def replace_marker_occurrences(self, string):
+  @staticmethod
+  def replace_marker_occurrences(string):
     """
     Replace occurrences of «marker» with a placeholder.
     
@@ -147,90 +152,42 @@ class PlaceholderMaster:
     It just so happens that the act of replacing occurrences
     of «marker» is equivalent to protecting them with a placeholder.
     """
-    
-    return re.sub(PlaceholderMaster._MARKER, self._marker_placeholder, string)
-  
-  def protect(self, string):
-    """
-    Protect a string by allocating it a placeholder.
-    
-    Reuses existing placeholders where possible.
-    """
-    
-    string = self.unprotect(string)
-    if string in self._placeholder_from_string:
-      return self._placeholder_from_string[string]
-    
-    placeholder = PlaceholderMaster.build_placeholder(self._counter)
-    self._counter += 1
-    self._string_from_placeholder[placeholder] = string
-    self._placeholder_from_string[string] = placeholder
-    
-    return placeholder
-  
-  def unprotect(self, string):
-    """
-    Unprotect a string by restoring placeholders to their strings.
-    """
-    
     return re.sub(
-      PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED,
-      self._unprotect_substitute_function,
-      string,
+      PlaceholderMaster._MARKER,
+      PlaceholderMaster.protect(PlaceholderMaster._MARKER),
+      string
     )
   
   @staticmethod
-  def encode_digit(digit):
-    
-    if digit < 0:
-      raise ValueError('error: digit must be non-negative')
-    
-    if digit >= PlaceholderMaster._COUNTER_BASE:
-      raise ValueError(
-        f'error: digit too large for base {PlaceholderMaster._COUNTER_BASE}'
-      )
-    
-    return chr(PlaceholderMaster._COUNTER_CODE_POINT_MIN + digit)
-  
-  @staticmethod
-  def decode_encoded_digit(encoded_digit):
-    return ord(encoded_digit) - PlaceholderMaster._COUNTER_CODE_POINT_MIN
-  
-  @staticmethod
-  def encode(counter):
-    
-    if counter < 0:
-      raise ValueError('error: counter to be encoded must be non-negative')
-    
-    if counter == 0:
-      return PlaceholderMaster.encode_digit(0)
-    
-    encoded_digits = []
-    while counter > 0:
-      quotient, last_digit = divmod(counter, PlaceholderMaster._COUNTER_BASE)
-      encoded_last_digit = PlaceholderMaster.encode_digit(last_digit)
-      encoded_digits.append(encoded_last_digit)
-      counter = quotient
-    
-    return ''.join(reversed(encoded_digits))
-  
-  @staticmethod
-  def decode(encoded_counter):
-    
-    counter = 0
-    for encoded_digit in encoded_counter:
-      digit = PlaceholderMaster.decode_encoded_digit(encoded_digit)
-      counter = counter * PlaceholderMaster._COUNTER_BASE + digit
-    
-    return counter
-  
-  @staticmethod
-  def build_placeholder(counter):
+  def protect(string):
+    """
+    Protect a string by converting it to a placeholder.
+    """
     
     marker = PlaceholderMaster._MARKER
-    encoded_counter = PlaceholderMaster.encode(counter)
     
-    return f'{marker}{encoded_counter}{marker}'
+    string = PlaceholderMaster.unprotect(string)
+    string_bytes = string.encode()
+    run_characters = \
+            ''.join(
+              chr(byte + PlaceholderMaster._RUN_CODE_POINT_MIN)
+                for byte in string_bytes
+            )
+    
+    placeholder = f'{marker}{run_characters}{marker}'
+    
+    return placeholder
+  
+  @staticmethod
+  def unprotect(string):
+    """
+    Unprotect a string by restoring placeholders to their strings.
+    """
+    return re.sub(
+      PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED,
+      PlaceholderMaster._unprotect_substitute_function,
+      string,
+    )
 
 
 class Reference:
@@ -508,9 +465,8 @@ class PlaceholderMarkerReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, replacement_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._replacement_master = replacement_master
   
   def attribute_names(self):
     return (
@@ -524,7 +480,7 @@ class PlaceholderMarkerReplacement(Replacement):
     pass
   
   def _apply(self, string):
-    return self._replacement_master.replace_marker_occurrences(string)
+    return PlaceholderMaster.replace_marker_occurrences(string)
 
 
 class PlaceholderProtectionReplacement(Replacement):
@@ -538,9 +494,8 @@ class PlaceholderProtectionReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, replacement_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._replacement_master = replacement_master
   
   def attribute_names(self):
     return (
@@ -554,7 +509,7 @@ class PlaceholderProtectionReplacement(Replacement):
     pass
   
   def _apply(self, string):
-    return self._replacement_master.protect(string)
+    return PlaceholderMaster.protect(string)
 
 
 class PlaceholderUnprotectionReplacement(Replacement):
@@ -567,9 +522,8 @@ class PlaceholderUnprotectionReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   """
   
-  def __init__(self, id_, replacement_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._replacement_master = replacement_master
   
   def attribute_names(self):
     return (
@@ -583,7 +537,7 @@ class PlaceholderUnprotectionReplacement(Replacement):
     pass
   
   def _apply(self, string):
-    return self._replacement_master.unprotect(string)
+    return PlaceholderMaster.unprotect(string)
 
 
 class DeIndentationReplacement(Replacement):
@@ -793,9 +747,8 @@ class FixedDelimitersReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._placeholder_master = placeholder_master
     self._syntax_type_is_block = None
     self._flag_name_from_letter = {}
     self._has_flags = False
@@ -1003,7 +956,7 @@ class FixedDelimitersReplacement(Replacement):
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                self._placeholder_master.protect(
+                PlaceholderMaster.protect(
                   build_attributes_sequence(combined_attribute_specifications)
                 )
       else:
@@ -1058,9 +1011,8 @@ class ExtensibleFenceReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._placeholder_master = placeholder_master
     self._syntax_type_is_block = None
     self._flag_name_from_letter = {}
     self._has_flags = False
@@ -1305,7 +1257,7 @@ class ExtensibleFenceReplacement(Replacement):
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                self._placeholder_master.protect(
+                PlaceholderMaster.protect(
                   build_attributes_sequence(combined_attribute_specifications)
                 )
       else:
@@ -1358,9 +1310,8 @@ class PartitioningReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, placeholder_master, verbose_mode_enabled):
+  def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._placeholder_master = placeholder_master
     self._starting_pattern = None
     self._attribute_specifications = None
     self._content_replacements = []
@@ -1537,7 +1488,7 @@ class PartitioningReplacement(Replacement):
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                self._placeholder_master.protect(
+                PlaceholderMaster.protect(
                   build_attributes_sequence(combined_attribute_specifications)
                 )
       else:
@@ -1606,7 +1557,6 @@ class ReplacementMaster:
     self._replacement_from_id = {}
     self._root_replacement_id = None
     self._replacement_queue = []
-    self._placeholder_master = PlaceholderMaster()
     self._verbose_mode_enabled = verbose_mode_enabled
   
   @staticmethod
@@ -1740,23 +1690,14 @@ class ReplacementMaster:
       replacement = ReplacementSequence(id_, self._verbose_mode_enabled)
     elif class_name == 'PlaceholderMarkerReplacement':
       replacement = \
-              PlaceholderMarkerReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              PlaceholderMarkerReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'PlaceholderProtectionReplacement':
       replacement = \
-              PlaceholderProtectionReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              PlaceholderProtectionReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'PlaceholderUnprotectionReplacement':
       replacement = \
               PlaceholderUnprotectionReplacement(
                 id_,
-                self._placeholder_master,
                 self._verbose_mode_enabled,
               )
     elif class_name == 'DeIndentationReplacement':
@@ -1768,25 +1709,13 @@ class ReplacementMaster:
       replacement = RegexDictionaryReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'FixedDelimitersReplacement':
       replacement = \
-              FixedDelimitersReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              FixedDelimitersReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'ExtensibleFenceReplacement':
       replacement = \
-              ExtensibleFenceReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              ExtensibleFenceReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'PartitioningReplacement':
       replacement = \
-              PartitioningReplacement(
-                id_,
-                self._placeholder_master,
-                self._verbose_mode_enabled,
-              )
+              PartitioningReplacement(id_, self._verbose_mode_enabled)
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
@@ -3730,6 +3659,7 @@ def build_attributes_sequence(attribute_specifications):
     if value is None: # boolean attribute
       attribute_sequence += f' {name}'
     else:
+      value = PlaceholderMaster.unprotect(value)
       value = escape_attribute_value_html(value)
       attribute_sequence += f' {name}="{value}"'
   
