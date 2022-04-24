@@ -499,6 +499,28 @@ class ReplacementWithAllowedFlags(Replacement, abc.ABC):
     self._flag_name_from_letter = copy.copy(value)
 
 
+class ReplacementWithAttributeSpecifications(Replacement, abc.ABC):
+  """
+  Base class for a replacement rule with `attribute_specifications`.
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._attribute_specifications = None
+  
+  @property
+  def attribute_specifications(self):
+    return self._attribute_specifications
+  
+  @attribute_specifications.setter
+  def attribute_specifications(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `attribute_specifications` after `commit()`'
+      )
+    self._attribute_specifications = value
+
+
 class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
   """
   Base class for a replacement rule with `concluding_replacements`.
@@ -857,6 +879,7 @@ class RegexDictionaryReplacement(
 class FixedDelimitersReplacement(
   ReplacementWithSyntaxType,
   ReplacementWithAllowedFlags,
+  ReplacementWithAttributeSpecifications,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -880,7 +903,6 @@ class FixedDelimitersReplacement(
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
     self._opening_delimiter = None
-    self._attribute_specifications = None
     self._content_replacements = []
     self._closing_delimiter = None
     self._tag_name = None
@@ -911,18 +933,6 @@ class FixedDelimitersReplacement(
         'error: cannot set `opening_delimiter` after `commit()`'
       )
     self._opening_delimiter = value
-  
-  @property
-  def attribute_specifications(self):
-    return self._attribute_specifications
-  
-  @attribute_specifications.setter
-  def attribute_specifications(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `attribute_specifications` after `commit()`'
-      )
-    self._attribute_specifications = value
   
   @property
   def content_replacements(self):
@@ -1087,6 +1097,7 @@ class FixedDelimitersReplacement(
 class ExtensibleFenceReplacement(
   ReplacementWithSyntaxType,
   ReplacementWithAllowedFlags,
+  ReplacementWithAttributeSpecifications,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -1115,7 +1126,6 @@ class ExtensibleFenceReplacement(
     self._prologue_delimiter = ''
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
-    self._attribute_specifications = None
     self._content_replacements = []
     self._epilogue_delimiter = ''
     self._tag_name = None
@@ -1171,18 +1181,6 @@ class ExtensibleFenceReplacement(
         'error: cannot set `extensible_delimiter_min_count` after `commit()`'
       )
     self._extensible_delimiter_min_count = value
-  
-  @property
-  def attribute_specifications(self):
-    return self._attribute_specifications
-  
-  @attribute_specifications.setter
-  def attribute_specifications(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `attribute_specifications` after `commit()`'
-      )
-    self._attribute_specifications = value
   
   @property
   def content_replacements(self):
@@ -1355,6 +1353,7 @@ class ExtensibleFenceReplacement(
 
 
 class PartitioningReplacement(
+  ReplacementWithAttributeSpecifications,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -1379,7 +1378,6 @@ class PartitioningReplacement(
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
     self._starting_pattern = None
-    self._attribute_specifications = None
     self._content_replacements = []
     self._ending_pattern = None
     self._tag_name = None
@@ -1408,18 +1406,6 @@ class PartitioningReplacement(
         'error: cannot set `starting_pattern` after `commit()`'
       )
     self._starting_pattern = value
-  
-  @property
-  def attribute_specifications(self):
-    return self._attribute_specifications
-  
-  @attribute_specifications.setter
-  def attribute_specifications(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `attribute_specifications` after `commit()`'
-      )
-    self._attribute_specifications = value
   
   @property
   def content_replacements(self):
@@ -1580,7 +1566,10 @@ class PartitioningReplacement(
     return substitute_function
 
 
-class ReferenceDefinitionReplacement(Replacement):
+class ReferenceDefinitionReplacement(
+  ReplacementWithAttributeSpecifications,
+  Replacement,
+):
   """
   A replacement rule for consuming reference definitions.
   
@@ -1595,7 +1584,6 @@ class ReferenceDefinitionReplacement(Replacement):
   def __init__(self, id_, reference_master, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
     self._reference_master = reference_master
-    self._attribute_specifications = None
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
@@ -1604,18 +1592,6 @@ class ReferenceDefinitionReplacement(Replacement):
       'queue_position',
       'attribute_specifications',
     )
-  
-  @property
-  def attribute_specifications(self):
-    return self._attribute_specifications
-  
-  @attribute_specifications.setter
-  def attribute_specifications(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `attribute_specifications` after `commit()`'
-      )
-    self._attribute_specifications = value
   
   def _validate_mandatory_attributes(self):
     pass
@@ -1716,7 +1692,10 @@ class ReferenceDefinitionReplacement(Replacement):
     return substitute_function
 
 
-class SpecifiedImageReplacement(Replacement):
+class SpecifiedImageReplacement(
+  ReplacementWithAttributeSpecifications,
+  Replacement,
+):
   """
   A replacement rule for specified images.
   
@@ -1730,7 +1709,6 @@ class SpecifiedImageReplacement(Replacement):
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._attribute_specifications = None
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
@@ -1739,18 +1717,6 @@ class SpecifiedImageReplacement(Replacement):
       'queue_position',
       'attribute_specifications',
     )
-  
-  @property
-  def attribute_specifications(self):
-    return self._attribute_specifications
-  
-  @attribute_specifications.setter
-  def attribute_specifications(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `attribute_specifications` after `commit()`'
-      )
-    self._attribute_specifications = value
   
   def _validate_mandatory_attributes(self):
     pass
@@ -1876,7 +1842,10 @@ class SpecifiedImageReplacement(Replacement):
     return substitute_function
 
 
-class ReferencedImageReplacement(Replacement):
+class ReferencedImageReplacement(
+  ReplacementWithAttributeSpecifications,
+  Replacement,
+):
   """
   A replacement rule for reference images.
   
@@ -1891,7 +1860,6 @@ class ReferencedImageReplacement(Replacement):
   def __init__(self, id_, reference_master, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
     self._reference_master = reference_master
-    self._attribute_specifications = None
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
@@ -1900,18 +1868,6 @@ class ReferencedImageReplacement(Replacement):
       'queue_position',
       'attribute_specifications',
     )
-  
-  @property
-  def attribute_specifications(self):
-    return self._attribute_specifications
-  
-  @attribute_specifications.setter
-  def attribute_specifications(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `attribute_specifications` after `commit()`'
-      )
-    self._attribute_specifications = value
   
   def _validate_mandatory_attributes(self):
     pass
