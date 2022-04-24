@@ -1884,9 +1884,7 @@ class ReferencedImageReplacement(Replacement):
               flags=re.ASCII | re.MULTILINE | re.VERBOSE,
             )
     self._substitute_function = \
-            self.build_substitute_function(
-              self._attribute_specifications,
-            )
+            self.build_substitute_function(self._attribute_specifications)
   
   def _apply(self, string):
     return re.sub(
