@@ -3515,7 +3515,9 @@ def compute_attribute_specification_matches(attribute_specifications):
       (?:
         (?P<name> [^\s=]+ ) =
                 (?:
-                  "(?P<quoted_value> [\s\S]*? )"
+                  "(?P<double_quoted_value> [\s\S]*? )"
+                    |
+                  '(?P<single_quoted_value> [\s\S]*? )'
                     |
                   (?P<bare_value> [\S]* )
                 )
@@ -3575,9 +3577,15 @@ def extract_attribute_name_and_value(attribute_specification_match):
     except KeyError:
       pass
     
-    quoted_value = attribute_specification_match.group('quoted_value')
-    if quoted_value is not None:
-      return name, quoted_value
+    double_quoted_value = \
+            attribute_specification_match.group('double_quoted_value')
+    if double_quoted_value is not None:
+      return name, double_quoted_value
+    
+    single_quoted_value = \
+            attribute_specification_match.group('single_quoted_value')
+    if single_quoted_value is not None:
+      return name, single_quoted_value
     
     bare_value = attribute_specification_match.group('bare_value')
     if bare_value is not None:
