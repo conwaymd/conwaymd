@@ -2962,7 +2962,11 @@ class ReplacementMaster:
         substitute = substitution_match.group('bare_substitute')
     
     try:
-      re.compile(pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
+      pattern_compiled = \
+              re.compile(
+                pattern,
+                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              )
     except re.error as pattern_exception:
       ReplacementMaster.print_error(
         f'bad regex pattern `{pattern}`',
@@ -2974,12 +2978,7 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     try:
-      re.sub(
-        pattern,
-        substitute,
-        '',
-        flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-      )
+      re.sub(pattern_compiled, substitute, '')
     except re.error as substitute_exception:
       ReplacementMaster.print_error(
         f'bad regex substitute `{substitute}` for pattern `{pattern}`',
