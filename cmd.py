@@ -4788,11 +4788,33 @@ ReferencedImageReplacement: #referenced-images
 - queue_position: AFTER #specified-images
 - attribute_specifications: EMPTY
 
+RegexDictionaryReplacement: #suppress-scheme
+- positive_flag: SUPPRESS_SCHEME
+* \A [\S]+ [:] (?: [/]{2} )? -->
+
+RegexDictionaryReplacement: #angle-bracket-wrap
+- positive_flag: ANGLE_BRACKET_WRAP
+* \A --> &lt;
+* \Z --> &gt;
+- concluding_replacements:
+    #placeholder-protect
+
+ExplicitLinkReplacement: #explicit-links
+- queue_position: AFTER #referenced-images
+- allowed_flags:
+    b=ANGLE_BRACKET_WRAP
+    s=SUPPRESS_SCHEME
+- attribute_specifications: EMPTY
+- content_replacements:
+    #suppress-scheme
+- concluding_replacements:
+    #angle-bracket-wrap
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #referenced-images
+- queue_position: AFTER #explicit-links
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline

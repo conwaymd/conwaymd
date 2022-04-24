@@ -806,6 +806,17 @@ https://example.com
 ![ Space & case test   ][  LaBEl  ]
 ![Hooray!]{class="no-label"}
 ![Class dismissed.]{-class .dismissed}[label]
+
+## `#explicit-links`
+
+<https://example.com>
+b<https://example.com>
+s<https://example.com>
+bs<https://example.com>
+
+bs<mailto:mail@example.com>
+
+s<{href='https://evil.com'}https://example.com>
 '''
         ################################################################
         # END CMD
@@ -1104,6 +1115,13 @@ https://example.com
 <img alt="Space &amp; case test" src="file.svg" title="title" class="test">
 <img alt="Hooray!" src="yay.png" class="test2 no-label">
 <img alt="Class dismissed." src="file.svg" title="title" class="dismissed">
+## <code>#explicit-links</code>
+<a href="https://example.com">https://example.com</a>
+&lt;<a href="https://example.com">https://example.com</a>&gt;
+<a href="https://example.com">example.com</a>
+&lt;<a href="https://example.com">example.com</a>&gt;
+&lt;<a href="mailto:mail@example.com">mail@example.com</a>&gt;
+<a href="https://evil.com">example.com</a>
 </body>
 </html>
 '''
