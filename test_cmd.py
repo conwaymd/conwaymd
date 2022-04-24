@@ -1005,7 +1005,7 @@ continuation, for the backslash is escaped.
 https://example.com
 [missing uri]:
 ## <code>#specified-images</code>
-<img alt="Alt text." src="" title="">
+<img alt="Alt text.">
 </body>
 </html>
 '''

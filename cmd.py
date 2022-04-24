@@ -1778,19 +1778,25 @@ class SpecifiedImageReplacement(Replacement):
       if angle_bracketed_uri is not None:
         src = angle_bracketed_uri
       else:
-        bare_uri = match.group('bare_uri')
-        src = none_to_empty_string(bare_uri)
-      src_protected = PlaceholderMaster.protect(src)
-      src_attribute_specification = f'src={src_protected}'
+        src = match.group('bare_uri')
+      
+      if src is not None:
+        src_protected = PlaceholderMaster.protect(src)
+        src_attribute_specification = f'src={src_protected}'
+      else:
+        src_attribute_specification = ''
       
       double_quoted_title = match.group('double_quoted_title')
       if double_quoted_title is not None:
         title = double_quoted_title
       else:
-        single_quoted_title = match.group('single_quoted_title')
-        title = none_to_empty_string(single_quoted_title)
-      title_protected = PlaceholderMaster.protect(title)
-      title_attribute_specification = f'title={title_protected}'
+        title = match.group('single_quoted_title')
+      
+      if title is not None:
+        title_protected = PlaceholderMaster.protect(title)
+        title_attribute_specification = f'title={title_protected}'
+      else:
+        title_attribute_specification = ''
       
       alt_src_title_attribute_specifications = \
               ' '.join(
