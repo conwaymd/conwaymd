@@ -2962,7 +2962,7 @@ class ReplacementMaster:
         substitute = substitution_match.group('bare_substitute')
     
     try:
-      re.sub(pattern, '', '', flags=re.ASCII | re.MULTILINE | re.VERBOSE)
+      re.compile(pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
     except re.error as pattern_exception:
       ReplacementMaster.print_error(
         f'bad regex pattern `{pattern}`',
