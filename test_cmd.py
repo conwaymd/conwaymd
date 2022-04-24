@@ -276,6 +276,23 @@ class TestCmd(unittest.TestCase):
       r'\)'
     )
   
+  def test_referenced_image_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.ReferencedImageReplacement.build_regex_pattern(None),
+      '[!]'
+      r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
+      r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
+    )
+    
+    self.assertEqual(
+      cmd.ReferencedImageReplacement.build_regex_pattern(''),
+      '[!]'
+      r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+      r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
+    )
+  
   def test_compute_longest_common_prefix(self):
     self.assertEqual(
       cmd.compute_longest_common_prefix(['a', 'b', 'c', 'd']),
