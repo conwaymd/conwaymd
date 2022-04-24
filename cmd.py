@@ -4032,6 +4032,14 @@ class ReplacementMaster:
   
   def execute(self, string):
     
+    if self._verbose_mode_enabled:
+      replacement_queue_ids = \
+              [
+                f'#{replacement.id_}'
+                  for replacement in self._replacement_queue
+              ]
+      print(f'Replacement queue: {replacement_queue_ids}\n\n\n\n')
+    
     for replacement in self._replacement_queue:
       string = replacement.apply(string)
     
