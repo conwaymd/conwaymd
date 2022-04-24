@@ -1718,6 +1718,7 @@ class ReplacementMaster:
     self._replacement_from_id = {}
     self._root_replacement_id = None
     self._replacement_queue = []
+    self._reference_master = ReferenceMaster()
     self._verbose_mode_enabled = verbose_mode_enabled
   
   @staticmethod
@@ -1877,6 +1878,13 @@ class ReplacementMaster:
     elif class_name == 'PartitioningReplacement':
       replacement = \
               PartitioningReplacement(id_, self._verbose_mode_enabled)
+    elif class_name == 'ReferenceDefinitionReplacement':
+      replacement = \
+              ReferenceDefinitionReplacement(
+                id_,
+                self._reference_master,
+                self._verbose_mode_enabled,
+              )
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
