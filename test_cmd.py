@@ -189,15 +189,15 @@ class TestCmd(unittest.TestCase):
       '[:]'
       r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
       '(?: '
-        r'[<] (?P<bracketed_uri> [\s\S]*? ) [>]'
+        r'[<] (?P<bracketed_uri> [^>]*? ) [>]'
           ' | '
         r'(?P<bare_uri> [\S]+ )'
       ' )'
       r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
       '(?: '
-        r'"(?P<double_quoted_title> [\s\S]*? )"'
+        r'"(?P<double_quoted_title> [^"]*? )"'
           ' | '
-        r"'(?P<single_quoted_title> [\s\S]*? )'"
+        r"'(?P<single_quoted_title> [^']*? )'"
       ' )?'
     )
     
@@ -209,15 +209,15 @@ class TestCmd(unittest.TestCase):
       '[:]'
       r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
       '(?: '
-        r'[<] (?P<bracketed_uri> [\s\S]*? ) [>]'
+        r'[<] (?P<bracketed_uri> [^>]*? ) [>]'
           ' | '
         r'(?P<bare_uri> [\S]+ )'
       ' )'
       r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
       '(?: '
-        r'"(?P<double_quoted_title> [\s\S]*? )"'
+        r'"(?P<double_quoted_title> [^"]*? )"'
           ' | '
-        r"'(?P<single_quoted_title> [\s\S]*? )'"
+        r"'(?P<single_quoted_title> [^']*? )'"
       ' )?'
     )
   

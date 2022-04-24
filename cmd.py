@@ -3945,7 +3945,7 @@ def build_extensible_delimiter_closing_regex():
 def build_uri_regex():
   return (
     '(?: '
-      r'[<] (?P<bracketed_uri> [\s\S]*? ) [>]'
+      r'[<] (?P<bracketed_uri> [^>]*? ) [>]'
         ' | '
       r'(?P<bare_uri> [\S]+ )'
     ' )'
@@ -3955,9 +3955,9 @@ def build_uri_regex():
 def build_title_regex():
   return (
     '(?: '
-      r'"(?P<double_quoted_title> [\s\S]*? )"'
+      r'"(?P<double_quoted_title> [^"]*? )"'
         ' | '
-      r"'(?P<single_quoted_title> [\s\S]*? )'"
+      r"'(?P<single_quoted_title> [^']*? )'"
     ' )?'
   )
 
