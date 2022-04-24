@@ -1034,7 +1034,7 @@ class ExtensibleFenceReplacement(Replacement):
     self._content_replacements = []
     self._epilogue_delimiter = ''
     self._tag_name = None
-    self._regex_pattern = None
+    self._regex_pattern_compiled = None
     self._substitute_function = None
   
   def attribute_names(self):
@@ -1170,16 +1170,19 @@ class ExtensibleFenceReplacement(Replacement):
   def _set_apply_method_variables(self):
     
     self._has_flags = len(self._flag_name_from_letter) > 0
-    self._regex_pattern = \
-            ExtensibleFenceReplacement.build_regex_pattern(
-              self._syntax_type_is_block,
-              self._flag_name_from_letter,
-              self._has_flags,
-              self._prologue_delimiter,
-              self._extensible_delimiter_character,
-              self._extensible_delimiter_min_count,
-              self._attribute_specifications,
-              self._epilogue_delimiter,
+    self._regex_pattern_compiled = \
+            re.compile(
+              ExtensibleFenceReplacement.build_regex_pattern(
+                self._syntax_type_is_block,
+                self._flag_name_from_letter,
+                self._has_flags,
+                self._prologue_delimiter,
+                self._extensible_delimiter_character,
+                self._extensible_delimiter_min_count,
+                self._attribute_specifications,
+                self._epilogue_delimiter,
+              ),
+              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
             )
     self._substitute_function = \
             self.build_substitute_function(
@@ -1191,10 +1194,9 @@ class ExtensibleFenceReplacement(Replacement):
   
   def _apply(self, string):
     return re.sub(
-      self._regex_pattern,
+      self._regex_pattern_compiled,
       self._substitute_function,
       string,
-      flags=re.ASCII | re.MULTILINE | re.VERBOSE,
     )
   
   @staticmethod
