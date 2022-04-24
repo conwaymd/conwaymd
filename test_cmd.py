@@ -730,6 +730,12 @@ https://example.com
   'spacious title'
 )
 ![alt]{alt=A src=S title=T}(src "title")
+
+## `#referenced-images`
+
+[label]{.test}: file.svg "title"
+
+![Alt text.][label]
 '''
         ################################################################
         # END CMD
@@ -1023,6 +1029,8 @@ https://example.com
 <img alt="Alt text." title="title only">
 <img alt="Spacious alt." src="spacious/src" title="spacious title">
 <img alt="A" src="S" title="T">
+## <code>#referenced-images</code>
+![Alt text.][label]
 </body>
 </html>
 '''

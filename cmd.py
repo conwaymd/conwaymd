@@ -4638,11 +4638,15 @@ SpecifiedImageReplacement: #specified-images
 - queue_position: AFTER #reference-definitions
 - attribute_specifications: EMPTY
 
+ReferencedImageReplacement: #referenced-images
+- queue_position: AFTER #specified-images
+- attribute_specifications: EMPTY
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #specified-images
+- queue_position: AFTER #referenced-images
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
