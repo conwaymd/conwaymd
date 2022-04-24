@@ -199,7 +199,7 @@ class TestCmd(unittest.TestCase):
           r'"(?P<double_quoted_title> [^"]*? )"'
             ' | '
           r"'(?P<single_quoted_title> [^']*? )'"
-        ' )?'
+        ' )'
       ' )?'
       r'[^\S\n]* $'
     )
@@ -222,7 +222,7 @@ class TestCmd(unittest.TestCase):
           r'"(?P<double_quoted_title> [^"]*? )"'
             ' | '
           r"'(?P<single_quoted_title> [^']*? )'"
-        ' )?'
+        ' )'
       ' )?'
       r'[^\S\n]* $'
     )

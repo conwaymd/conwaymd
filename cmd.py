@@ -3961,7 +3961,7 @@ def build_title_regex():
       r'"(?P<double_quoted_title> [^"]*? )"'
         ' | '
       r"'(?P<single_quoted_title> [^']*? )'"
-    ' )?'
+    ' )'
   )
 
 
