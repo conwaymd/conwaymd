@@ -1853,7 +1853,7 @@ class ReferencedImageReplacement(
   Replacement,
 ):
   """
-  A replacement rule for reference images.
+  A replacement rule for referenced images.
   
   CMD replacement rule syntax:
   ````
@@ -1976,6 +1976,148 @@ class ReferencedImageReplacement(
               )
       
       substitute = f'<img{attributes_sequence}>'
+      
+      return substitute
+    
+    return substitute_function
+
+
+class ExplicitLinkReplacement(
+  ReplacementWithAllowedFlags,
+  ReplacementWithAttributeSpecifications,
+  ReplacementWithContentReplacements,
+  ReplacementWithConcludingReplacements,
+  Replacement,
+):
+  """
+  A replacement rule for explicit links.
+  
+  CMD replacement rule syntax:
+  ````
+  ExplicitLinkReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  - content_replacements: (def) NONE | #«id» [...]
+  - concluding_replacements: (def) NONE | #«id» [...]
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._regex_pattern_compiled = None
+    self._substitute_function = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'allowed_flags',
+      'attribute_specifications',
+      'content_replacements',
+      'concluding_replacements',
+    )
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    
+    self._has_flags = len(self._flag_name_from_letter) > 0
+    self._regex_pattern_compiled = \
+            re.compile(
+              ExplicitLinkReplacement.build_regex_pattern(
+                self._flag_name_from_letter,
+                self._has_flags,
+                self._attribute_specifications,
+              ),
+              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+            )
+    self._substitute_function = \
+            self.build_substitute_function(
+              self._flag_name_from_letter,
+              self._has_flags,
+              self._attribute_specifications,
+            )
+  
+  def _apply(self, string):
+    return re.sub(
+      self._regex_pattern_compiled,
+      self._substitute_function,
+      string,
+    )
+  
+  @staticmethod
+  def build_regex_pattern(
+    flag_name_from_letter,
+    has_flags,
+    attribute_specifications,
+  ):
+    
+    flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
+    opening_angle_bracket_regex = '[<]'
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block=False,
+            )
+    uri_regex = r'(?P<uri> [a-zA-Z.+-]+ [:] [^\s>]*? )'
+    closing_angle_bracket_regex = '[>]'
+    
+    return ''.join(
+      [
+        flags_regex,
+        opening_angle_bracket_regex,
+        attribute_specifications_regex,
+        uri_regex,
+        closing_angle_bracket_regex,
+      ]
+    )
+  
+  def build_substitute_function(
+    self,
+    flag_name_from_letter,
+    has_flags,
+    attribute_specifications,
+  ):
+    
+    def substitute_function(match):
+      
+      enabled_flag_names = \
+              ReplacementWithAllowedFlags.get_enabled_flag_names(
+                match,
+                flag_name_from_letter,
+                has_flags,
+              )
+
+      href = match.group('uri')
+      href_protected = PlaceholderMaster.protect(href)
+      href_attribute_specification = f'href={href_protected}'
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                ' '.join(
+                  [
+                    href_attribute_specification,
+                    none_to_empty_string(matched_attribute_specifications),
+                  ]
+                )
+      else:
+        combined_attribute_specifications = href_attribute_specification
+      
+      attributes_sequence = \
+              PlaceholderMaster.protect(
+                build_attributes_sequence(combined_attribute_specifications)
+              )
+      
+      content = href
+      for replacement in self._content_replacements:
+        content = replacement.apply(content, enabled_flag_names)
+      
+      substitute = f'<a{attributes_sequence}>{content}</a>'
+      for replacement in self._concluding_replacements:
+        substitute = replacement.apply(substitute, enabled_flag_names)
       
       return substitute
     
@@ -2203,6 +2345,8 @@ class ReplacementMaster:
                 self._reference_master,
                 self._verbose_mode_enabled,
               )
+    elif class_name == 'ExplicitLinkReplacement':
+      replacement = ExplicitLinkReplacement(id_, self._verbose_mode_enabled)
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
