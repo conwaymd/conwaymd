@@ -420,7 +420,7 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
   Not to be used when authoring CMD documents.
   (Hypothetical) CMD replacement rule syntax:
   ````
-  Replacement: #«id»
+  ReplacementWithSubstitutions: #«id»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
     "«substitute»" | '«substitute»' | «substitute»
@@ -440,6 +440,35 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
     self._substitute_from_pattern[pattern] = substitute
 
 
+class ReplacementWithSyntaxType(Replacement, abc.ABC):
+  """
+  Base class for a replacement rule with syntax type.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  ReplacementWithSyntaxType: #«id»
+  - syntax_type: BLOCK | INLINE (mandatory)
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._syntax_type_is_block = None
+  
+  @property
+  def syntax_type_is_block(self):
+    return self._syntax_type_is_block
+  
+  @syntax_type_is_block.setter
+  def syntax_type_is_block(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `syntax_type_is_block` after `commit()`'
+      )
+    self._syntax_type_is_block = value
+
+
 class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
   """
   Base class for a replacement rule with concluding replacements.
@@ -447,7 +476,7 @@ class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
   Not to be used when authoring CMD documents.
   (Hypothetical) CMD replacement rule syntax:
   ````
-  Replacement: #«id»
+  ReplacementWithConcludingReplacements: #«id»
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
   """
@@ -796,6 +825,7 @@ class RegexDictionaryReplacement(
 
 
 class FixedDelimitersReplacement(
+  ReplacementWithSyntaxType,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -818,7 +848,6 @@ class FixedDelimitersReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._syntax_type_is_block = None
     self._flag_name_from_letter = {}
     self._has_flags = False
     self._opening_delimiter = None
@@ -841,18 +870,6 @@ class FixedDelimitersReplacement(
       'tag_name',
       'concluding_replacements',
     )
-  
-  @property
-  def syntax_type_is_block(self):
-    return self._syntax_type_is_block
-  
-  @syntax_type_is_block.setter
-  def syntax_type_is_block(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `syntax_type_is_block` after `commit()`'
-      )
-    self._syntax_type_is_block = value
   
   @property
   def flag_name_from_letter(self):
@@ -1051,6 +1068,7 @@ class FixedDelimitersReplacement(
 
 
 class ExtensibleFenceReplacement(
+  ReplacementWithSyntaxType,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -1076,7 +1094,6 @@ class ExtensibleFenceReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._syntax_type_is_block = None
     self._flag_name_from_letter = {}
     self._has_flags = False
     self._prologue_delimiter = ''
@@ -1102,18 +1119,6 @@ class ExtensibleFenceReplacement(
       'tag_name',
       'concluding_replacements',
     )
-  
-  @property
-  def syntax_type_is_block(self):
-    return self._syntax_type_is_block
-  
-  @syntax_type_is_block.setter
-  def syntax_type_is_block(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `syntax_type_is_block` after `commit()`'
-      )
-    self._syntax_type_is_block = value
   
   @property
   def flag_name_from_letter(self):
