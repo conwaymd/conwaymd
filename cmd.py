@@ -237,7 +237,11 @@ class ReferenceMaster:
   def read_definition(self, label):
     
     label = ReferenceMaster.normalise_label(label)
-    reference = self._reference_from_label[label]
+    
+    try:
+      reference = self._reference_from_label[label]
+    except KeyError:
+      return None
     
     attribute_specifications = reference.label
     uri = reference.uri
