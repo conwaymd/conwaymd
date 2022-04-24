@@ -729,6 +729,7 @@ https://example.com
   <spacious/src>
   'spacious title'
 )
+![alt]{alt=A src=S title=T}(src "title")
 '''
         ################################################################
         # END CMD
@@ -1021,6 +1022,7 @@ https://example.com
 <img alt="Alt text." src="/src/only">
 <img alt="Alt text." title="title only">
 <img alt="Spacious alt." src="spacious/src" title="spacious title">
+<img alt="A" src="S" title="T">
 </body>
 </html>
 '''
