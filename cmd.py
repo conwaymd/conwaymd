@@ -597,7 +597,7 @@ class OrdinaryDictionaryReplacement(Replacement):
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
     self._substitute_from_pattern = {}
-    self._regex_pattern = None
+    self._regex_pattern_compiled = None
     self._substitute_function = None
   
   def attribute_names(self):
@@ -619,9 +619,11 @@ class OrdinaryDictionaryReplacement(Replacement):
     pass
   
   def _set_apply_method_variables(self):
-    self._regex_pattern = \
-            OrdinaryDictionaryReplacement.build_regex_pattern(
-              self._substitute_from_pattern,
+    self._regex_pattern_compiled = \
+            re.compile(
+              OrdinaryDictionaryReplacement.build_regex_pattern(
+                self._substitute_from_pattern,
+              )
             )
     self._substitute_function = \
             self.build_substitute_function(
@@ -630,8 +632,13 @@ class OrdinaryDictionaryReplacement(Replacement):
   
   def _apply(self, string):
     
-    if self._regex_pattern != '':
-      string = re.sub(self._regex_pattern, self._substitute_function, string)
+    if self._regex_pattern_compiled != '':
+      string = \
+              re.sub(
+                self._regex_pattern_compiled,
+                self._substitute_function,
+                string,
+              )
     
     return string
   
