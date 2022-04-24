@@ -229,11 +229,14 @@ class ReferenceMaster:
     self._reference_from_label = {}
   
   def write_definition(self, label, attribute_specifications, uri, title):
+    
+    label = ReferenceMaster.normalise_label(label)
     self._reference_from_label[label] = \
             Reference(attribute_specifications, uri, title)
   
   def read_definition(self, label):
     
+    label = ReferenceMaster.normalise_label(label)
     reference = self._reference_from_label[label]
     
     attribute_specifications = reference.label
@@ -241,6 +244,10 @@ class ReferenceMaster:
     title = reference.title
     
     return attribute_specifications, uri, title
+  
+  @staticmethod
+  def normalise_label(label):
+    return label.strip().lower()
 
 
 class Replacement(abc.ABC):
