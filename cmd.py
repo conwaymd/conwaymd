@@ -502,6 +502,13 @@ class ReplacementWithAllowedFlags(Replacement, abc.ABC):
 class ReplacementWithAttributeSpecifications(Replacement, abc.ABC):
   """
   Base class for a replacement rule with `attribute_specifications`.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  ReplacementWithAttributeSpecifications: #«id»
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  ````
   """
   
   def __init__(self, id_, verbose_mode_enabled):
@@ -519,6 +526,35 @@ class ReplacementWithAttributeSpecifications(Replacement, abc.ABC):
         'error: cannot set `attribute_specifications` after `commit()`'
       )
     self._attribute_specifications = value
+
+
+class ReplacementWithContentReplacements(Replacement, abc.ABC):
+  """
+  Base class for a replacement rule with `content_replacements`.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  ReplacementWithContentReplacements: #«id»
+  - content_replacements: (def) NONE | #«id» [...]
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._content_replacements = []
+  
+  @property
+  def content_replacements(self):
+    return self._content_replacements
+  
+  @content_replacements.setter
+  def content_replacements(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `content_replacements` after `commit()`'
+      )
+    self._content_replacements = copy.copy(value)
 
 
 class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
@@ -880,6 +916,7 @@ class FixedDelimitersReplacement(
   ReplacementWithSyntaxType,
   ReplacementWithAllowedFlags,
   ReplacementWithAttributeSpecifications,
+  ReplacementWithContentReplacements,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -903,7 +940,6 @@ class FixedDelimitersReplacement(
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
     self._opening_delimiter = None
-    self._content_replacements = []
     self._closing_delimiter = None
     self._tag_name = None
     self._regex_pattern_compiled = None
@@ -933,18 +969,6 @@ class FixedDelimitersReplacement(
         'error: cannot set `opening_delimiter` after `commit()`'
       )
     self._opening_delimiter = value
-  
-  @property
-  def content_replacements(self):
-    return self._content_replacements
-  
-  @content_replacements.setter
-  def content_replacements(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `content_replacements` after `commit()`'
-      )
-    self._content_replacements = copy.copy(value)
   
   @property
   def closing_delimiter(self):
@@ -1098,6 +1122,7 @@ class ExtensibleFenceReplacement(
   ReplacementWithSyntaxType,
   ReplacementWithAllowedFlags,
   ReplacementWithAttributeSpecifications,
+  ReplacementWithContentReplacements,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -1126,7 +1151,6 @@ class ExtensibleFenceReplacement(
     self._prologue_delimiter = ''
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
-    self._content_replacements = []
     self._epilogue_delimiter = ''
     self._tag_name = None
     self._regex_pattern_compiled = None
@@ -1181,18 +1205,6 @@ class ExtensibleFenceReplacement(
         'error: cannot set `extensible_delimiter_min_count` after `commit()`'
       )
     self._extensible_delimiter_min_count = value
-  
-  @property
-  def content_replacements(self):
-    return self._content_replacements
-  
-  @content_replacements.setter
-  def content_replacements(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `content_replacements` after `commit()`'
-      )
-    self._content_replacements = copy.copy(value)
   
   @property
   def epilogue_delimiter(self):
@@ -1354,6 +1366,7 @@ class ExtensibleFenceReplacement(
 
 class PartitioningReplacement(
   ReplacementWithAttributeSpecifications,
+  ReplacementWithContentReplacements,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -1378,7 +1391,6 @@ class PartitioningReplacement(
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
     self._starting_pattern = None
-    self._content_replacements = []
     self._ending_pattern = None
     self._tag_name = None
     self._regex_pattern_compiled = None
@@ -1406,18 +1418,6 @@ class PartitioningReplacement(
         'error: cannot set `starting_pattern` after `commit()`'
       )
     self._starting_pattern = value
-  
-  @property
-  def content_replacements(self):
-    return self._content_replacements
-  
-  @content_replacements.setter
-  def content_replacements(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `content_replacements` after `commit()`'
-      )
-    self._content_replacements = copy.copy(value)
   
   @property
   def ending_pattern(self):
