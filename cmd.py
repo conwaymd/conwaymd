@@ -251,7 +251,7 @@ class ReferenceMaster:
   
   @staticmethod
   def normalise_label(label):
-    return label.strip().lower()
+    return label.lower()
 
 
 class Replacement(abc.ABC):
@@ -1605,7 +1605,7 @@ class ReferenceDefinitionReplacement(Replacement):
               syntax_type_is_block=True,
               capture_anchoring_whitespace=True,
             )
-    label_regex = r'\[ (?P<label> [^\]]*? ) \]'
+    label_regex = r'\[ [\s]* (?P<label> [^\]]*? ) [\s]* \]'
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,

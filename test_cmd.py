@@ -185,7 +185,7 @@ class TestCmd(unittest.TestCase):
     self.assertEqual(
       cmd.ReferenceDefinitionReplacement.build_regex_pattern(None),
       r'^ (?P<anchoring_whitespace> [^\S\n]* )'
-      r'\[ (?P<label> [^\]]*? ) \]'
+      r'\[ [\s]* (?P<label> [^\]]*? ) [\s]* \]'
       '[:]'
       r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
       '(?: '
@@ -207,7 +207,7 @@ class TestCmd(unittest.TestCase):
     self.assertEqual(
       cmd.ReferenceDefinitionReplacement.build_regex_pattern(''),
       r'^ (?P<anchoring_whitespace> [^\S\n]* )'
-      r'\[ (?P<label> [^\]]*? ) \]'
+      r'\[ [\s]* (?P<label> [^\]]*? ) [\s]* \]'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
       '[:]'
       r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
