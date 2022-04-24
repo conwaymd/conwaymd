@@ -413,6 +413,33 @@ class Replacement(abc.ABC):
     raise NotImplementedError
 
 
+class ReplacementWithSubstitutions(Replacement, abc.ABC):
+  """
+  Base class for a replacement rule with substitutions.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  Replacement: #«id»
+  * "«pattern»" | '«pattern»' | «pattern»
+      -->
+    "«substitute»" | '«substitute»' | «substitute»
+  [...]
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._substitute_from_pattern = {}
+  
+  def add_substitution(self, pattern, substitute):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot call `add_substitution(...)` after `commit()`'
+      )
+    self._substitute_from_pattern[pattern] = substitute
+
+
 class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
   """
   Base class for a replacement rule with concluding replacements.
@@ -440,33 +467,6 @@ class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
         'error: cannot set `concluding_replacements` after `commit()`'
       )
     self._concluding_replacements = copy.copy(value)
-
-
-class ReplacementWithSubstitutions(Replacement, abc.ABC):
-  """
-  Base class for a replacement rule with substitutions.
-  
-  Not to be used when authoring CMD documents.
-  (Hypothetical) CMD replacement rule syntax:
-  ````
-  Replacement: #«id»
-  * "«pattern»" | '«pattern»' | «pattern»
-      -->
-    "«substitute»" | '«substitute»' | «substitute»
-  [...]
-  ````
-  """
-  
-  def __init__(self, id_, verbose_mode_enabled):
-    super().__init__(id_, verbose_mode_enabled)
-    self._substitute_from_pattern = {}
-  
-  def add_substitution(self, pattern, substitute):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot call `add_substitution(...)` after `commit()`'
-      )
-    self._substitute_from_pattern[pattern] = substitute
 
 
 class ReplacementSequence(Replacement):
