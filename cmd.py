@@ -1612,9 +1612,13 @@ class ReferenceDefinitionReplacement(Replacement):
               syntax_type_is_block=False,
             )
     colon_regex = '[:]'
-    block_continuation_regex = build_block_continuation_regex()
+    maybe_hanging_whitespace_regex = build_maybe_hanging_whitespace_regex()
     uri_regex = build_uri_regex()
+    whitespace_then_uri_regex = f'{maybe_hanging_whitespace_regex}{uri_regex}'
     title_regex = build_title_regex()
+    whitespace_then_title_regex = \
+            f'(?: {maybe_hanging_whitespace_regex}{title_regex} )?'
+    trailing_horizontal_whitespace_regex = r'[^\S\n]* $'
     
     return ''.join(
       [
@@ -1622,10 +1626,9 @@ class ReferenceDefinitionReplacement(Replacement):
         label_regex,
         attribute_specifications_regex,
         colon_regex,
-        block_continuation_regex,
-        uri_regex,
-        block_continuation_regex,
-        title_regex,
+        whitespace_then_uri_regex,
+        whitespace_then_title_regex,
+        trailing_horizontal_whitespace_regex,
       ]
     )
   
@@ -3878,7 +3881,7 @@ def build_block_anchoring_regex(
   return ''
 
 
-def build_block_continuation_regex():
+def build_maybe_hanging_whitespace_regex():
   return r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
 
 

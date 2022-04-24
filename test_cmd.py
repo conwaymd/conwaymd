@@ -193,12 +193,15 @@ class TestCmd(unittest.TestCase):
           ' | '
         r'(?P<bare_uri> [\S]+ )'
       ' )'
-      r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
       '(?: '
-        r'"(?P<double_quoted_title> [^"]*? )"'
-          ' | '
-        r"'(?P<single_quoted_title> [^']*? )'"
+        r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
+        '(?: '
+          r'"(?P<double_quoted_title> [^"]*? )"'
+            ' | '
+          r"'(?P<single_quoted_title> [^']*? )'"
+        ' )?'
       ' )?'
+      r'[^\S\n]* $'
     )
     
     self.assertEqual(
@@ -213,12 +216,15 @@ class TestCmd(unittest.TestCase):
           ' | '
         r'(?P<bare_uri> [\S]+ )'
       ' )'
-      r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
       '(?: '
-        r'"(?P<double_quoted_title> [^"]*? )"'
-          ' | '
-        r"'(?P<single_quoted_title> [^']*? )'"
+        r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
+        '(?: '
+          r'"(?P<double_quoted_title> [^"]*? )"'
+            ' | '
+          r"'(?P<single_quoted_title> [^']*? )'"
+        ' )?'
       ' )?'
+      r'[^\S\n]* $'
     )
   
   def test_compute_longest_common_prefix(self):
@@ -697,12 +703,18 @@ This be not \\
     https://example.com
     "Yes"
 
+[some good]: https://example.com
+  [more good]: https://example.com
+
   [good except title]:
     https://example.com
   "No"
 
   [bad]:
 https://example.com
+
+[missing uri]:
+  [indented]: https://example.com
 '''
         ################################################################
         # END CMD
@@ -987,6 +999,7 @@ continuation, for the backslash is escaped.
 "No"
 [bad]:
 https://example.com
+[missing uri]:
 </body>
 </html>
 '''
