@@ -3881,7 +3881,7 @@ def build_block_anchoring_regex(
 
 
 def build_block_continuation_regex():
-  return r'[^\S\n]* (?: \n (P=anchoring_whitespace) [^\S\n]+ )?'
+  return r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
 
 
 def build_flags_regex(allowed_flags, has_flags):
