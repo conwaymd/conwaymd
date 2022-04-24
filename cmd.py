@@ -557,6 +557,35 @@ class ReplacementWithContentReplacements(Replacement, abc.ABC):
     self._content_replacements = copy.copy(value)
 
 
+class ReplacementWithTagName(Replacement, abc.ABC):
+  """
+  Base class for a replacement rule with `tag_name`.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  ReplacementWithTagName: #«id»
+  - tag_name: (def) NONE | «name»
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._tag_name = None
+  
+  @property
+  def tag_name(self):
+    return self._tag_name
+  
+  @tag_name.setter
+  def tag_name(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `tag_name` after `commit()`'
+      )
+    self._tag_name = value
+
+
 class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
   """
   Base class for a replacement rule with `concluding_replacements`.
@@ -917,6 +946,7 @@ class FixedDelimitersReplacement(
   ReplacementWithAllowedFlags,
   ReplacementWithAttributeSpecifications,
   ReplacementWithContentReplacements,
+  ReplacementWithTagName,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -941,7 +971,6 @@ class FixedDelimitersReplacement(
     super().__init__(id_, verbose_mode_enabled)
     self._opening_delimiter = None
     self._closing_delimiter = None
-    self._tag_name = None
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
@@ -981,18 +1010,6 @@ class FixedDelimitersReplacement(
         'error: cannot set `closing_delimiter` after `commit()`'
       )
     self._closing_delimiter = value
-  
-  @property
-  def tag_name(self):
-    return self._tag_name
-  
-  @tag_name.setter
-  def tag_name(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `tag_name` after `commit()`'
-      )
-    self._tag_name = value
   
   def _validate_mandatory_attributes(self):
     
@@ -1123,6 +1140,7 @@ class ExtensibleFenceReplacement(
   ReplacementWithAllowedFlags,
   ReplacementWithAttributeSpecifications,
   ReplacementWithContentReplacements,
+  ReplacementWithTagName,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -1152,7 +1170,6 @@ class ExtensibleFenceReplacement(
     self._extensible_delimiter_character = None
     self._extensible_delimiter_min_count = None
     self._epilogue_delimiter = ''
-    self._tag_name = None
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
@@ -1217,18 +1234,6 @@ class ExtensibleFenceReplacement(
         'error: cannot set `epilogue_delimiter` after `commit()`'
       )
     self._epilogue_delimiter = value
-  
-  @property
-  def tag_name(self):
-    return self._tag_name
-  
-  @tag_name.setter
-  def tag_name(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `tag_name` after `commit()`'
-      )
-    self._tag_name = value
   
   def _validate_mandatory_attributes(self):
     
@@ -1367,6 +1372,7 @@ class ExtensibleFenceReplacement(
 class PartitioningReplacement(
   ReplacementWithAttributeSpecifications,
   ReplacementWithContentReplacements,
+  ReplacementWithTagName,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -1392,7 +1398,6 @@ class PartitioningReplacement(
     super().__init__(id_, verbose_mode_enabled)
     self._starting_pattern = None
     self._ending_pattern = None
-    self._tag_name = None
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
@@ -1430,18 +1435,6 @@ class PartitioningReplacement(
         'error: cannot set `ending_pattern` after `commit()`'
       )
     self._ending_pattern = value
-  
-  @property
-  def tag_name(self):
-    return self._tag_name
-  
-  @tag_name.setter
-  def tag_name(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `tag_name` after `commit()`'
-      )
-    self._tag_name = value
   
   def _validate_mandatory_attributes(self):
     
