@@ -586,7 +586,9 @@ class OrdinaryDictionaryReplacement(Replacement):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  * "«pattern»" | «pattern» --> "«substitute»" | «substitute»
+  * "«pattern»" | '«pattern»' | «pattern»
+      -->
+    "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -2838,7 +2840,9 @@ class ReplacementMaster:
       fr'''
         [\s]*
           (?:
-            "(?P<quoted_pattern> [\s\S]*? )"
+            "(?P<double_quoted_pattern> [\s\S]*? )"
+              |
+            '(?P<single_quoted_pattern> [\s\S]*? )'
               |
             (?P<bare_pattern> [\s\S]*? )
           )
@@ -2846,7 +2850,9 @@ class ReplacementMaster:
           {re.escape(longest_substitution_delimiter)}
         [\s]*
           (?:
-            "(?P<quoted_substitute> [\s\S]*? )"
+            "(?P<double_quoted_substitute> [\s\S]*? )"
+              |
+            '(?P<single_quoted_substitute> [\s\S]*? )'
               |
             (?P<bare_substitute> [\s\S]*? )
           )
@@ -2876,17 +2882,27 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    quoted_pattern = substitution_match.group('quoted_pattern')
-    if quoted_pattern is not None:
-      pattern = quoted_pattern
+    double_quoted_pattern = substitution_match.group('double_quoted_pattern')
+    if double_quoted_pattern is not None:
+      pattern = double_quoted_pattern
     else:
-      pattern = substitution_match.group('bare_pattern')
+      single_quoted_pattern = substitution_match.group('single_quoted_pattern')
+      if single_quoted_pattern is not None:
+        pattern = single_quoted_pattern
+      else:
+        pattern = substitution_match.group('bare_pattern')
     
-    quoted_substitute = substitution_match.group('quoted_substitute')
-    if quoted_substitute is not None:
-      substitute = quoted_substitute
+    double_quoted_substitute = \
+            substitution_match.group('double_quoted_substitute')
+    if double_quoted_substitute is not None:
+      substitute = double_quoted_substitute
     else:
-      substitute = substitution_match.group('bare_substitute')
+      single_quoted_substitute = \
+              substitution_match.group('single_quoted_substitute')
+      if single_quoted_substitute is not None:
+        substitute = single_quoted_substitute
+      else:
+        substitute = substitution_match.group('bare_substitute')
     
     replacement.add_substitution(pattern, substitute)
   
@@ -2910,17 +2926,27 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    quoted_pattern = substitution_match.group('quoted_pattern')
-    if quoted_pattern is not None:
-      pattern = quoted_pattern
+    double_quoted_pattern = substitution_match.group('double_quoted_pattern')
+    if double_quoted_pattern is not None:
+      pattern = double_quoted_pattern
     else:
-      pattern = substitution_match.group('bare_pattern')
+      single_quoted_pattern = substitution_match.group('single_quoted_pattern')
+      if single_quoted_pattern is not None:
+        pattern = single_quoted_pattern
+      else:
+        pattern = substitution_match.group('bare_pattern')
     
-    quoted_substitute = substitution_match.group('quoted_substitute')
-    if quoted_substitute is not None:
-      substitute = quoted_substitute
+    double_quoted_substitute = \
+      substitution_match.group('double_quoted_substitute')
+    if double_quoted_substitute is not None:
+      substitute = double_quoted_substitute
     else:
-      substitute = substitution_match.group('bare_substitute')
+      single_quoted_substitute = \
+        substitution_match.group('single_quoted_substitute')
+      if single_quoted_substitute is not None:
+        substitute = single_quoted_substitute
+      else:
+        substitute = substitution_match.group('bare_substitute')
     
     try:
       re.sub(pattern, '', '', flags=re.ASCII | re.MULTILINE | re.VERBOSE)
