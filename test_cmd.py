@@ -180,7 +180,7 @@ class TestCmd(unittest.TestCase):
       r'(?= \Z )'
     )
   
-  def text_reference_definition_replacement_build_regex_pattern(self):
+  def test_reference_definition_replacement_build_regex_pattern(self):
     
     self.assertEqual(
       cmd.ReferenceDefinitionReplacement.build_regex_pattern(None),
