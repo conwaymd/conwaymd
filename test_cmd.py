@@ -719,6 +719,14 @@ https://example.com
 ## `#specified-images`
 
 ![Alt text.]()
+![Alt text.](/src/only)
+![Alt text.]("title only")
+![
+  Spacious alt.
+](
+  <spacious/src>
+  'spacious title'
+)
 '''
         ################################################################
         # END CMD
@@ -1006,6 +1014,9 @@ https://example.com
 [missing uri]:
 ## <code>#specified-images</code>
 <img alt="Alt text.">
+<img alt="Alt text." src="/src/only">
+<img alt="Alt text." title="title only">
+<img alt="Spacious alt." src="spacious/src" title="spacious title">
 </body>
 </html>
 '''
