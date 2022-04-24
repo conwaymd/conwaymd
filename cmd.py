@@ -241,7 +241,7 @@ class ReferenceMaster:
     try:
       reference = self._reference_from_label[label]
     except KeyError:
-      return None
+      return None, None, None
     
     attribute_specifications = reference.attribute_specifications
     uri = reference.uri
@@ -1676,7 +1676,7 @@ class ReferenceDefinitionReplacement(Replacement):
 
 class SpecifiedImageReplacement(Replacement):
   """
-  A replacement rule for consuming specified images.
+  A replacement rule for specified images.
   
   CMD replacement rule syntax:
   ````
@@ -1821,6 +1821,152 @@ class SpecifiedImageReplacement(Replacement):
       else:
         combined_attribute_specifications = \
                 alt_src_title_attribute_specifications
+      
+      attributes_sequence = \
+              PlaceholderMaster.protect(
+                build_attributes_sequence(combined_attribute_specifications)
+              )
+      
+      substitute = f'<img{attributes_sequence}>'
+      
+      return substitute
+    
+    return substitute_function
+
+
+class ReferencedImageReplacement(Replacement):
+  """
+  A replacement rule for reference images.
+  
+  CMD replacement rule syntax:
+  ````
+  ReferencedImageReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  ````
+  """
+  
+  def __init__(self, id_, reference_master, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._reference_master = reference_master
+    self._attribute_specifications = None
+    self._regex_pattern_compiled = None
+    self._substitute_function = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'attribute_specifications',
+    )
+  
+  @property
+  def attribute_specifications(self):
+    return self._attribute_specifications
+  
+  @attribute_specifications.setter
+  def attribute_specifications(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `attribute_specifications` after `commit()`'
+      )
+    self._attribute_specifications = value
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    
+    self._regex_pattern_compiled = \
+            re.compile(
+              SpecifiedImageReplacement.build_regex_pattern(
+                self._attribute_specifications,
+              ),
+              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+            )
+    self._substitute_function = \
+            self.build_substitute_function(
+              self._attribute_specifications,
+            )
+  
+  def _apply(self, string):
+    return re.sub(
+      self._regex_pattern_compiled,
+      self._substitute_function,
+      string,
+    )
+  
+  @staticmethod
+  def build_regex_pattern(attribute_specifications):
+    
+    exclamation_mark_regex = '[!]'
+    alt_text_regex = r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block=False,
+            )
+    label_regex = r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
+    
+    return ''.join(
+      [
+        exclamation_mark_regex,
+        alt_text_regex,
+        attribute_specifications_regex,
+        label_regex,
+      ]
+    )
+  
+  def build_substitute_function(self, attribute_specifications):
+    
+    def substitute_function(match):
+      
+      alt = match.group('alt_text')
+      alt_protected = PlaceholderMaster.protect(alt)
+      alt_attribute_specification = f'alt={alt_protected}'
+      
+      label = match.group('label')
+      if label is None or label == '':
+        label = alt
+      
+      referenced_attribute_specifications, src, title = \
+              self._reference_master.load_definition(label)
+      
+      if src is not None:
+        src_protected = PlaceholderMaster.protect(src)
+        src_attribute_specification = f'src={src_protected}'
+      else:
+        src_attribute_specification = ''
+      
+      if title is not None:
+        title_protected = PlaceholderMaster.protect(title)
+        title_attribute_specification = f'title={title_protected}'
+      else:
+        title_attribute_specification = ''
+      
+      alt_src_title_referenced_attribute_specifications = \
+              ' '.join(
+                [
+                  alt_attribute_specification,
+                  src_attribute_specification,
+                  title_attribute_specification,
+                  none_to_empty_string(referenced_attribute_specifications)
+                ]
+              )
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                ' '.join(
+                  [
+                    alt_src_title_referenced_attribute_specifications,
+                    attribute_specifications,
+                    none_to_empty_string(matched_attribute_specifications),
+                  ]
+                )
+      else:
+        combined_attribute_specifications = \
+                alt_src_title_referenced_attribute_specifications
       
       attributes_sequence = \
               PlaceholderMaster.protect(
@@ -2048,6 +2194,13 @@ class ReplacementMaster:
               )
     elif class_name == 'SpecifiedImageReplacement':
       replacement = SpecifiedImageReplacement(id_, self._verbose_mode_enabled)
+    elif class_name == 'ReferencedImageReplacement':
+      replacement = \
+              ReferencedImageReplacement(
+                id_,
+                self._reference_master,
+                self._verbose_mode_enabled,
+              )
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
