@@ -353,12 +353,24 @@ class Replacement(abc.ABC):
     self._set_apply_method_variables()
     self._is_committed = True
   
-  def apply(self, string):
+  def apply(self, string, enabled_flag_names=None):
     
     if not self._is_committed:
       raise UncommittedApplyException(
         'error: cannot call `apply(string)` before `commit()`'
       )
+    
+    if enabled_flag_names is not None:
+      
+      positive_flag_name = self._positive_flag_name
+      if positive_flag_name is not None \
+      and positive_flag_name not in enabled_flag_names:
+        return string
+      
+      negative_flag_name = self._negative_flag_name
+      if negative_flag_name is not None \
+      and negative_flag_name in enabled_flag_names:
+        return string
     
     string_before = string
     string = self._apply(string)
@@ -986,18 +998,7 @@ class FixedDelimitersReplacement(Replacement):
       
       content = match.group('content')
       for replacement in self._content_replacements:
-        
-        positive_flag_name = replacement.positive_flag_name
-        if positive_flag_name is not None \
-        and positive_flag_name not in enabled_flag_names:
-          continue
-        
-        negative_flag_name = replacement.negative_flag_name
-        if negative_flag_name is not None \
-        and negative_flag_name in enabled_flag_names:
-          continue
-        
-        content = replacement.apply(content)
+        content = replacement.apply(content, enabled_flag_names)
       
       if tag_name is None:
         substitute = content
@@ -1289,18 +1290,7 @@ class ExtensibleFenceReplacement(Replacement):
       
       content = match.group('content')
       for replacement in self._content_replacements:
-        
-        positive_flag_name = replacement.positive_flag_name
-        if positive_flag_name is not None \
-        and positive_flag_name not in enabled_flag_names:
-          continue
-        
-        negative_flag_name = replacement.negative_flag_name
-        if negative_flag_name is not None \
-        and negative_flag_name in enabled_flag_names:
-          continue
-        
-        content = replacement.apply(content)
+        content = replacement.apply(content, enabled_flag_names)
       
       if tag_name is None:
         substitute = content
