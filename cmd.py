@@ -1550,8 +1550,9 @@ class ReferenceDefinitionReplacement(Replacement):
   ````
   """
   
-  def __init__(self, id_, verbose_mode_enabled):
+  def __init__(self, id_, reference_master, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
+    self._reference_master = reference_master
     self._attribute_specifications = None
     self._regex_pattern_compiled = None
     self._substitute_function = None
@@ -1630,8 +1631,7 @@ class ReferenceDefinitionReplacement(Replacement):
       ]
     )
   
-  @staticmethod
-  def build_substitute_function(attribute_specifications):
+  def build_substitute_function(self, attribute_specifications):
     
     def substitute_function(match):
       
@@ -1646,6 +1646,8 @@ class ReferenceDefinitionReplacement(Replacement):
                     + ' '
                     + none_to_empty_string(matched_attribute_specifications)
                 )
+      else:
+        combined_attribute_specifications = ''
       
       bracketed_uri = match.group('bracketed_uri')
       if bracketed_uri is not None:
@@ -1659,7 +1661,12 @@ class ReferenceDefinitionReplacement(Replacement):
       else:
         title = match.group('single_quoted_title')
       
-      # {instance of ReferenceMaster}.write_definition(...)
+      self._reference_master.write_definition(
+        label,
+        combined_attribute_specifications,
+        uri,
+        title,
+      )
       
       return ''
     
