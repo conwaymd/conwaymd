@@ -1650,9 +1650,9 @@ class ReferenceDefinitionReplacement(Replacement):
       else:
         combined_attribute_specifications = ''
       
-      bracketed_uri = match.group('bracketed_uri')
-      if bracketed_uri is not None:
-        uri = bracketed_uri
+      angle_bracketed_uri = match.group('angle_bracketed_uri')
+      if angle_bracketed_uri is not None:
+        uri = angle_bracketed_uri
       else:
         uri = match.group('bare_uri')
       
@@ -3948,7 +3948,7 @@ def build_extensible_delimiter_closing_regex():
 def build_uri_regex():
   return (
     '(?: '
-      r'[<] (?P<bracketed_uri> [^>]*? ) [>]'
+      r'[<] (?P<angle_bracketed_uri> [^>]*? ) [>]'
         ' | '
       r'(?P<bare_uri> [\S]+ )'
     ' )'

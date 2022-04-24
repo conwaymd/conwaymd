@@ -189,7 +189,7 @@ class TestCmd(unittest.TestCase):
       '[:]'
       r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
       '(?: '
-        r'[<] (?P<bracketed_uri> [^>]*? ) [>]'
+        r'[<] (?P<angle_bracketed_uri> [^>]*? ) [>]'
           ' | '
         r'(?P<bare_uri> [\S]+ )'
       ' )'
@@ -212,7 +212,7 @@ class TestCmd(unittest.TestCase):
       '[:]'
       r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
       '(?: '
-        r'[<] (?P<bracketed_uri> [^>]*? ) [>]'
+        r'[<] (?P<angle_bracketed_uri> [^>]*? ) [>]'
           ' | '
         r'(?P<bare_uri> [\S]+ )'
       ' )'
@@ -697,7 +697,7 @@ This be not \\
 
 [good]: https://example.com
 [good double]: https://example.com "Yes"
-[good bracketed single]: <https://example.com> 'Yes'
+[good angle-bracketed single]: <https://example.com> 'Yes'
 
   [good continued]:
     https://example.com
