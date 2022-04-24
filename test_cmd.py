@@ -48,9 +48,7 @@ class TestCmd(unittest.TestCase):
     )
     self.assertEqual(
       cmd.PlaceholderMaster.protect('一鿐'),
-      '\uF8FF'
-        '\uE0E4\uE0B8\uE080\uE0E9\uE0BF\uE090'
-      '\uF8FF'
+      '\uF8FF\uE0E4\uE0B8\uE080\uE0E9\uE0BF\uE090\uF8FF'
     )
   
   def test_ordinary_dictionary_replacement_build_regex_pattern(self):
