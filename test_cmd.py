@@ -408,6 +408,7 @@ FixedDelimitersReplacement: #comment-breaker
 # `test_cmd_to_html`
 
 ``{title=&<>"} Attribute specification escape test. ``
+``{title="<`"`>"} Attribute specification quote escape test. ``
 ``{title="`?` <`` <`!`> ``>"}
   Attribute specification prevail test.
 ``
@@ -675,6 +676,7 @@ font-family: serif;
 <body>
 # <code>test_cmd_to_html</code>
 <code title="&amp;&lt;&gt;&quot;">Attribute specification escape test.</code>
+<code title="&quot;">Attribute specification quote escape test.</code>
 <pre title="`?` &lt;`!`&gt;"><code>Attribute specification prevail test.
 </code></pre>
 ## <code>#placeholder-markers</code>
