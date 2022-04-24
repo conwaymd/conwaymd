@@ -442,6 +442,33 @@ class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
     self._concluding_replacements = copy.copy(value)
 
 
+class ReplacementWithSubstitutions(Replacement, abc.ABC):
+  """
+  Base class for a replacement rule with substitutions.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  Replacement: #«id»
+  * "«pattern»" | '«pattern»' | «pattern»
+      -->
+    "«substitute»" | '«substitute»' | «substitute»
+  [...]
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._substitute_from_pattern = {}
+  
+  def add_substitution(self, pattern, substitute):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot call `add_substitution(...)` after `commit()`'
+      )
+    self._substitute_from_pattern[pattern] = substitute
+
+
 class ReplacementSequence(Replacement):
   """
   A replacement rule that applies a sequence of replacement rules.
@@ -612,6 +639,7 @@ class DeIndentationReplacement(Replacement):
 
 
 class OrdinaryDictionaryReplacement(
+  ReplacementWithSubstitutions,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -637,7 +665,6 @@ class OrdinaryDictionaryReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._substitute_from_pattern = {}
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
@@ -648,13 +675,6 @@ class OrdinaryDictionaryReplacement(
       'negative_flag',
       'concluding_replacements',
     )
-  
-  def add_substitution(self, pattern, substitute):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot call `add_substitution(...)` after `commit()`'
-      )
-    self._substitute_from_pattern[pattern] = substitute
   
   def _validate_mandatory_attributes(self):
     pass
@@ -703,6 +723,7 @@ class OrdinaryDictionaryReplacement(
 
 
 class RegexDictionaryReplacement(
+  ReplacementWithSubstitutions,
   ReplacementWithConcludingReplacements,
   Replacement,
 ):
@@ -727,7 +748,6 @@ class RegexDictionaryReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._substitute_from_pattern = {}
     self._substitute_function_from_pattern = {}
   
   def attribute_names(self):
@@ -737,13 +757,6 @@ class RegexDictionaryReplacement(
       'negative_flag',
       'concluding_replacements',
     )
-  
-  def add_substitution(self, pattern, substitute):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot call `add_substitution(...)` after `commit()`'
-      )
-    self._substitute_from_pattern[pattern] = substitute
   
   def _validate_mandatory_attributes(self):
     pass
