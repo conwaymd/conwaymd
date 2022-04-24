@@ -718,6 +718,8 @@ https://example.com
 
 ## `#specified-images`
 
+![](decoration/image)
+![]{-alt}("omitting alt is bad")
 ![Alt text.]()
 ![Alt text.](/src/only)
 ![Alt text.]("title only")
@@ -1013,6 +1015,8 @@ continuation, for the backslash is escaped.
 https://example.com
 [missing uri]:
 ## <code>#specified-images</code>
+<img alt="" src="decoration/image">
+<img title="omitting alt is bad">
 <img alt="Alt text.">
 <img alt="Alt text." src="/src/only">
 <img alt="Alt text." title="title only">
