@@ -265,7 +265,6 @@ class Replacement(abc.ABC):
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  - concluding_replacements: (def) NONE | #«id» [...]
   ````
   """
   
@@ -276,7 +275,6 @@ class Replacement(abc.ABC):
     self._queue_reference_replacement = None
     self._positive_flag_name = None
     self._negative_flag_name = None
-    self._concluding_replacements = []
     self._verbose_mode_enabled = verbose_mode_enabled
   
   @property
@@ -335,18 +333,6 @@ class Replacement(abc.ABC):
         'error: cannot set `negative_flag_name` after `commit()`'
       )
     self._negative_flag_name = value
-  
-  @property
-  def concluding_replacements(self):
-    return self._concluding_replacements
-  
-  @concluding_replacements.setter
-  def concluding_replacements(self, value):
-    if self._is_committed:
-      raise CommittedMutateException(
-        'error: cannot set `concluding_replacements` after `commit()`'
-      )
-    self._concluding_replacements = copy.copy(value)
   
   def commit(self):
     self._validate_mandatory_attributes()
@@ -425,6 +411,35 @@ class Replacement(abc.ABC):
     Apply the defined replacement to a string.
     """
     raise NotImplementedError
+
+
+class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
+  """
+  Base class for a replacement rule with concluding replacements.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  Replacement: #«id»
+  - concluding_replacements: (def) NONE | #«id» [...]
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._concluding_replacements = []
+  
+  @property
+  def concluding_replacements(self):
+    return self._concluding_replacements
+  
+  @concluding_replacements.setter
+  def concluding_replacements(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `concluding_replacements` after `commit()`'
+      )
+    self._concluding_replacements = copy.copy(value)
 
 
 class ReplacementSequence(Replacement):
@@ -596,7 +611,10 @@ class DeIndentationReplacement(Replacement):
     return de_indent(string)
 
 
-class OrdinaryDictionaryReplacement(Replacement):
+class OrdinaryDictionaryReplacement(
+  ReplacementWithConcludingReplacements,
+  Replacement,
+):
   """
   A replacement rule for a dictionary of ordinary substitutions.
   
@@ -684,7 +702,10 @@ class OrdinaryDictionaryReplacement(Replacement):
     return substitute_function
 
 
-class RegexDictionaryReplacement(Replacement):
+class RegexDictionaryReplacement(
+  ReplacementWithConcludingReplacements,
+  Replacement,
+):
   """
   A replacement rule for a dictionary of regex substitutions.
   
@@ -761,7 +782,10 @@ class RegexDictionaryReplacement(Replacement):
     return substitute_function
 
 
-class FixedDelimitersReplacement(Replacement):
+class FixedDelimitersReplacement(
+  ReplacementWithConcludingReplacements,
+  Replacement,
+):
   """
   A fixed-delimiters replacement rule.
   
@@ -1013,7 +1037,10 @@ class FixedDelimitersReplacement(Replacement):
     return substitute_function
 
 
-class ExtensibleFenceReplacement(Replacement):
+class ExtensibleFenceReplacement(
+  ReplacementWithConcludingReplacements,
+  Replacement,
+):
   """
   A generalised extensible-fence-style replacement rule.
   
@@ -1305,7 +1332,10 @@ class ExtensibleFenceReplacement(Replacement):
     return substitute_function
 
 
-class PartitioningReplacement(Replacement):
+class PartitioningReplacement(
+  ReplacementWithConcludingReplacements,
+  Replacement,
+):
   """
   A generalised partitioning replacement rule.
   
