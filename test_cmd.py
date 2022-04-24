@@ -227,6 +227,55 @@ class TestCmd(unittest.TestCase):
       r'[^\S\n]* $'
     )
   
+  def test_specified_image_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.SpecifiedImageReplacement.build_regex_pattern(None),
+      '[!]'
+      r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
+      r'\('
+        fr'(?: [\s]* '
+          '(?: '
+            r'[<] (?P<angle_bracketed_uri> [^>]*? ) [>]'
+              ' | '
+            r'(?P<bare_uri> [\S]+ )'
+          ' )'
+        ' )?'
+        fr'(?: [\s]* '
+          '(?: '
+            r'"(?P<double_quoted_title> [^"]*? )"'
+              ' | '
+            r"'(?P<single_quoted_title> [^']*? )'"
+          ' )'
+        ' )?'
+        r'[\s]*'
+      r'\)'
+    )
+    
+    self.assertEqual(
+      cmd.SpecifiedImageReplacement.build_regex_pattern(''),
+      '[!]'
+      r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+      r'\('
+        fr'(?: [\s]* '
+          '(?: '
+            r'[<] (?P<angle_bracketed_uri> [^>]*? ) [>]'
+              ' | '
+            r'(?P<bare_uri> [\S]+ )'
+          ' )'
+        ' )?'
+        fr'(?: [\s]* '
+          '(?: '
+            r'"(?P<double_quoted_title> [^"]*? )"'
+              ' | '
+            r"'(?P<single_quoted_title> [^']*? )'"
+          ' )'
+        ' )?'
+        r'[\s]*'
+      r'\)'
+    )
+  
   def test_compute_longest_common_prefix(self):
     self.assertEqual(
       cmd.compute_longest_common_prefix(['a', 'b', 'c', 'd']),
