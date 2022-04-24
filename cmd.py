@@ -228,13 +228,13 @@ class ReferenceMaster:
   def __init__(self):
     self._reference_from_label = {}
   
-  def write_definition(self, label, attribute_specifications, uri, title):
+  def store_definition(self, label, attribute_specifications, uri, title):
     
     label = ReferenceMaster.normalise_label(label)
     self._reference_from_label[label] = \
             Reference(attribute_specifications, uri, title)
   
-  def read_definition(self, label):
+  def load_definition(self, label):
     
     label = ReferenceMaster.normalise_label(label)
     
@@ -1661,7 +1661,7 @@ class ReferenceDefinitionReplacement(Replacement):
       else:
         title = match.group('single_quoted_title')
       
-      self._reference_master.write_definition(
+      self._reference_master.store_definition(
         label,
         combined_attribute_specifications,
         uri,
