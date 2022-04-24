@@ -243,7 +243,7 @@ class ReferenceMaster:
     except KeyError:
       return None
     
-    attribute_specifications = reference.label
+    attribute_specifications = reference.attribute_specifications
     uri = reference.uri
     title = reference.title
     
