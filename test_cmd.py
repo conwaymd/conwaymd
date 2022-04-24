@@ -686,6 +686,23 @@ This be \
     continuation.
 This be not \\
     continuation, for the backslash is escaped.
+
+## `#reference-definitions`
+
+[good]: https://example.com
+[good double]: https://example.com "Yes"
+[good bracketed single]: <https://example.com> 'Yes'
+
+  [good continued]:
+    https://example.com
+    "Yes"
+
+  [good except title]:
+    https://example.com
+  "No"
+
+  [bad]:
+https://example.com
 '''
         ################################################################
         # END CMD
@@ -966,6 +983,10 @@ Header-after-data (seriously, why would you have this?):
 This be continuation.
 This be not \
 continuation, for the backslash is escaped.
+## <code>#reference-definitions</code>
+"No"
+[bad]:
+https://example.com
 </body>
 </html>
 '''

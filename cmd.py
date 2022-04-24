@@ -4314,11 +4314,15 @@ RegexDictionaryReplacement: #backslash-continuations
 - queue_position: AFTER #backslash-escapes
 * \\ \n [^\S\n]+ -->
 
+ReferenceDefinitionReplacement: #reference-definitions
+- queue_position: AFTER #backslash-continuations
+- attribute_specifications: EMPTY
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #backslash-continuations
+- queue_position: AFTER #reference-definitions
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
