@@ -4162,7 +4162,7 @@ def compute_attribute_specification_matches(attribute_specifications):
           |
         [h] (?P<height> [0-9]+ )
           |
-        [-] (?P<omitted_attribute> [\S]+ )
+        [-] (?P<deleted_attribute> [\S]+ )
           |
         (?P<boolean_attribute> [\S]+ )
       ) ?
@@ -4243,9 +4243,9 @@ def extract_attribute_name_and_value(attribute_specification_match):
   if height is not None:
     return 'height', height
   
-  omitted_attribute = attribute_specification_match.group('omitted_attribute')
-  if omitted_attribute is not None:
-    return omitted_attribute,
+  deleted_attribute = attribute_specification_match.group('deleted_attribute')
+  if deleted_attribute is not None:
+    return deleted_attribute,
   
   boolean_attribute = attribute_specification_match.group('boolean_attribute')
   if boolean_attribute is not None:
@@ -4268,7 +4268,7 @@ def build_attributes_sequence(attribute_specifications):
   c«colspan»
   w«width»
   h«height»
-  -«omitted_attribute»
+  -«deleted_attribute»
   «boolean_attribute»
   ````
   In the two forms with an explicit equals sign,
