@@ -1600,18 +1600,16 @@ class ReferenceDefinitionReplacement(Replacement):
   @staticmethod
   def build_regex_pattern(attribute_specifications):
     
-    syntax_type_is_block = True
-    
     block_anchoring_regex = \
             build_block_anchoring_regex(
-              syntax_type_is_block,
+              syntax_type_is_block=True,
               capture_anchoring_whitespace=True,
             )
     label_regex = r'\[ (?P<label> [\s\S]*? ) \]'
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block
+              syntax_type_is_block=False,
             )
     colon_regex = '[:]'
     block_continuation_regex = build_block_continuation_regex()
