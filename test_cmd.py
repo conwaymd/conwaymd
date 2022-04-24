@@ -800,8 +800,12 @@ https://example.com
 ## `#referenced-images`
 
 [label]{.test}: file.svg "title"
+[Hooray!]{.test2}: yay.png
 
 ![Alt text.][label]
+![ Space & case test   ][  LaBEl  ]
+![Hooray!]{class="no-label"}
+![Class dismissed.]{-class .dismissed}[label]
 '''
         ################################################################
         # END CMD
@@ -1097,6 +1101,9 @@ https://example.com
 <img alt="A" src="S" title="T">
 ## <code>#referenced-images</code>
 <img alt="Alt text." src="file.svg" title="title" class="test">
+<img alt="Space &amp; case test" src="file.svg" title="title" class="test">
+<img alt="Hooray!" src="yay.png" class="test2 no-label">
+<img alt="Class dismissed." src="file.svg" title="title" class="dismissed">
 </body>
 </html>
 '''
