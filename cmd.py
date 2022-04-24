@@ -60,7 +60,8 @@ class MissingAttributeException(Exception):
   def __init__(self, missing_attribute):
     self._missing_attribute = missing_attribute
   
-  def get_missing_attribute(self):
+  @property
+  def missing_attribute(self):
     return self._missing_attribute
 
 
@@ -3636,7 +3637,7 @@ class ReplacementMaster:
     try:
       replacement.commit()
     except MissingAttributeException as exception:
-      missing_attribute = exception.get_missing_attribute()
+      missing_attribute = exception.missing_attribute
       ReplacementMaster.print_error(
         f'missing attribute `{missing_attribute}` for {class_name}',
         rules_file_name,
