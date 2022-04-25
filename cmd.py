@@ -1618,6 +1618,39 @@ class PartitioningReplacement(
     return substitute_function
 
 
+class InlineAssortedDelimitersReplacement(
+  ReplacementWithAttributeSpecifications,
+  ReplacementWithProhibitedContent,
+  Replacement
+):
+  """
+  An inline assorted-delimiters replacement rule.
+  
+  CMD replacement rule syntax:
+  ````
+  InlineAssortedDelimitersReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._regex_pattern_compiled = None
+    self._substitute_function = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'attribute_specifications',
+      'prohibited_content',
+    )
+  
+  def _validate_mandatory_attributes(self):
+    pass
+
+
 class HeadingReplacement(
   ReplacementWithAttributeSpecifications,
   Replacement,
