@@ -623,18 +623,6 @@ Comments can remove code. <# `Like so.` #>
 """
 """"
 
-## `#paragraphs`
-
---------{.eight}
-This be a paragraph.
---
-NOTE: nested paragraphs are illegal.
---
---------
---{.two}
-This be another paragraph.
---
-
 ## `#unordered-lists`
 ===={.four}
 -
@@ -763,6 +751,18 @@ Header-after-data (seriously, why would you have this?):
 '''
 """
 r'''
+
+## `#paragraphs`
+
+--------{.eight}
+This be a paragraph.
+--
+NOTE: nested paragraphs are illegal.
+--
+--------
+--{.two}
+This be another paragraph.
+--
 
 ## `#inline-code`
 
@@ -977,16 +977,6 @@ Child 2.
 </blockquote>
 </blockquote>
 </blockquote>
-<h2><code>#paragraphs</code></h2>
-<p class="eight">
-This be a paragraph.
---
-NOTE: nested paragraphs are illegal.
---
-</p>
-<p class="two">
-This be another paragraph.
-</p>
 <h2><code>#unordered-lists</code></h2>
 <ul class="four">
 <li>
@@ -1160,6 +1150,16 @@ Header-after-data (seriously, why would you have this?):
 <td>Data2</td>
 </tr>
 </table>
+<h2><code>#paragraphs</code></h2>
+<p class="eight">
+This be a paragraph.
+--
+NOTE: nested paragraphs are illegal.
+--
+</p>
+<p class="two">
+This be another paragraph.
+</p>
 <h2><code>#inline-code</code></h2>
 This be <code>inline code</code>.
 <code class="classy">Whitespace stripped, and <b>unescaped</b>.</code>
