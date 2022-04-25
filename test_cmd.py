@@ -789,6 +789,19 @@ This be `inline code`.
 u``{.classy} Whitespace stripped, and <b>unescaped</b>. ``
 Even ```inline with ``backticks within`` ```.
 
+Inline code may not contain anchored block tags.
+(1) `This code
+  <p>will not work`</p>.
+(2)
+--
+Neither will `this
+--
+code`.
+||
+(3) But if the block tag be not anchored,
+then it `<p>will work</p>`.
+||
+
 ## `#backslash-escapes`
 
 \\ \# \& \( \) \* \< \> \[ \] \_ \{ \| \}
@@ -1179,6 +1192,18 @@ This be another paragraph.
 This be <code>inline code</code>.
 <code class="classy">Whitespace stripped, and <b>unescaped</b>.</code>
 Even <code>inline with ``backticks within``</code>.
+Inline code may not contain anchored block tags.
+(1) `This code
+<p>will not work`</p>.
+(2)
+<p>
+Neither will `this
+</p>
+code`.
+<div>
+(3) But if the block tag be not anchored,
+then it <code>&lt;p&gt;will work&lt;/p&gt;</code>.
+</div>
 <h2><code>#backslash-escapes</code></h2>
 \ # &amp; ( ) * &lt; &gt; [ ] _ { | }
 \\3 \\4 \\\5 \\\6
