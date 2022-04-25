@@ -5123,7 +5123,7 @@ ReferencedLinkReplacement: #referenced-links
 - queue_position: AFTER #specified-links
 - attribute_specifications: EMPTY
 
-RegexDictionaryReplacement: #escape-idle-ampersands
+RegexDictionaryReplacement: #escape-idle-html
 - queue_position: AFTER #referenced-links
 * [&]
   (?!
@@ -5135,13 +5135,14 @@ RegexDictionaryReplacement: #escape-idle-ampersands
     [;]
   )
     --> &amp;
+* [<] (?= [\s] ) --> &lt;
 
 
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #escape-idle-ampersands
+- queue_position: AFTER #escape-idle-html
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
