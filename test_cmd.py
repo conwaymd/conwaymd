@@ -319,7 +319,7 @@ class TestCmd(unittest.TestCase):
     
     self.assertEqual(
       cmd.InlineAssortedDelimitersReplacement.build_regex_pattern(
-        tag_name_from_delimiter_count_from_character={
+        tag_name_from_delimiter_length_from_character={
           '_': {1: 'i', 2: 'b'},
           '*': {1: 'em', 2: 'strong'},
         },
@@ -341,7 +341,7 @@ class TestCmd(unittest.TestCase):
     
     self.assertEqual(
       cmd.InlineAssortedDelimitersReplacement.build_regex_pattern(
-        tag_name_from_delimiter_count_from_character={
+        tag_name_from_delimiter_length_from_character={
           '_': {1: 'i'},
           '*': {1: 'em', 2: 'strong'},
           '"': {2: 'q'},

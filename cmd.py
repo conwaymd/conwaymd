@@ -1637,7 +1637,7 @@ class InlineAssortedDelimitersReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._tag_name_from_delimiter_count_from_character = {}
+    self._tag_name_from_delimiter_length_from_character = {}
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
@@ -1649,16 +1649,16 @@ class InlineAssortedDelimitersReplacement(
       'prohibited_content',
     )
   
-  def add_delimiter_conversion(self, character, count, tag_name):
+  def add_delimiter_conversion(self, character, length, tag_name):
     
     if self._is_committed:
       raise CommittedMutateException(
         'error: cannot call `add_delimiter_conversion(...)` after `commit()`'
       )
     
-    if character not in self._tag_name_from_delimiter_count_from_character:
-      self._tag_name_from_delimiter_count_from_character[character] = {}
-      self._tag_name_from_delimiter_count_from_character[character][count] \
+    if character not in self._tag_name_from_delimiter_length_from_character:
+      self._tag_name_from_delimiter_length_from_character[character] = {}
+      self._tag_name_from_delimiter_length_from_character[character][length] \
               = tag_name
   
   def _validate_mandatory_attributes(self):
@@ -1668,7 +1668,7 @@ class InlineAssortedDelimitersReplacement(
     self._regex_pattern_compiled = \
             re.compile(
               InlineAssortedDelimitersReplacement.build_regex_pattern(
-                self._tag_name_from_delimiter_count_from_character,
+                self._tag_name_from_delimiter_length_from_character,
                 self._attribute_specifications,
                 self._prohibited_content_regex,
               ),
@@ -1678,7 +1678,7 @@ class InlineAssortedDelimitersReplacement(
   
   @staticmethod
   def build_regex_pattern(
-    tag_name_from_delimiter_count_from_character,
+    tag_name_from_delimiter_length_from_character,
     attribute_specifications,
     prohibited_content_regex,
   ):
@@ -1689,17 +1689,17 @@ class InlineAssortedDelimitersReplacement(
     either_characters = set()
     double_characters = set()
     all_characters = set()
-    for character in tag_name_from_delimiter_count_from_character:
-      tag_name_from_delimiter_count = \
-              tag_name_from_delimiter_count_from_character[character]
-      delimiter_counts = tag_name_from_delimiter_count.keys()
-      if delimiter_counts == {1}:
+    for character in tag_name_from_delimiter_length_from_character:
+      tag_name_from_delimiter_length = \
+              tag_name_from_delimiter_length_from_character[character]
+      delimiter_lengths = tag_name_from_delimiter_length.keys()
+      if delimiter_lengths == {1}:
         single_characters.add(character)
         all_characters.add(character)
-      elif delimiter_counts == {1, 2}:
+      elif delimiter_lengths == {1, 2}:
         either_characters.add(character)
         all_characters.add(character)
-      elif delimiter_counts == {2}:
+      elif delimiter_lengths == {2}:
         double_characters.add(character)
         all_characters.add(character)
     
