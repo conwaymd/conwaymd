@@ -2124,6 +2124,150 @@ class ExplicitLinkReplacement(
     return substitute_function
 
 
+class SpecifiedLinkReplacement(
+  ReplacementWithAttributeSpecifications,
+  Replacement,
+):
+  """
+  A replacement rule for specified links.
+  
+  CMD replacement rule syntax:
+  ````
+  SpecifiedLinkReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._regex_pattern_compiled = None
+    self._substitute_function = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'attribute_specifications',
+    )
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    
+    self._regex_pattern_compiled = \
+            re.compile(
+              SpecifiedLinkReplacement.build_regex_pattern(
+                self._attribute_specifications,
+              ),
+              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+            )
+    self._substitute_function = \
+            SpecifiedLinkReplacement.build_substitute_function(
+              self._attribute_specifications,
+            )
+  
+  def _apply(self, string):
+    return re.sub(
+      self._regex_pattern_compiled,
+      self._substitute_function,
+      string,
+    )
+  
+  @staticmethod
+  def build_regex_pattern(attribute_specifications):
+    
+    link_text_regex = r'\[ [\s]* (?P<link_text> [^\]]*? ) [\s]* \]'
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block=False,
+            )
+    opening_parenthesis_regex = r'\('
+    uri_regex = build_uri_regex()
+    whitespace_then_uri_regex = fr'(?: [\s]* {uri_regex} )?'
+    title_regex = build_title_regex()
+    whitespace_then_title_regex = fr'(?: [\s]* {title_regex} )?'
+    whitespace_regex = r'[\s]*'
+    closing_parenthesis_regex = r'\)'
+    
+    return ''.join(
+      [
+        link_text_regex,
+        attribute_specifications_regex,
+        opening_parenthesis_regex,
+        whitespace_then_uri_regex,
+        whitespace_then_title_regex,
+        whitespace_regex,
+        closing_parenthesis_regex,
+      ]
+    )
+  
+  @staticmethod
+  def build_substitute_function(attribute_specifications):
+    
+    def substitute_function(match):
+      
+      content = match.group('link_text')
+      
+      angle_bracketed_uri = match.group('angle_bracketed_uri')
+      if angle_bracketed_uri is not None:
+        href = angle_bracketed_uri
+      else:
+        href = match.group('bare_uri')
+      
+      if href is not None:
+        href_protected = PlaceholderMaster.protect(href)
+        href_attribute_specification = f'href={href_protected}'
+      else:
+        href_attribute_specification = ''
+      
+      double_quoted_title = match.group('double_quoted_title')
+      if double_quoted_title is not None:
+        title = double_quoted_title
+      else:
+        title = match.group('single_quoted_title')
+      
+      if title is not None:
+        title_protected = PlaceholderMaster.protect(title)
+        title_attribute_specification = f'title={title_protected}'
+      else:
+        title_attribute_specification = ''
+      
+      href_title_attribute_specifications = \
+              ' '.join(
+                [
+                  href_attribute_specification,
+                  title_attribute_specification,
+                ]
+              )
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                ' '.join(
+                  [
+                    href_title_attribute_specifications,
+                    attribute_specifications,
+                    none_to_empty_string(matched_attribute_specifications),
+                  ]
+                )
+      else:
+        combined_attribute_specifications = href_title_attribute_specifications
+      
+      attributes_sequence = \
+              PlaceholderMaster.protect(
+                build_attributes_sequence(combined_attribute_specifications)
+              )
+      
+      substitute = f'<a{attributes_sequence}>{content}</a>'
+      
+      return substitute
+    
+    return substitute_function
+
+
 CMD_REPLACEMENT_SYNTAX_HELP = \
 '''\
 In CMD replacement rule syntax, a line must be one of the following:
@@ -2347,6 +2491,8 @@ class ReplacementMaster:
               )
     elif class_name == 'ExplicitLinkReplacement':
       replacement = ExplicitLinkReplacement(id_, self._verbose_mode_enabled)
+    elif class_name == 'SpecifiedLinkReplacement':
+      replacement = SpecifiedLinkReplacement(id_, self._verbose_mode_enabled)
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
