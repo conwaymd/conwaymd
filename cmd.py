@@ -1766,7 +1766,7 @@ class SpecifiedImageReplacement(
               SpecifiedImageReplacement.build_regex_pattern(
                 self._attribute_specifications,
               ),
-              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              flags=re.ASCII | re.VERBOSE,
             )
     self._substitute_function = \
             SpecifiedImageReplacement.build_substitute_function(
@@ -1915,7 +1915,7 @@ class ReferencedImageReplacement(
               ReferencedImageReplacement.build_regex_pattern(
                 self._attribute_specifications,
               ),
-              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              flags=re.ASCII | re.VERBOSE,
             )
     self._substitute_function = \
             self.build_substitute_function(self._attribute_specifications)
@@ -2061,7 +2061,7 @@ class ExplicitLinkReplacement(
                 self._has_flags,
                 self._attribute_specifications,
               ),
-              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              flags=re.ASCII | re.VERBOSE,
             )
     self._substitute_function = \
             self.build_substitute_function(
@@ -2192,7 +2192,7 @@ class SpecifiedLinkReplacement(
               SpecifiedLinkReplacement.build_regex_pattern(
                 self._attribute_specifications,
               ),
-              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              flags=re.ASCII | re.VERBOSE,
             )
     self._substitute_function = \
             SpecifiedLinkReplacement.build_substitute_function(
@@ -2338,7 +2338,7 @@ class ReferencedLinkReplacement(
               ReferencedLinkReplacement.build_regex_pattern(
                 self._attribute_specifications,
               ),
-              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+              flags=re.ASCII | re.VERBOSE,
             )
     self._substitute_function = \
             self.build_substitute_function(self._attribute_specifications)
