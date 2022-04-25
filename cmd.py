@@ -5173,7 +5173,7 @@ def build_captured_character_class_regex(characters, capture_group_name):
     return None
   
   characters_escaped = \
-          ''.join(re.escape(character) for character in characters)
+          ''.join(re.escape(character) for character in sorted(characters))
   character_class_regex = f'[{characters_escaped}]'
   
   return f'(?P<{capture_group_name}> {character_class_regex} )'

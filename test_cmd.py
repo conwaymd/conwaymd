@@ -328,7 +328,7 @@ class TestCmd(unittest.TestCase):
       ),
       '[|]?'
       '(?P<delimiter> '
-        r'(?P<delimiter_character> (?P<either> [_\*] ) )'
+        r'(?P<delimiter_character> (?P<either> [\*_] ) )'
         ' (?(either) (?P=either)? )'
       ' )'
       r'(?! [\s] | [<][/] )'
