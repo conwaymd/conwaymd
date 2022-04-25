@@ -3026,6 +3026,8 @@ class ReplacementMaster:
     elif class_name == 'PartitioningReplacement':
       replacement = \
               PartitioningReplacement(id_, self._verbose_mode_enabled)
+    elif class_name == 'HeadingReplacement':
+      replacement = HeadingReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'ReferenceDefinitionReplacement':
       replacement = \
               ReferenceDefinitionReplacement(
@@ -3053,8 +3055,6 @@ class ReplacementMaster:
                 self._reference_master,
                 self._verbose_mode_enabled,
               )
-    elif class_name == 'HeadingReplacement':
-      replacement = HeadingReplacement(id_, self._verbose_mode_enabled)
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
