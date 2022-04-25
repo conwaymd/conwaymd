@@ -991,6 +991,7 @@ class FixedDelimitersReplacement(
   ReplacementWithSyntaxType,
   ReplacementWithAllowedFlags,
   ReplacementWithAttributeSpecifications,
+  ReplacementWithProhibitedContent,
   ReplacementWithContentReplacements,
   ReplacementWithTagName,
   ReplacementWithConcludingReplacements,
@@ -1006,6 +1007,7 @@ class FixedDelimitersReplacement(
   - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
   - opening_delimiter: «string» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
+  - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
   - content_replacements: (def) NONE | #«id» [...]
   - closing_delimiter: «string» (mandatory)
   - tag_name: (def) NONE | «name»
@@ -1027,6 +1029,7 @@ class FixedDelimitersReplacement(
       'allowed_flags',
       'opening_delimiter',
       'attribute_specifications',
+      'prohibited_content',
       'content_replacements',
       'closing_delimiter',
       'tag_name',
@@ -1079,6 +1082,7 @@ class FixedDelimitersReplacement(
                 self._has_flags,
                 self._opening_delimiter,
                 self._attribute_specifications,
+                self._prohibited_content_regex,
                 self._closing_delimiter,
               ),
               flags=re.ASCII | re.MULTILINE | re.VERBOSE,
@@ -1105,6 +1109,7 @@ class FixedDelimitersReplacement(
     has_flags,
     opening_delimiter,
     attribute_specifications,
+    prohibited_content_regex,
     closing_delimiter,
   ):
     
@@ -1116,7 +1121,7 @@ class FixedDelimitersReplacement(
               attribute_specifications,
               require_newline=syntax_type_is_block,
             )
-    content_regex = build_content_regex()
+    content_regex = build_content_regex(prohibited_content_regex)
     closing_delimiter_regex = re.escape(closing_delimiter)
     
     return ''.join(

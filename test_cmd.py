@@ -83,6 +83,7 @@ class TestCmd(unittest.TestCase):
         has_flags=True,
         opening_delimiter='<|',
         attribute_specifications='',
+        prohibited_content_regex=None,
         closing_delimiter='|>',
       ),
       '(?P<flags> [ui]* )'
@@ -99,6 +100,7 @@ class TestCmd(unittest.TestCase):
         has_flags=False,
         opening_delimiter='($',
         attribute_specifications='',
+        prohibited_content_regex=None,
         closing_delimiter='$)',
       ),
       r'^ [^\S\n]*'
