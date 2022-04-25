@@ -2275,6 +2275,138 @@ class SpecifiedLinkReplacement(
     return substitute_function
 
 
+class ReferencedLinkReplacement(
+  ReplacementWithAttributeSpecifications,
+  Replacement,
+):
+  """
+  A replacement rule for referenced links.
+  
+  CMD replacement rule syntax:
+  ````
+  ReferencedLinkReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  ````
+  """
+  
+  def __init__(self, id_, reference_master, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._reference_master = reference_master
+    self._regex_pattern_compiled = None
+    self._substitute_function = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'attribute_specifications',
+    )
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    
+    self._regex_pattern_compiled = \
+            re.compile(
+              ReferencedLinkReplacement.build_regex_pattern(
+                self._attribute_specifications,
+              ),
+              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+            )
+    self._substitute_function = \
+            self.build_substitute_function(self._attribute_specifications)
+  
+  def _apply(self, string):
+    return re.sub(
+      self._regex_pattern_compiled,
+      self._substitute_function,
+      string,
+    )
+  
+  @staticmethod
+  def build_regex_pattern(attribute_specifications):
+    
+    link_text_regex = r'\[ [\s]* (?P<link_text> [^\]]*? ) [\s]* \]'
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              syntax_type_is_block=False,
+            )
+    label_regex = r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
+    
+    return ''.join(
+      [
+        link_text_regex,
+        attribute_specifications_regex,
+        label_regex,
+      ]
+    )
+  
+  def build_substitute_function(self, attribute_specifications):
+    
+    def substitute_function(match):
+      
+      content = match.group('link_text')
+      
+      label = match.group('label')
+      if label is None or label == '':
+        label = content
+      
+      try:
+        referenced_attribute_specifications, href, title = \
+                self._reference_master.load_definition(label)
+      except UnrecognisedLabelException:
+        return match.group()
+      
+      if href is not None:
+        href_protected = PlaceholderMaster.protect(href)
+        href_attribute_specification = f'href={href_protected}'
+      else:
+        href_attribute_specification = ''
+      
+      if title is not None:
+        title_protected = PlaceholderMaster.protect(title)
+        title_attribute_specification = f'title={title_protected}'
+      else:
+        title_attribute_specification = ''
+      
+      href_title_referenced_attribute_specifications = \
+              ' '.join(
+                [
+                  href_attribute_specification,
+                  title_attribute_specification,
+                  none_to_empty_string(referenced_attribute_specifications)
+                ]
+              )
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                ' '.join(
+                  [
+                    href_title_referenced_attribute_specifications,
+                    attribute_specifications,
+                    none_to_empty_string(matched_attribute_specifications),
+                  ]
+                )
+      else:
+        combined_attribute_specifications = \
+                href_title_referenced_attribute_specifications
+      
+      attributes_sequence = \
+              PlaceholderMaster.protect(
+                build_attributes_sequence(combined_attribute_specifications)
+              )
+      
+      substitute = f'<a{attributes_sequence}>{content}</a>'
+      
+      return substitute
+    
+    return substitute_function
+
+
 CMD_REPLACEMENT_SYNTAX_HELP = \
 '''\
 In CMD replacement rule syntax, a line must be one of the following:
@@ -2500,6 +2632,13 @@ class ReplacementMaster:
       replacement = ExplicitLinkReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'SpecifiedLinkReplacement':
       replacement = SpecifiedLinkReplacement(id_, self._verbose_mode_enabled)
+    elif class_name == 'ReferencedLinkReplacement':
+      replacement = \
+              ReferencedLinkReplacement(
+                id_,
+                self._reference_master,
+                self._verbose_mode_enabled,
+              )
     else:
       ReplacementMaster.print_error(
         f'unrecognised replacement class `{class_name}`',
