@@ -5307,6 +5307,7 @@ ExtensibleFenceReplacement: #paragraphs
 - syntax_type: BLOCK
 - extensible_delimiter: --
 - attribute_specifications: EMPTY
+- prohibited_content: BLOCKS
 - content_replacements:
     #prepend-newline
 - tag_name: p

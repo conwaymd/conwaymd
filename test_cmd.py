@@ -782,6 +782,11 @@ NOTE: nested paragraphs are illegal.
 --{.two}
 This be another paragraph.
 --
+||
+----
+A paragraph cannot contain a <div>block</div>.
+----
+||
 
 ## `#inline-code`
 
@@ -1188,6 +1193,11 @@ NOTE: nested paragraphs are illegal.
 <p class="two">
 This be another paragraph.
 </p>
+<div>
+----
+A paragraph cannot contain a <div>block</div>.
+----
+</div>
 <h2><code>#inline-code</code></h2>
 This be <code>inline code</code>.
 <code class="classy">Whitespace stripped, and <b>unescaped</b>.</code>
