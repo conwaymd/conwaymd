@@ -567,6 +567,10 @@ class ReplacementWithProhibitedContent(Replacement, abc.ABC):
   
   @prohibited_content_regex.setter
   def prohibited_content_regex(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `prohibited_content_regex` after `commit()`'
+      )
     self._prohibited_content_regex = value
 
 
