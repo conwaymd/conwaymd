@@ -1613,6 +1613,118 @@ class PartitioningReplacement(
     return substitute_function
 
 
+class HeadingReplacement(
+  ReplacementWithAttributeSpecifications,
+  Replacement,
+):
+  """
+  A replacement rule for headings.
+  
+  CMD replacement rule syntax:
+  ````
+  HeadingReplacement: #«id»
+  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - attribute_specifications: (def) NONE | EMPTY | «string»
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._regex_pattern_compiled = None
+    self._substitute_function = None
+  
+  def attribute_names(self):
+    return (
+      'queue_position',
+      'attribute_specifications',
+    )
+  
+  def _validate_mandatory_attributes(self):
+    pass
+  
+  def _set_apply_method_variables(self):
+    
+    self._regex_pattern_compiled = \
+            re.compile(
+              HeadingReplacement.build_regex_pattern(
+                self._attribute_specifications,
+              ),
+              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+            )
+    self._substitute_function = \
+            HeadingReplacement.build_substitute_function(
+              self._attribute_specifications,
+            )
+  
+  def _apply(self, string):
+    return re.sub(
+      self._regex_pattern_compiled,
+      self._substitute_function,
+      string,
+    )
+  
+  @staticmethod
+  def build_regex_pattern(attribute_specifications):
+    
+    block_anchoring_regex = \
+            build_block_anchoring_regex(syntax_type_is_block=True)
+    opening_hashes_regex = '(?P<opening_hashes> [#]{1,6} )'
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              require_newline=False,
+            )
+    content_regex = r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [^\S\n]* )?'
+    closing_hashes_regex = '[#]*'
+    trailing_horizontal_whitespace_regex = r'[^\S\n]* $'
+    
+    return ''.join(
+      [
+        block_anchoring_regex,
+        opening_hashes_regex,
+        attribute_specifications_regex,
+        content_regex,
+        closing_hashes_regex,
+        trailing_horizontal_whitespace_regex,
+      ]
+    )
+  
+  @staticmethod
+  def build_substitute_function(attribute_specifications):
+    
+    def substitute_function(match):
+      
+      opening_hashes = match.group('opening_hashes')
+      heading_level = len(opening_hashes)
+      tag_name = f'h{heading_level}'
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                (
+                  attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
+        attributes_sequence = \
+                build_attributes_sequence(
+                  combined_attribute_specifications,
+                  use_protection=True,
+                )
+      else:
+        attributes_sequence = ''
+      
+      content = match.group('content')
+      content = none_to_empty_string(content)
+      
+      substitute = f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
+      
+      return substitute
+    
+    return substitute_function
+
+
 class ReferenceDefinitionReplacement(
   ReplacementWithAttributeSpecifications,
   Replacement,
@@ -2489,118 +2601,6 @@ class ReferencedLinkReplacement(
               )
       
       substitute = f'<a{attributes_sequence}>{content}</a>'
-      
-      return substitute
-    
-    return substitute_function
-
-
-class HeadingReplacement(
-  ReplacementWithAttributeSpecifications,
-  Replacement,
-):
-  """
-  A replacement rule for headings.
-  
-  CMD replacement rule syntax:
-  ````
-  HeadingReplacement: #«id»
-  - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
-  - attribute_specifications: (def) NONE | EMPTY | «string»
-  ````
-  """
-  
-  def __init__(self, id_, verbose_mode_enabled):
-    super().__init__(id_, verbose_mode_enabled)
-    self._regex_pattern_compiled = None
-    self._substitute_function = None
-  
-  def attribute_names(self):
-    return (
-      'queue_position',
-      'attribute_specifications',
-    )
-  
-  def _validate_mandatory_attributes(self):
-    pass
-  
-  def _set_apply_method_variables(self):
-    
-    self._regex_pattern_compiled = \
-            re.compile(
-              HeadingReplacement.build_regex_pattern(
-                self._attribute_specifications,
-              ),
-              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-            )
-    self._substitute_function = \
-            HeadingReplacement.build_substitute_function(
-              self._attribute_specifications,
-            )
-  
-  def _apply(self, string):
-    return re.sub(
-      self._regex_pattern_compiled,
-      self._substitute_function,
-      string,
-    )
-  
-  @staticmethod
-  def build_regex_pattern(attribute_specifications):
-    
-    block_anchoring_regex = \
-            build_block_anchoring_regex(syntax_type_is_block=True)
-    opening_hashes_regex = '(?P<opening_hashes> [#]{1,6} )'
-    attribute_specifications_regex = \
-            build_attribute_specifications_regex(
-              attribute_specifications,
-              require_newline=False,
-            )
-    content_regex = r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [^\S\n]* )?'
-    closing_hashes_regex = '[#]*'
-    trailing_horizontal_whitespace_regex = r'[^\S\n]* $'
-    
-    return ''.join(
-      [
-        block_anchoring_regex,
-        opening_hashes_regex,
-        attribute_specifications_regex,
-        content_regex,
-        closing_hashes_regex,
-        trailing_horizontal_whitespace_regex,
-      ]
-    )
-  
-  @staticmethod
-  def build_substitute_function(attribute_specifications):
-    
-    def substitute_function(match):
-      
-      opening_hashes = match.group('opening_hashes')
-      heading_level = len(opening_hashes)
-      tag_name = f'h{heading_level}'
-      
-      if attribute_specifications is not None:
-        matched_attribute_specifications = \
-                match.group('attribute_specifications')
-        combined_attribute_specifications = \
-                (
-                  attribute_specifications
-                    + ' '
-                    + none_to_empty_string(matched_attribute_specifications)
-                )
-        attributes_sequence = \
-                build_attributes_sequence(
-                  combined_attribute_specifications,
-                  use_protection=True,
-                )
-      else:
-        attributes_sequence = ''
-      
-      content = match.group('content')
-      content = none_to_empty_string(content)
-      
-      substitute = f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
       
       return substitute
     
