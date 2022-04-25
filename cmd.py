@@ -5114,11 +5114,15 @@ SpecifiedLinkReplacement: #specified-links
 - queue_position: AFTER #explicit-links
 - attribute_specifications: EMPTY
 
+ReferencedLinkReplacement: #referenced-links
+- queue_position: AFTER #specified-links
+- attribute_specifications: EMPTY
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #specified-links
+- queue_position: AFTER #referenced-links
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline

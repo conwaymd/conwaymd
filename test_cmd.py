@@ -835,6 +835,18 @@ s<{href='https://evil.com'}https://example.com>
 [Link]{href=H title=T}(href "title")
 
 [![alt](src "title")](href 'title2')
+
+## `#referenced-links`
+
+[label2]{.test}: /file "title"
+[Rejoice]{.test2}: yay.html
+
+[Content.][label2]
+[ Space & case test   ][  LabEL2  ]
+[Rejoice]{class="no-label"}
+[Class dismissed.]{-class .dismissed}[label2]
+
+[Untouched][Nonexistent label]
 '''
         ################################################################
         # END CMD
@@ -1149,6 +1161,12 @@ https://example.com
 <a href="spacious/href" title="spacious title">Spacious text.</a>
 <a href="H" title="T">Link</a>
 <a href="href" title="title2"><img alt="alt" src="src" title="title"></a>
+## <code>#referenced-links</code>
+<a href="/file" title="title" class="test">Content.</a>
+<a href="/file" title="title" class="test">Space & case test</a>
+<a href="yay.html" class="test2 no-label">Rejoice</a>
+<a href="/file" title="title" class="dismissed">Class dismissed.</a>
+[Untouched][Nonexistent label]
 </body>
 </html>
 '''
