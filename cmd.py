@@ -101,7 +101,7 @@ class PlaceholderMaster:
   
   _RUN_CHARACTER_MIN = '\uE000'
   _RUN_CHARACTER_MAX = '\uE100'
-  _MARKER = '\uF8FF'
+  MARKER = '\uF8FF'
   _REPLACEMENT_CHARACTER = '\uFFFD'
   
   _RUN_CODE_POINT_MIN = ord(_RUN_CHARACTER_MIN)
@@ -110,11 +110,11 @@ class PlaceholderMaster:
   _PLACEHOLDER_PATTERN_COMPILED = \
           re.compile(
             f'''
-              {_MARKER}
+              {MARKER}
               (?P<run_characters>
                 [{_RUN_CHARACTER_MIN}-{_RUN_CHARACTER_MAX}]*
               )
-              {_MARKER}
+              {MARKER}
             ''',
             flags=re.VERBOSE
           )
@@ -158,8 +158,8 @@ class PlaceholderMaster:
     of «marker» is equivalent to protecting them with a placeholder.
     """
     return re.sub(
-      PlaceholderMaster._MARKER,
-      PlaceholderMaster.protect(PlaceholderMaster._MARKER),
+      PlaceholderMaster.MARKER,
+      PlaceholderMaster.protect(PlaceholderMaster.MARKER),
       string
     )
   
@@ -169,7 +169,7 @@ class PlaceholderMaster:
     Protect a string by converting it to a placeholder.
     """
     
-    marker = PlaceholderMaster._MARKER
+    marker = PlaceholderMaster.MARKER
     
     string = PlaceholderMaster.unprotect(string)
     string_bytes = string.encode()
@@ -3524,6 +3524,54 @@ class ReplacementMaster:
     replacement.positive_flag_name = positive_flag_name
   
   @staticmethod
+  def compute_prohibited_content_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none_keyword> NONE )
+            |
+          (?P<prohibited_content> BLOCKS | ANCHORED_BLOCKS )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_prohibited_content(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    prohibited_content_match = \
+            ReplacementMaster.compute_prohibited_content_match(attribute_value)
+    
+    invalid_value = prohibited_content_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `prohibited_content`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    if prohibited_content_match.group('none_keyword') is not None:
+      return
+    
+    prohibited_content = prohibited_content_match.group('prohibited_content')
+    require_anchoring = prohibited_content == 'ANCHORED_BLOCKS'
+    prohibited_content_regex = build_block_tag_regex(require_anchoring)
+    replacement.prohibited_content_regex = prohibited_content_regex
+  
+  @staticmethod
   def compute_prologue_delimiter_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -4169,6 +4217,14 @@ class ReplacementMaster:
           line_number_range_start,
           line_number,
         )
+      elif attribute_name == 'prohibited_content':
+        ReplacementMaster.stage_prohibited_content(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
       elif attribute_name == 'prologue_delimiter':
         ReplacementMaster.stage_prologue_delimiter(
           replacement,
@@ -4770,6 +4826,59 @@ def build_attributes_sequence(attribute_specifications, use_protection=False):
     attribute_sequence = PlaceholderMaster.protect(attribute_sequence)
   
   return attribute_sequence
+
+
+BLOCK_TAG_NAMES = [
+  'address',
+  'article',
+  'aside',
+  'blockquote',
+  'details',
+  'dialog',
+  'dd',
+  'div',
+  'dl',
+  'dt',
+  'fieldset',
+  'figcaption',
+  'figure',
+  'footer',
+  'form',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'header',
+  'hgroup',
+  'hr',
+  'li',
+  'main',
+  'nav',
+  'ol',
+  'p',
+  'pre',
+  'section',
+  'table',
+  'ul',
+]
+
+
+def build_block_tag_regex(require_anchoring):
+  
+  block_tag_name_regex = \
+          '|'.join(re.escape(tag_name) for tag_name in BLOCK_TAG_NAMES)
+  after_tag_name_regex = fr'(?: [\s] | {re.escape(PlaceholderMaster.MARKER)} )'
+  block_tag_regex = \
+          f'[<] [/]? (?: {block_tag_name_regex} ) {after_tag_name_regex}'
+  
+  if require_anchoring:
+    block_anchoring_regex = \
+            build_block_anchoring_regex(syntax_type_is_block=True)
+    return block_anchoring_regex + block_tag_regex
+  else:
+    return block_tag_regex
 
 
 def build_block_anchoring_regex(
