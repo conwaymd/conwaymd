@@ -5144,8 +5144,12 @@ ExtensibleFenceReplacement: #tables
     #prepend-newline
 - tag_name: table
 
-ExtensibleFenceReplacement: #paragraphs
+HeadingReplacement: #headings
 - queue_position: AFTER #tables
+- attribute_specifications: EMPTY
+
+ExtensibleFenceReplacement: #paragraphs
+- queue_position: AFTER #headings
 - syntax_type: BLOCK
 - extensible_delimiter: --
 - attribute_specifications: EMPTY
@@ -5237,12 +5241,8 @@ ReferencedLinkReplacement: #referenced-links
 - queue_position: AFTER #specified-links
 - attribute_specifications: EMPTY
 
-HeadingReplacement: #headings
-- queue_position: AFTER #referenced-links
-- attribute_specifications: EMPTY
-
 RegexDictionaryReplacement: #escape-idle-html
-- queue_position: AFTER #headings
+- queue_position: AFTER #referenced-links
 * [&]
   (?!
     (?:
