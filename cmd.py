@@ -4631,15 +4631,6 @@ ExtensibleFenceReplacement: #blockquotes
     #prepend-newline
 - tag_name: blockquote
 
-ExtensibleFenceReplacement: #paragraphs
-- queue_position: AFTER #blockquotes
-- syntax_type: BLOCK
-- extensible_delimiter: --
-- attribute_specifications: EMPTY
-- content_replacements:
-    #prepend-newline
-- tag_name: p
-
 PartitioningReplacement: #unordered-list-items
 - starting_pattern: [-+*]
 - attribute_specifications: EMPTY
@@ -4649,7 +4640,7 @@ PartitioningReplacement: #unordered-list-items
 - tag_name: li
 
 ExtensibleFenceReplacement: #unordered-lists
-- queue_position: AFTER #paragraphs
+- queue_position: AFTER #blockquotes
 - syntax_type: BLOCK
 - extensible_delimiter: ==
 - attribute_specifications: EMPTY
@@ -4759,8 +4750,17 @@ ExtensibleFenceReplacement: #tables
     #prepend-newline
 - tag_name: table
 
-OrdinaryDictionaryReplacement: #backslash-escapes
+ExtensibleFenceReplacement: #paragraphs
 - queue_position: AFTER #tables
+- syntax_type: BLOCK
+- extensible_delimiter: --
+- attribute_specifications: EMPTY
+- content_replacements:
+    #prepend-newline
+- tag_name: p
+
+OrdinaryDictionaryReplacement: #backslash-escapes
+- queue_position: AFTER #paragraphs
 * \\ --> \
 * \# --> #
 * \& --> &amp;
