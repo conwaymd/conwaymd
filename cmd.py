@@ -5237,8 +5237,12 @@ ReferencedLinkReplacement: #referenced-links
 - queue_position: AFTER #specified-links
 - attribute_specifications: EMPTY
 
-RegexDictionaryReplacement: #escape-idle-html
+HeadingReplacement: #headings
 - queue_position: AFTER #referenced-links
+- attribute_specifications: EMPTY
+
+RegexDictionaryReplacement: #escape-idle-html
+- queue_position: AFTER #headings
 * [&]
   (?!
     (?:

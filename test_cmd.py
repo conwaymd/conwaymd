@@ -847,6 +847,25 @@ s<{href='https://evil.com'}https://example.com>
 [Class dismissed.]{-class .dismissed}[label2]
 
 [Untouched][Nonexistent label]
+
+## `#headings`
+
+### Level 3
+#### Level 4
+##### Level 5
+###### Level 6
+
+### Non-empty
+### Insufficient closing hashes #
+### Excessive closing hashes #######
+###{}
+###{} Non-empty
+###{.class-1 title="This be fancy"} Fancy
+### Trailing whitespace     	
+### Trailing whitespace after hashes #  	
+
+#missing-whitespace
+####### Excessive opening hashes
 '''
         ################################################################
         # END CMD
@@ -874,15 +893,15 @@ font-family: serif;
 </style>
 </head>
 <body>
-# <code>test_cmd_to_html</code>
+<h1><code>test_cmd_to_html</code></h1>
 <code title="&amp;&lt;&gt;&quot;">Attribute specification escape test.</code>
 <code title="&quot;">Attribute specification double-quote escape test.</code>
 <pre title="`?` &lt;`!`&gt;"><code>Attribute specification prevail test.
 </code></pre>
-## <code>#placeholder-markers</code>
+<h2><code>#placeholder-markers</code></h2>
 If implemented properly, the following shall confound not:
 <code>'\uF8FF\uE069\uE420\uE000\uF8FE\uE064\uF8FF'</code>: 
-## <code>#literals</code>
+<h2><code>#literals</code></h2>
 BEFORE{ Literal &amp; &lt; &gt; }AFTER
 No indent,
     yet four more spaces hence?
@@ -892,7 +911,7 @@ Flag `i`: whitespace stripped on this line,
 Flag `w`: whitespace trimmed on all lines,
 even trailing whitespace,
 and even whitespace before a break element:<br>
-## <code>#display-code</code>
+<h2><code>#display-code</code></h2>
 <pre><code>for (int index = 0; index &lt; count; index++)
 {
   // etc. etc.
@@ -905,17 +924,17 @@ and even whitespace before a break element:<br>
 <pre><code>    Retained indentation:
       a lot.
 </code></pre>
-## <code>#inline-code</code>
+<h2><code>#inline-code</code></h2>
 This be <code>inline code</code>.
 <code class="classy">Whitespace stripped, and <b>unescaped</b>.</code>
 Even <code>inline with ``backticks within``</code>.
-## <code>#comment-breaker</code> (custom)
+<h2><code>#comment-breaker</code> (custom)</h2>
 &lt;## Sundered be this. ##&gt;
 <strong>Unescaped!</strong>
-## <code>#comments</code>
+<h2><code>#comments</code></h2>
 <code>Code prevails over &lt;## comments ##&gt;.</code>
 Yet comments can remove code.
-## <code>#divisions</code>
+<h2><code>#divisions</code></h2>
 <div class="top-level">
 Parent.
 <div class="elder">
@@ -925,7 +944,7 @@ Child 1.
 Child 2.
 </div>
 </div>
-## <code>#blockquotes</code>
+<h2><code>#blockquotes</code></h2>
 <blockquote class="four">
 <blockquote class="three">
 <blockquote class="two">
@@ -935,7 +954,7 @@ Child 2.
 </blockquote>
 </blockquote>
 </blockquote>
-## <code>#paragraphs</code>
+<h2><code>#paragraphs</code></h2>
 <p class="eight">
 This be a paragraph.
 --
@@ -945,7 +964,7 @@ NOTE: nested paragraphs are illegal.
 <p class="two">
 This be another paragraph.
 </p>
-## <code>#unordered-lists</code>
+<h2><code>#unordered-lists</code></h2>
 <ul class="four">
 <li>
 <ul class="three">
@@ -973,7 +992,7 @@ Hello!
 Empty list:
 <ul>
 </ul>
-## <code>#ordered-lists</code>
+<h2><code>#ordered-lists</code></h2>
 <ol>
 <li>
 Yes.
@@ -1004,7 +1023,7 @@ Indeed 2.
 </ul>
 </li>
 </ol>
-## <code>#tables</code>
+<h2><code>#tables</code></h2>
 <table>
 <caption>Why the hell would you have table inception?</caption>
 <thead>
@@ -1118,21 +1137,21 @@ Header-after-data (seriously, why would you have this?):
 <td>Data2</td>
 </tr>
 </table>
-## <code>#backslash-escapes</code>
+<h2><code>#backslash-escapes</code></h2>
 \ # &amp; ( ) * &lt; &gt; [ ] _ { | }
 \\3 \\4 \\\5 \\\6
 [space] [space]
 [tab]	[tab]
-## <code>#backslash-continuations</code>
+<h2><code>#backslash-continuations</code></h2>
 This be continuation.
 This be not \
 continuation, for the backslash is escaped.
-## <code>#reference-definitions</code>
+<h2><code>#reference-definitions</code></h2>
 "No"
 [bad]:
 https://example.com
 [missing uri]:
-## <code>#specified-images</code>
+<h2><code>#specified-images</code></h2>
 <img alt="" src="decoration/image">
 <img src="" title="omitting alt is bad">
 <img alt="Alt text." src="">
@@ -1140,20 +1159,20 @@ https://example.com
 <img alt="Alt text." src="" title="title only">
 <img alt="Spacious alt." src="spacious/src" title="spacious title">
 <img alt="A" src="S" title="T">
-## <code>#referenced-images</code>
+<h2><code>#referenced-images</code></h2>
 <img alt="Alt text." src="file.svg" title="title" class="test">
 <img alt="Space &amp; case test" src="file.svg" title="title" class="test">
 <img alt="Hooray!" src="yay.png" class="test2 no-label">
 <img alt="Class dismissed." src="file.svg" title="title" class="dismissed">
 ![Untouched][Nonexistent label]
-## <code>#explicit-links</code>
+<h2><code>#explicit-links</code></h2>
 <a href="https://example.com">https://example.com</a>
 &lt;<a href="https://example.com">https://example.com</a>&gt;
 <a href="https://example.com">example.com</a>
 &lt;<a href="https://example.com">example.com</a>&gt;
 &lt;<a href="mailto:mail@example.com">mail@example.com</a>&gt;
 <a href="https://evil.com">example.com</a>
-## <code>#specified-links</code>
+<h2><code>#specified-links</code></h2>
 <a href="empty/content"></a>
 <a href="">Empty href</a>
 <a>No href</a>
@@ -1161,12 +1180,27 @@ https://example.com
 <a href="spacious/href" title="spacious title">Spacious text.</a>
 <a href="H" title="T">Link</a>
 <a href="href" title="title2"><img alt="alt" src="src" title="title"></a>
-## <code>#referenced-links</code>
+<h2><code>#referenced-links</code></h2>
 <a href="/file" title="title" class="test">Content.</a>
 <a href="/file" title="title" class="test">Space &amp; case test</a>
 <a href="yay.html" class="test2 no-label">Rejoice</a>
 <a href="/file" title="title" class="dismissed">Class dismissed.</a>
 [Untouched][Nonexistent label]
+<h2><code>#headings</code></h2>
+<h3>Level 3</h3>
+<h4>Level 4</h4>
+<h5>Level 5</h5>
+<h6>Level 6</h6>
+<h3>Non-empty</h3>
+<h3>Insufficient closing hashes</h3>
+<h3>Excessive closing hashes</h3>
+<h3></h3>
+<h3>Non-empty</h3>
+<h3 class="class-1" title="This be fancy">Fancy</h3>
+<h3>Trailing whitespace</h3>
+<h3>Trailing whitespace after hashes</h3>
+#missing-whitespace
+####### Excessive opening hashes
 </body>
 </html>
 '''
