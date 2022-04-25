@@ -315,6 +315,54 @@ class TestCmd(unittest.TestCase):
       r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
     )
   
+  def test_inline_assorted_delimiters_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.InlineAssortedDelimitersReplacement.build_regex_pattern(
+        tag_name_from_delimiter_count_from_character={
+          '_': {1: 'i', 2: 'b'},
+          '*': {1: 'em', 2: 'strong'},
+        },
+        attribute_specifications='',
+        prohibited_content_regex='[<]div',
+      ),
+      '[|]?'
+      '(?P<delimiter> '
+        r'(?P<delimiter_character> (?P<either> [_\*] ) )'
+        ' (?(either) (?P=either)? )'
+      ' )'
+      r'(?! [\s] | [<][/] )'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+      r'[\s]*'
+      r'(?P<content> (?: (?! (?P=delimiter_character) | [<]div ) [\s\S] )+? )'
+      r'(?<! [\s] | [|] )'
+      '(?P=delimiter)'
+    )
+    
+    self.assertEqual(
+      cmd.InlineAssortedDelimitersReplacement.build_regex_pattern(
+        tag_name_from_delimiter_count_from_character={
+          '_': {1: 'i'},
+          '*': {1: 'em', 2: 'strong'},
+          '"': {2: 'q'},
+        },
+        attribute_specifications=None,
+        prohibited_content_regex='[<]div',
+      ),
+      '[|]?'
+      '(?P<delimiter> '
+        '(?P<delimiter_character> '
+          r'(?P<double> ["] ) | (?P<either> [\*] ) | (?P<single> [_] )'
+        ' )'
+        ' (?(double) (?P=double) | (?(either) (?P=either)? ) )'
+      ' )'
+      r'(?! [\s] | [<][/] )'
+      r'[\s]*'
+      r'(?P<content> (?: (?! (?P=delimiter_character) | [<]div ) [\s\S] )+? )'
+      r'(?<! [\s] | [|] )'
+      '(?P=delimiter)'
+    )
+  
   def test_heading_replacement_build_regex_pattern(self):
     
     self.assertEqual(

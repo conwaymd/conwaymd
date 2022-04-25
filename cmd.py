@@ -1629,6 +1629,7 @@ class InlineAssortedDelimitersReplacement(
   ````
   InlineAssortedDelimitersReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+  - delimiter_conversion: «character» | «character_doubled»=«tag_name» [...]
   - attribute_specifications: (def) NONE | EMPTY | «string»
   - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
   ````
@@ -1636,18 +1637,134 @@ class InlineAssortedDelimitersReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
+    self._tag_name_from_delimiter_count_from_character = {}
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
   def attribute_names(self):
     return (
       'queue_position',
+      'delimiter_conversion',
       'attribute_specifications',
       'prohibited_content',
     )
   
+  def add_delimiter_conversion(self, character, count, tag_name):
+    
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot call `add_delimiter_conversion(...)` after `commit()`'
+      )
+    
+    if character not in self._tag_name_from_delimiter_count_from_character:
+      self._tag_name_from_delimiter_count_from_character[character] = {}
+      self._tag_name_from_delimiter_count_from_character[character][count] \
+              = tag_name
+  
   def _validate_mandatory_attributes(self):
     pass
+  
+  def _set_apply_method_variables(self):
+    self._regex_pattern_compiled = \
+            re.compile(
+              InlineAssortedDelimitersReplacement.build_regex_pattern(
+                self._tag_name_from_delimiter_count_from_character,
+                self._attribute_specifications,
+                self._prohibited_content_regex,
+              ),
+              flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+            )
+    # TODO self._substitute_function
+  
+  @staticmethod
+  def build_regex_pattern(
+    tag_name_from_delimiter_count_from_character,
+    attribute_specifications,
+    prohibited_content_regex,
+  ):
+    
+    optional_pipe_regex = '[|]?'
+    
+    single_characters = set()
+    either_characters = set()
+    double_characters = set()
+    all_characters = set()
+    for character in tag_name_from_delimiter_count_from_character:
+      tag_name_from_delimiter_count = \
+              tag_name_from_delimiter_count_from_character[character]
+      delimiter_counts = tag_name_from_delimiter_count.keys()
+      if delimiter_counts == {1}:
+        single_characters.add(character)
+        all_characters.add(character)
+      elif delimiter_counts == {1, 2}:
+        either_characters.add(character)
+        all_characters.add(character)
+      elif delimiter_counts == {2}:
+        double_characters.add(character)
+        all_characters.add(character)
+    
+    single_class_regex = \
+            build_captured_character_class_regex(single_characters, 'single')
+    either_class_regex = \
+            build_captured_character_class_regex(either_characters, 'either')
+    double_class_regex = \
+            build_captured_character_class_regex(double_characters, 'double')
+    class_regexes = \
+            [double_class_regex, either_class_regex, single_class_regex]
+    delimiter_character_alternatives = \
+            ' | '.join(
+              class_regex
+                for class_regex in class_regexes
+                if class_regex is not None
+            )
+    delimiter_character_regex = \
+            f'(?P<delimiter_character> {delimiter_character_alternatives} )'
+    
+    if either_class_regex is not None:
+      if double_class_regex is not None:
+        repetition_regex = \
+                '(?(double) (?P=double) | (?(either) (?P=either)? ) )'
+      else:
+        repetition_regex = '(?(either) (?P=either)? )'
+    else:
+      if double_class_regex is not None:
+        repetition_regex = '(?(double) (?P=double) )'
+      else:
+        repetition_regex = ''
+    opening_delimiter_regex = \
+            f'(?P<delimiter> {delimiter_character_regex} {repetition_regex} )'
+    
+    after_opening_delimiter_regex = r'(?! [\s] | [<][/] )'
+    attribute_specifications_regex = \
+            build_attribute_specifications_regex(
+              attribute_specifications,
+              require_newline=False,
+            )
+    before_content_whitespace_regex = r'[\s]*'
+    
+    if prohibited_content_regex is None:
+      prohibited_content_regex = '(?P=delimiter_character)'
+    else:
+      prohibited_content_regex = \
+              f'(?P=delimiter_character) | {prohibited_content_regex}'
+    content_regex = \
+            build_content_regex(prohibited_content_regex, permit_empty=False)
+    
+    before_closing_delimiter_regex = r'(?<! [\s] | [|] )'
+    closing_delimiter_regex = '(?P=delimiter)'
+    
+    return ''.join(
+      [
+        optional_pipe_regex,
+        opening_delimiter_regex,
+        after_opening_delimiter_regex,
+        attribute_specifications_regex,
+        before_content_whitespace_regex,
+        content_regex,
+        before_closing_delimiter_regex,
+        closing_delimiter_regex,
+      ]
+    )
 
 
 class HeadingReplacement(
@@ -5050,9 +5167,22 @@ def build_attribute_specifications_regex(
   return braced_sequence_regex + block_newline_regex
 
 
+def build_captured_character_class_regex(characters, capture_group_name):
+  
+  if len(characters) == 0:
+    return None
+  
+  characters_escaped = \
+          ''.join(re.escape(character) for character in characters)
+  character_class_regex = f'[{characters_escaped}]'
+  
+  return f'(?P<{capture_group_name}> {character_class_regex} )'
+
+
 def build_content_regex(
   prohibited_content_regex=None,
   permitted_content_regex=r'[\s\S]',
+  permit_empty=True,
   capture_group_name='content',
 ):
   
@@ -5062,7 +5192,12 @@ def build_content_regex(
     permitted_atom_regex = \
             f'(?: (?! {prohibited_content_regex} ) {permitted_content_regex} )'
   
-  return f'(?P<{capture_group_name}> {permitted_atom_regex}*? )'
+  if permit_empty:
+    repetition = '*'
+  else:
+    repetition = '+'
+  
+  return f'(?P<{capture_group_name}> {permitted_atom_regex}{repetition}? )'
 
 
 def build_extensible_delimiter_closing_regex():
