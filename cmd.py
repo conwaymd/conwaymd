@@ -1221,7 +1221,7 @@ class ExtensibleFenceReplacement(
     super().__init__(id_, verbose_mode_enabled)
     self._prologue_delimiter = ''
     self._extensible_delimiter_character = None
-    self._extensible_delimiter_min_count = None
+    self._extensible_delimiter_min_length = None
     self._epilogue_delimiter = ''
     self._regex_pattern_compiled = None
     self._substitute_function = None
@@ -1266,16 +1266,16 @@ class ExtensibleFenceReplacement(
     self._extensible_delimiter_character = value
   
   @property
-  def extensible_delimiter_min_count(self):
-    return self._extensible_delimiter_min_count
+  def extensible_delimiter_min_length(self):
+    return self._extensible_delimiter_min_length
   
-  @extensible_delimiter_min_count.setter
-  def extensible_delimiter_min_count(self, value):
+  @extensible_delimiter_min_length.setter
+  def extensible_delimiter_min_length(self, value):
     if self._is_committed:
       raise CommittedMutateException(
-        'error: cannot set `extensible_delimiter_min_count` after `commit()`'
+        'error: cannot set `extensible_delimiter_min_length` after `commit()`'
       )
-    self._extensible_delimiter_min_count = value
+    self._extensible_delimiter_min_length = value
   
   @property
   def epilogue_delimiter(self):
@@ -1308,7 +1308,7 @@ class ExtensibleFenceReplacement(
                 self._has_flags,
                 self._prologue_delimiter,
                 self._extensible_delimiter_character,
-                self._extensible_delimiter_min_count,
+                self._extensible_delimiter_min_length,
                 self._attribute_specifications,
                 self._prohibited_content_regex,
                 self._epilogue_delimiter,
@@ -1337,7 +1337,7 @@ class ExtensibleFenceReplacement(
     has_flags,
     prologue_delimiter,
     extensible_delimiter_character,
-    extensible_delimiter_min_count,
+    extensible_delimiter_min_length,
     attribute_specifications,
     prohibited_content_regex,
     epilogue_delimiter,
@@ -1349,7 +1349,7 @@ class ExtensibleFenceReplacement(
     extensible_delimiter_opening_regex = \
             build_extensible_delimiter_opening_regex(
               extensible_delimiter_character,
-              extensible_delimiter_min_count,
+              extensible_delimiter_min_length,
             )
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
@@ -3600,10 +3600,12 @@ class ReplacementMaster:
             extensible_delimiter_match.group('extensible_delimiter_character')
     extensible_delimiter = \
             extensible_delimiter_match.group('extensible_delimiter')
-    extensible_delimiter_min_count = len(extensible_delimiter)
+    extensible_delimiter_min_length = len(extensible_delimiter)
     
-    replacement.extensible_delimiter_character = extensible_delimiter_character
-    replacement.extensible_delimiter_min_count = extensible_delimiter_min_count
+    replacement.extensible_delimiter_character = \
+            extensible_delimiter_character
+    replacement.extensible_delimiter_min_length = \
+            extensible_delimiter_min_length
   
   @staticmethod
   def compute_negative_flag_match(attribute_value):
@@ -5130,11 +5132,11 @@ def build_flags_regex(allowed_flags, has_flags):
 
 def build_extensible_delimiter_opening_regex(
   extensible_delimiter_character,
-  extensible_delimiter_min_count,
+  extensible_delimiter_min_length,
 ):
   
   character_regex = re.escape(extensible_delimiter_character)
-  repetition_regex = f'{{{extensible_delimiter_min_count},}}'
+  repetition_regex = f'{{{extensible_delimiter_min_length},}}'
   
   return f'(?P<extensible_delimiter> {character_regex}{repetition_regex} )'
 
