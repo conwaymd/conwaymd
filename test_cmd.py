@@ -293,6 +293,27 @@ class TestCmd(unittest.TestCase):
       r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
     )
   
+  def test_heading_replacement_build_regex_pattern(self):
+    
+    self.assertEqual(
+      cmd.HeadingReplacement.build_regex_pattern(None),
+      r'^ [^\S\n]*'
+      '(?P<opening_hashes> [#]{1,6} )'
+      r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [^\S\n]* )?'
+      '[#]*'
+      r'[^\S\n]* $'
+    )
+    
+    self.assertEqual(
+      cmd.HeadingReplacement.build_regex_pattern(''),
+      r'^ [^\S\n]*'
+      '(?P<opening_hashes> [#]{1,6} )'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
+      r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [^\S\n]* )?'
+      '[#]*'
+      r'[^\S\n]* $'
+    )
+  
   def test_compute_longest_common_prefix(self):
     self.assertEqual(
       cmd.compute_longest_common_prefix(['a', 'b', 'c', 'd']),
@@ -855,6 +876,7 @@ s<{href='https://evil.com'}https://example.com>
 ##### Level 5
 ###### Level 6
 
+###
 ### Non-empty
 ### Insufficient closing hashes #
 ### Excessive closing hashes #######
@@ -1191,6 +1213,7 @@ https://example.com
 <h4>Level 4</h4>
 <h5>Level 5</h5>
 <h6>Level 6</h6>
+<h3></h3>
 <h3>Non-empty</h3>
 <h3>Insufficient closing hashes</h3>
 <h3>Excessive closing hashes</h3>

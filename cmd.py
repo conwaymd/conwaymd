@@ -2470,7 +2470,7 @@ class HeadingReplacement(
               attribute_specifications,
               require_newline=False,
             )
-    content_regex = r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [\s]* )?'
+    content_regex = r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [^\S\n]* )?'
     closing_hashes_regex = '[#]*'
     trailing_horizontal_whitespace_regex = r'[^\S\n]* $'
     
