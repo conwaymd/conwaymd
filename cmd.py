@@ -1629,7 +1629,8 @@ class InlineAssortedDelimitersReplacement(
   ````
   InlineAssortedDelimitersReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
-  - delimiter_conversion: «character» | «character_doubled»=«tag_name» [...]
+  - delimiter_conversion:
+      «character» | «character_doubled»=«tag_name» [...] (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
   - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
   ````
@@ -1649,22 +1650,25 @@ class InlineAssortedDelimitersReplacement(
       'prohibited_content',
     )
   
-  def add_delimiter_conversion(self, character, length, tag_name):
-    
+  @property
+  def tag_name_from_delimiter_length_from_character(self):
+    return self._tag_name_from_delimiter_length_from_character
+  
+  @tag_name_from_delimiter_length_from_character.setter
+  def tag_name_from_delimiter_length_from_character(self, value):
     if self._is_committed:
       raise CommittedMutateException(
         'error: cannot call `add_delimiter_conversion(...)` after `commit()`'
       )
-    
-    if character not in self._tag_name_from_delimiter_length_from_character:
-      self._tag_name_from_delimiter_length_from_character[character] = {}
-      self._tag_name_from_delimiter_length_from_character[character][length] \
-              = tag_name
+    self._tag_name_from_delimiter_length_from_character = copy.deepcopy(value)
   
   def _validate_mandatory_attributes(self):
-    pass
+    
+    if len(self._tag_name_from_delimiter_length_from_character) == 0:
+      raise MissingAttributeException('delimiter_conversion')
   
   def _set_apply_method_variables(self):
+    
     self._regex_pattern_compiled = \
             re.compile(
               InlineAssortedDelimitersReplacement.build_regex_pattern(
@@ -3500,6 +3504,75 @@ class ReplacementMaster:
     replacement.content_replacements = content_replacements
   
   @staticmethod
+  def compute_delimiter_conversion_matches(attribute_value):
+    return re.finditer(
+      r'''
+        (?P<whitespace_only> \A [\s]* \Z )
+          |
+        [\s]*
+        (?:
+          (?P<delimiter>
+            (?P<delimiter_character> [\S] ) (?P=delimiter_character)?
+          )
+                  = (?P<tag_name> [a-z0-9]+ ) (?= [\s] | \Z )
+            |
+          (?P<invalid_syntax> [\S]+ )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
+  
+  @staticmethod
+  def stage_delimiter_conversion(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+
+    tag_name_from_delimiter_length_from_character = {}
+    
+    for delimiter_conversion_match \
+    in ReplacementMaster.compute_delimiter_conversion_matches(attribute_value):
+      
+      if delimiter_conversion_match.group('whitespace_only') is not None:
+        ReplacementMaster.print_error(
+          f'invalid specification `` for attribute `delimiter_conversion`',
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      invalid_syntax = delimiter_conversion_match.group('invalid_syntax')
+      if invalid_syntax is not None:
+        ReplacementMaster.print_error(
+          f'invalid specification `{invalid_syntax}`'
+            ' for attribute `delimiter_conversion`'
+          ,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+      
+      character = delimiter_conversion_match.group('delimiter_character')
+      length = len(delimiter_conversion_match.group('delimiter'))
+      tag_name = delimiter_conversion_match.group('tag_name')
+      
+      if character not in tag_name_from_delimiter_length_from_character:
+        tag_name_from_delimiter_length_from_character[character] = {}
+      
+      tag_name_from_delimiter_length_from_character[character][length] \
+              = tag_name
+    
+    replacement.tag_name_from_delimiter_length_from_character = \
+            tag_name_from_delimiter_length_from_character
+  
+  @staticmethod
   def compute_ending_pattern_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -4446,6 +4519,14 @@ class ReplacementMaster:
         )
       elif attribute_name == 'content_replacements':
         self.stage_content_replacements(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'delimiter_conversion':
+        ReplacementMaster.stage_delimiter_conversion(
           replacement,
           attribute_value,
           rules_file_name,
