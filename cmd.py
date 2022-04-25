@@ -1048,7 +1048,7 @@ class FixedDelimitersReplacement(
                 self._syntax_type_is_block,
                 self._flag_name_from_letter,
                 self._has_flags,
-                self.opening_delimiter,
+                self._opening_delimiter,
                 self._attribute_specifications,
                 self._closing_delimiter,
               ),
@@ -1474,7 +1474,7 @@ class PartitioningReplacement(
     self._substitute_function = \
             self.build_substitute_function(
               self._attribute_specifications,
-              self.tag_name,
+              self._tag_name,
             )
   
   def _apply(self, string):
