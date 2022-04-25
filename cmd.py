@@ -1674,7 +1674,11 @@ class InlineAssortedDelimitersReplacement(
               ),
               flags=re.ASCII | re.MULTILINE | re.VERBOSE,
             )
-    # TODO self._substitute_function
+    self._substitute_function = \
+            self.build_substitute_function(
+              self._tag_name_from_delimiter_length_from_character,
+              self._attribute_specifications,
+            )
   
   @staticmethod
   def build_regex_pattern(
@@ -1765,6 +1769,46 @@ class InlineAssortedDelimitersReplacement(
         closing_delimiter_regex,
       ]
     )
+  
+  def build_substitute_function(
+    self,
+    tag_name_from_delimiter_length_from_character,
+    attribute_specifications,
+  ):
+    
+    def substitute_function(match):
+      
+      character = match.group('delimiter_character')
+      delimiter = match.group('delimiter')
+      length = len(delimiter)
+      tag_name = \
+              tag_name_from_delimiter_length_from_character[character][length]
+      
+      if attribute_specifications is not None:
+        matched_attribute_specifications = \
+                match.group('attribute_specifications')
+        combined_attribute_specifications = \
+                (
+                  attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
+        attributes_sequence = \
+                build_attributes_sequence(
+                  combined_attribute_specifications,
+                  use_protection=True,
+                )
+      else:
+        attributes_sequence = ''
+      
+      content = match.group('content')
+      content = self.apply(content)
+      
+      substitute = f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
+      
+      return substitute
+    
+    return substitute_function
 
 
 class HeadingReplacement(
