@@ -54,17 +54,19 @@ class TestCmd(unittest.TestCase):
   def test_ordinary_dictionary_replacement_build_regex_pattern(self):
     
     self.assertEqual(
-      cmd.OrdinaryDictionaryReplacement.build_regex_pattern({}),
+      cmd.OrdinaryDictionaryReplacement.build_regex_pattern(
+        substitute_from_pattern={},
+      ),
       ''
     )
     self.assertEqual(
       cmd.OrdinaryDictionaryReplacement.build_regex_pattern(
-        {
+        substitute_from_pattern={
           'a': 'b',
           'b': 'c',
           'c': 'd',
           r'#$&*+-.^\|~': 'COMPLICATED',
-        }
+        },
       ),
       r'a|b|c|\#\$\&\*\+\-\.\^\\\|\~'
     )
@@ -185,7 +187,9 @@ class TestCmd(unittest.TestCase):
   def test_reference_definition_replacement_build_regex_pattern(self):
     
     self.assertEqual(
-      cmd.ReferenceDefinitionReplacement.build_regex_pattern(None),
+      cmd.ReferenceDefinitionReplacement.build_regex_pattern(
+        attribute_specifications=None,
+      ),
       r'^ (?P<anchoring_whitespace> [^\S\n]* )'
       r'\[ [\s]* (?P<label> [^\]]*? ) [\s]* \]'
       '[:]'
@@ -207,7 +211,9 @@ class TestCmd(unittest.TestCase):
     )
     
     self.assertEqual(
-      cmd.ReferenceDefinitionReplacement.build_regex_pattern(''),
+      cmd.ReferenceDefinitionReplacement.build_regex_pattern(
+        attribute_specifications='',
+      ),
       r'^ (?P<anchoring_whitespace> [^\S\n]* )'
       r'\[ [\s]* (?P<label> [^\]]*? ) [\s]* \]'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
@@ -232,7 +238,10 @@ class TestCmd(unittest.TestCase):
   def test_specified_image_replacement_build_regex_pattern(self):
     
     self.assertEqual(
-      cmd.SpecifiedImageReplacement.build_regex_pattern(None, None),
+      cmd.SpecifiedImageReplacement.build_regex_pattern(
+        attribute_specifications=None,
+        prohibited_content_regex=None,
+      ),
       '[!]'
       r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
       r'\('
@@ -255,7 +264,10 @@ class TestCmd(unittest.TestCase):
     )
     
     self.assertEqual(
-      cmd.SpecifiedImageReplacement.build_regex_pattern('', 'a'),
+      cmd.SpecifiedImageReplacement.build_regex_pattern(
+        attribute_specifications='',
+        prohibited_content_regex='a',
+      ),
       '[!]'
       r'\[ [\s]* (?P<alt_text> (?: (?! a ) [^\]] )*? ) [\s]* \]'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
@@ -281,14 +293,20 @@ class TestCmd(unittest.TestCase):
   def test_referenced_image_replacement_build_regex_pattern(self):
     
     self.assertEqual(
-      cmd.ReferencedImageReplacement.build_regex_pattern(None, None),
+      cmd.ReferencedImageReplacement.build_regex_pattern(
+        attribute_specifications=None,
+        prohibited_content_regex=None,
+      ),
       '[!]'
       r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
       r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
     )
     
     self.assertEqual(
-      cmd.ReferencedImageReplacement.build_regex_pattern('', None),
+      cmd.ReferencedImageReplacement.build_regex_pattern(
+        attribute_specifications='',
+        prohibited_content_regex=None,
+      ),
       '[!]'
       r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
@@ -298,7 +316,9 @@ class TestCmd(unittest.TestCase):
   def test_heading_replacement_build_regex_pattern(self):
     
     self.assertEqual(
-      cmd.HeadingReplacement.build_regex_pattern(None),
+      cmd.HeadingReplacement.build_regex_pattern(
+        attribute_specifications=None,
+      ),
       r'^ [^\S\n]*'
       '(?P<opening_hashes> [#]{1,6} )'
       r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [^\S\n]* )?'
@@ -307,7 +327,7 @@ class TestCmd(unittest.TestCase):
     )
     
     self.assertEqual(
-      cmd.HeadingReplacement.build_regex_pattern(''),
+      cmd.HeadingReplacement.build_regex_pattern(attribute_specifications=''),
       r'^ [^\S\n]*'
       '(?P<opening_hashes> [#]{1,6} )'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
