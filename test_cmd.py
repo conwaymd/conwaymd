@@ -1163,7 +1163,7 @@ https://example.com
 <a href="href" title="title2"><img alt="alt" src="src" title="title"></a>
 ## <code>#referenced-links</code>
 <a href="/file" title="title" class="test">Content.</a>
-<a href="/file" title="title" class="test">Space & case test</a>
+<a href="/file" title="title" class="test">Space &amp; case test</a>
 <a href="yay.html" class="test2 no-label">Rejoice</a>
 <a href="/file" title="title" class="dismissed">Class dismissed.</a>
 [Untouched][Nonexistent label]

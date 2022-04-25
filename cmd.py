@@ -5123,11 +5123,25 @@ ReferencedLinkReplacement: #referenced-links
 - queue_position: AFTER #specified-links
 - attribute_specifications: EMPTY
 
+RegexDictionaryReplacement: #escape-idle-ampersands
+- queue_position: AFTER #referenced-links
+* [&]
+  (?!
+    (?:
+      [a-zA-Z]{1,31}
+        |
+      [#] (?: [0-9]{1,7} | [xX] [0-9a-fA-F]{1,6} )
+    )
+    [;]
+  )
+    --> &amp;
+
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #referenced-links
+- queue_position: AFTER #escape-idle-ampersands
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
