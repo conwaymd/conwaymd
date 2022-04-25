@@ -3714,7 +3714,7 @@ class ReplacementMaster:
         (?:
           (?P<none_keyword> NONE )
             |
-          (?P<tag_name> [a-z]+ )
+          (?P<tag_name> [a-z0-9]+ )
             |
           (?P<invalid_value> [\s\S]*? )
         )
