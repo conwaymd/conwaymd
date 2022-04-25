@@ -65,6 +65,10 @@ class MissingAttributeException(Exception):
     return self._missing_attribute
 
 
+class UnrecognisedLabelException(Exception):
+  pass
+
+
 class PlaceholderMaster:
   """
   Static class providing placeholder protection to strings.
@@ -242,7 +246,7 @@ class ReferenceMaster:
     try:
       reference = self._reference_from_label[label]
     except KeyError:
-      return None, None, None
+      raise UnrecognisedLabelException
     
     attribute_specifications = reference.attribute_specifications
     uri = reference.uri
@@ -1930,8 +1934,11 @@ class ReferencedImageReplacement(
       if label is None or label == '':
         label = alt
       
-      referenced_attribute_specifications, src, title = \
-              self._reference_master.load_definition(label)
+      try:
+        referenced_attribute_specifications, src, title = \
+                self._reference_master.load_definition(label)
+      except UnrecognisedLabelException:
+        return match.group()
       
       if src is not None:
         src_protected = PlaceholderMaster.protect(src)

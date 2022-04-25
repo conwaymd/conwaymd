@@ -807,6 +807,8 @@ https://example.com
 ![Hooray!]{class="no-label"}
 ![Class dismissed.]{-class .dismissed}[label]
 
+![Untouched][Nonexistent label]
+
 ## `#explicit-links`
 
 <https://example.com>
@@ -1131,6 +1133,7 @@ https://example.com
 <img alt="Space &amp; case test" src="file.svg" title="title" class="test">
 <img alt="Hooray!" src="yay.png" class="test2 no-label">
 <img alt="Class dismissed." src="file.svg" title="title" class="dismissed">
+![Untouched][Nonexistent label]
 ## <code>#explicit-links</code>
 <a href="https://example.com">https://example.com</a>
 &lt;<a href="https://example.com">https://example.com</a>&gt;
