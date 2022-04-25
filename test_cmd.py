@@ -1134,10 +1134,10 @@ https://example.com
 [missing uri]:
 ## <code>#specified-images</code>
 <img alt="" src="decoration/image">
-<img title="omitting alt is bad">
-<img alt="Alt text.">
+<img src="" title="omitting alt is bad">
+<img alt="Alt text." src="">
 <img alt="Alt text." src="/src/only">
-<img alt="Alt text." title="title only">
+<img alt="Alt text." src="" title="title only">
 <img alt="Spacious alt." src="spacious/src" title="spacious title">
 <img alt="A" src="S" title="T">
 ## <code>#referenced-images</code>

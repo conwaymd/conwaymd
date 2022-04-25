@@ -1801,11 +1801,8 @@ class SpecifiedImageReplacement(
       else:
         src = match.group('bare_uri')
       
-      if src is not None:
-        src_protected = PlaceholderMaster.protect(src)
-        src_attribute_specification = f'src={src_protected}'
-      else:
-        src_attribute_specification = ''
+      src_protected = PlaceholderMaster.protect(none_to_empty_string(src))
+      src_attribute_specification = f'src={src_protected}'
       
       double_quoted_title = match.group('double_quoted_title')
       if double_quoted_title is not None:
@@ -1944,11 +1941,8 @@ class ReferencedImageReplacement(
       except UnrecognisedLabelException:
         return match.group()
       
-      if src is not None:
-        src_protected = PlaceholderMaster.protect(src)
-        src_attribute_specification = f'src={src_protected}'
-      else:
-        src_attribute_specification = ''
+      src_protected = PlaceholderMaster.protect(none_to_empty_string(src))
+      src_attribute_specification = f'src={src_protected}'
       
       if title is not None:
         title_protected = PlaceholderMaster.protect(title)
