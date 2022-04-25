@@ -831,6 +831,8 @@ s<{href='https://evil.com'}https://example.com>
   'spacious title'
 )
 [Link]{href=H title=T}(href "title")
+
+[![alt](src "title")](href 'title2')
 '''
         ################################################################
         # END CMD
@@ -1143,6 +1145,7 @@ https://example.com
 <a title="title only">Text</a>
 <a href="spacious/href" title="spacious title">Spacious text.</a>
 <a href="H" title="T">Link</a>
+<a href="href" title="title2"><img alt="alt" src="src" title="title"></a>
 </body>
 </html>
 '''
