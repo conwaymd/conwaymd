@@ -1085,7 +1085,7 @@ class FixedDelimitersReplacement(
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block,
+              require_newline=syntax_type_is_block,
             )
     content_regex = build_content_regex()
     closing_delimiter_regex = re.escape(closing_delimiter)
@@ -1316,7 +1316,7 @@ class ExtensibleFenceReplacement(
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block,
+              require_newline=syntax_type_is_block,
             )
     content_regex = build_content_regex()
     extensible_delimiter_closing_regex = \
@@ -1496,7 +1496,7 @@ class PartitioningReplacement(
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block=False,
+              require_newline=False,
               allow_omission=False,
             )
     if attribute_specifications_regex == '':
@@ -1508,7 +1508,7 @@ class PartitioningReplacement(
     attribute_specifications_no_capture_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block=False,
+              require_newline=False,
               capture_attribute_specifications=False,
               allow_omission=False,
             )
@@ -1640,7 +1640,7 @@ class ReferenceDefinitionReplacement(
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block=False,
+              require_newline=False,
             )
     colon_regex = '[:]'
     maybe_hanging_whitespace_regex = build_maybe_hanging_whitespace_regex()
@@ -1763,7 +1763,7 @@ class SpecifiedImageReplacement(
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block=False,
+              require_newline=False,
             )
     opening_parenthesis_regex = r'\('
     uri_regex = build_uri_regex()
@@ -1910,7 +1910,7 @@ class ReferencedImageReplacement(
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block=False,
+              require_newline=False,
             )
     label_regex = r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
     
@@ -2064,7 +2064,7 @@ class ExplicitLinkReplacement(
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block=False,
+              require_newline=False,
             )
     uri_regex = r'(?P<uri> [a-zA-Z.+-]+ [:] [^\s>]*? )'
     closing_angle_bracket_regex = '[>]'
@@ -2188,7 +2188,7 @@ class SpecifiedLinkReplacement(
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block=False,
+              require_newline=False,
             )
     opening_parenthesis_regex = r'\('
     uri_regex = build_uri_regex()
@@ -2332,7 +2332,7 @@ class ReferencedLinkReplacement(
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
-              syntax_type_is_block=False,
+              require_newline=False,
             )
     label_regex = r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
     
@@ -4677,7 +4677,7 @@ def build_extensible_delimiter_opening_regex(
 
 def build_attribute_specifications_regex(
   attribute_specifications,
-  syntax_type_is_block,
+  require_newline,
   capture_attribute_specifications=True,
   allow_omission=True,
 ):
@@ -4695,7 +4695,7 @@ def build_attribute_specifications_regex(
   else:
     braced_sequence_regex = ''
   
-  if syntax_type_is_block:
+  if require_newline:
     block_newline_regex = r'\n'
   else:
     block_newline_regex = ''
