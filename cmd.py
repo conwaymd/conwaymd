@@ -5775,8 +5775,20 @@ ReferencedLinkReplacement: #referenced-links
 - attribute_specifications: EMPTY
 - prohibited_content: BLOCKS
 
-RegexDictionaryReplacement: #escape-idle-html
+InlineAssortedDelimitersReplacement: #inline-semantics
 - queue_position: AFTER #referenced-links
+- delimiter_conversion:
+    __=b
+    _=i
+    **=strong
+    *=em
+    ''=cite
+    ""=q
+- attribute_specifications: EMPTY
+- prohibited_content: BLOCKS
+
+RegexDictionaryReplacement: #escape-idle-html
+- queue_position: AFTER #inline-semantics
 * [&]
   (?!
     (?:

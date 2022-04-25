@@ -995,6 +995,44 @@ s<{href='https://evil.com'}https://example.com>
 [Class dismissed.]{-class .dismissed}[label2]
 
 [Untouched][Nonexistent label]
+
+## `#inline-semantics`
+
+11 *em*
+22 **strong**
+33 ***em(strong)***
+44 ****strong(strong)****
+55 *****em(strong(strong))*****
+123 *em **em(strong)***
+213 **strong *strong(em)***
+312 ***strong(em)* strong**
+321 ***em(strong)** em*
+1221 *em **em(strong)** em*
+2112 **strong *strong(em)* strong**
+
+___foo___ vs __|_bar___
+
+_i_ __b__
+*em* **strong**
+''cite''
+""q""
+
+'not enough single-quotes for cite'
+"not enough double-quotes for q"
+
+"""1+"""
+""""2""""
+"""""2+"""""
+""""""3""""""
+
+----
+No __spanning
+----
+----
+across block elements__.
+----
+Yes __spanning
+across lines__.
 '''
         ################################################################
         # END CMD
@@ -1362,6 +1400,37 @@ span across blocks]<a href="file.svg" title="title" class="test">label</a>
 <a href="yay.html" class="test2 no-label">Rejoice</a>
 <a href="/file" title="title" class="dismissed">Class dismissed.</a>
 [Untouched][Nonexistent label]
+<h2><code>#inline-semantics</code></h2>
+11 <em>em</em>
+22 <strong>strong</strong>
+33 <em><strong>em(strong)</strong></em>
+44 <strong><strong>strong(strong)</strong></strong>
+55 <em><strong><strong>em(strong(strong))</strong></strong></em>
+123 <em>em <strong>em(strong)</strong></em>
+213 <strong>strong <em>strong(em)</em></strong>
+312 <strong><em>strong(em)</em> strong</strong>
+321 <em><strong>em(strong)</strong> em</em>
+1221 <em>em <strong>em(strong)</strong> em</em>
+2112 <strong>strong <em>strong(em)</em> strong</strong>
+<i><b>foo</b></i> vs <b><i>bar</i></b>
+<i>i</i> <b>b</b>
+<em>em</em> <strong>strong</strong>
+<cite>cite</cite>
+<q>q</q>
+'not enough single-quotes for cite'
+"not enough double-quotes for q"
+"<q>1+</q>"
+<q><q>2</q></q>
+"<q><q>2+</q></q>"
+<q><q><q>3</q></q></q>
+<p>
+No __spanning
+</p>
+<p>
+across block elements__.
+</p>
+Yes <b>spanning
+across lines</b>.
 </body>
 </html>
 '''
