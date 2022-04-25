@@ -588,12 +588,6 @@ BEFORE{ <`` Literal & < > ``> }AFTER
       a lot.
    ```
 
-## `#inline-code`
-
-This be `inline code`.
-u``{.classy} Whitespace stripped, and <b>unescaped</b>. ``
-Even ```inline with ``backticks within`` ```.
-
 ## `#comment-breaker` (custom)
 
 <| <## Sundered |> be <| this. ##> |>
@@ -769,6 +763,13 @@ Header-after-data (seriously, why would you have this?):
 '''
 """
 r'''
+
+## `#inline-code`
+
+This be `inline code`.
+u``{.classy} Whitespace stripped, and <b>unescaped</b>. ``
+Even ```inline with ``backticks within`` ```.
+
 ## `#backslash-escapes`
 
 \\ \# \& \( \) \* \< \> \[ \] \_ \{ \| \}
@@ -949,10 +950,6 @@ and even whitespace before a break element:<br>
 <pre><code>    Retained indentation:
       a lot.
 </code></pre>
-<h2><code>#inline-code</code></h2>
-This be <code>inline code</code>.
-<code class="classy">Whitespace stripped, and <b>unescaped</b>.</code>
-Even <code>inline with ``backticks within``</code>.
 <h2><code>#comment-breaker</code> (custom)</h2>
 &lt;## Sundered be this. ##&gt;
 <strong>Unescaped!</strong>
@@ -1163,6 +1160,10 @@ Header-after-data (seriously, why would you have this?):
 <td>Data2</td>
 </tr>
 </table>
+<h2><code>#inline-code</code></h2>
+This be <code>inline code</code>.
+<code class="classy">Whitespace stripped, and <b>unescaped</b>.</code>
+Even <code>inline with ``backticks within``</code>.
 <h2><code>#backslash-escapes</code></h2>
 \ # &amp; ( ) * &lt; &gt; [ ] _ { | }
 \\3 \\4 \\\5 \\\6
