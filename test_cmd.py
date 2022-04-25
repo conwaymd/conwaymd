@@ -599,8 +599,9 @@ u<| <strong>Unescaped!</strong> |>
 
 ## `#comments`
 
-`Code prevails over <## comments ##>.`
-Yet comments can remove code. <# `Like so.` #>
+`Code prevails not <## over comments ##>.`
+`Literals may aid code to prevail <`<# over comments #>`>`
+Comments can remove code. <# `Like so.` #>
 
 ## `#divisions`
 
@@ -954,8 +955,9 @@ Even <code>inline with ``backticks within``</code>.
 &lt;## Sundered be this. ##&gt;
 <strong>Unescaped!</strong>
 <h2><code>#comments</code></h2>
-<code>Code prevails over &lt;## comments ##&gt;.</code>
-Yet comments can remove code.
+<code>Code prevails not.</code>
+<code>Literals may aid code to prevail &lt;# over comments #&gt;</code>
+Comments can remove code.
 <h2><code>#divisions</code></h2>
 <div class="top-level">
 Parent.

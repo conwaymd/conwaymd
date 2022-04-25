@@ -4954,25 +4954,8 @@ ExtensibleFenceReplacement: #display-code
     #placeholder-protect
 - tag_name: pre
 
-ExtensibleFenceReplacement: #inline-code
-- queue_position: AFTER #display-code
-- syntax_type: INLINE
-- allowed_flags:
-    u=KEEP_HTML_UNESCAPED
-    i=KEEP_INDENTED
-    w=REDUCE_WHITESPACE
-- extensible_delimiter: `
-- attribute_specifications: EMPTY
-- content_replacements:
-    #escape-html
-    #de-indent
-    #trim-whitespace
-    #reduce-whitespace
-    #placeholder-protect
-- tag_name: code
-
 RegexDictionaryReplacement: #comments
-- queue_position: AFTER #inline-code
+- queue_position: AFTER #display-code
 * [^\S\n]*
   [<]
     (?P<hashes> [#]+ )
@@ -5170,8 +5153,25 @@ ExtensibleFenceReplacement: #paragraphs
     #prepend-newline
 - tag_name: p
 
-OrdinaryDictionaryReplacement: #backslash-escapes
+ExtensibleFenceReplacement: #inline-code
 - queue_position: AFTER #paragraphs
+- syntax_type: INLINE
+- allowed_flags:
+    u=KEEP_HTML_UNESCAPED
+    i=KEEP_INDENTED
+    w=REDUCE_WHITESPACE
+- extensible_delimiter: `
+- attribute_specifications: EMPTY
+- content_replacements:
+    #escape-html
+    #de-indent
+    #trim-whitespace
+    #reduce-whitespace
+    #placeholder-protect
+- tag_name: code
+
+OrdinaryDictionaryReplacement: #backslash-escapes
+- queue_position: AFTER #inline-code
 * \\ --> \
 * \# --> #
 * \& --> &amp;
