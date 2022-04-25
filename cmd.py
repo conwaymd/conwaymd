@@ -1680,6 +1680,22 @@ class InlineAssortedDelimitersReplacement(
               self._attribute_specifications,
             )
   
+  def _apply(self, string):
+    
+    string_has_changed = True
+    
+    while string_has_changed:
+      new_string = \
+              re.sub(
+                self._regex_pattern_compiled,
+                self._substitute_function,
+                string,
+              )
+      string_has_changed = new_string != string
+      string = new_string
+    
+    return string
+  
   @staticmethod
   def build_regex_pattern(
     tag_name_from_delimiter_length_from_character,
