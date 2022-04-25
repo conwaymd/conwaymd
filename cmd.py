@@ -884,8 +884,7 @@ class OrdinaryDictionaryReplacement(
             )
   
   def _apply(self, string):
-    
-    if self._regex_pattern_compiled != '':
+    if len(self._substitute_from_pattern) > 0:
       string = \
               re.sub(
                 self._regex_pattern_compiled,
