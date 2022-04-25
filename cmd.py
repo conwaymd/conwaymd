@@ -5062,7 +5062,7 @@ def build_content_regex(
     permitted_atom_regex = \
             f'(?: (?! {prohibited_content_regex} ) {permitted_content_regex} )'
   
-  return f'''(?P<{capture_group_name}> {permitted_atom_regex}*? )'''
+  return f'(?P<{capture_group_name}> {permitted_atom_regex}*? )'
 
 
 def build_extensible_delimiter_closing_regex():
