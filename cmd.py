@@ -1186,6 +1186,7 @@ class ExtensibleFenceReplacement(
   ReplacementWithSyntaxType,
   ReplacementWithAllowedFlags,
   ReplacementWithAttributeSpecifications,
+  ReplacementWithProhibitedContent,
   ReplacementWithContentReplacements,
   ReplacementWithTagName,
   ReplacementWithConcludingReplacements,
@@ -1204,6 +1205,7 @@ class ExtensibleFenceReplacement(
   - prologue_delimiter: (def) NONE | «string»
   - extensible_delimiter: «character_repeated» (mandatory)
   - attribute_specifications: (def) NONE | EMPTY | «string»
+  - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
   - content_replacements: (def) NONE | #«id» [...]
   - epilogue_delimiter: (def) NONE | «string»
   - tag_name: (def) NONE | «name»
@@ -1228,6 +1230,7 @@ class ExtensibleFenceReplacement(
       'prologue_delimiter',
       'extensible_delimiter',
       'attribute_specifications',
+      'prohibited_content',
       'content_replacements',
       'epilogue_delimiter',
       'tag_name',
@@ -1303,6 +1306,7 @@ class ExtensibleFenceReplacement(
                 self._extensible_delimiter_character,
                 self._extensible_delimiter_min_count,
                 self._attribute_specifications,
+                self._prohibited_content_regex,
                 self._epilogue_delimiter,
               ),
               flags=re.ASCII | re.MULTILINE | re.VERBOSE,
@@ -1331,6 +1335,7 @@ class ExtensibleFenceReplacement(
     extensible_delimiter_character,
     extensible_delimiter_min_count,
     attribute_specifications,
+    prohibited_content_regex,
     epilogue_delimiter,
   ):
     
@@ -1347,7 +1352,7 @@ class ExtensibleFenceReplacement(
               attribute_specifications,
               require_newline=syntax_type_is_block,
             )
-    content_regex = build_content_regex()
+    content_regex = build_content_regex(prohibited_content_regex)
     extensible_delimiter_closing_regex = \
             build_extensible_delimiter_closing_regex()
     epilogue_delimiter_regex = re.escape(epilogue_delimiter)
@@ -4955,8 +4960,18 @@ def build_attribute_specifications_regex(
   return braced_sequence_regex + block_newline_regex
 
 
-def build_content_regex():
-  return r'(?P<content> [\s\S]*? )'
+def build_content_regex(
+  prohibited_content_regex=None,
+  permitted_content_regex=r'[\s\S]',
+):
+  
+  if prohibited_content_regex is None:
+    permitted_atom_regex = permitted_content_regex
+  else:
+    permitted_atom_regex = \
+            f'(?: (?! {prohibited_content_regex} ) {permitted_content_regex} )'
+  
+  return f'''(?P<content> {permitted_atom_regex}*? )'''
 
 
 def build_extensible_delimiter_closing_regex():
@@ -5304,6 +5319,7 @@ ExtensibleFenceReplacement: #inline-code
     w=REDUCE_WHITESPACE
 - extensible_delimiter: `
 - attribute_specifications: EMPTY
+- prohibited_content: ANCHORED_BLOCKS
 - content_replacements:
     #escape-html
     #de-indent

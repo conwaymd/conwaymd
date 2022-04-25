@@ -122,6 +122,7 @@ class TestCmd(unittest.TestCase):
         extensible_delimiter_character='+',
         extensible_delimiter_min_count=2,
         attribute_specifications=None,
+        prohibited_content_regex=None,
         epilogue_delimiter='}',
       ),
       '(?P<flags> [ui]* )'
@@ -141,6 +142,7 @@ class TestCmd(unittest.TestCase):
         extensible_delimiter_character='$',
         extensible_delimiter_min_count=4,
         attribute_specifications='',
+        prohibited_content_regex=None,
         epilogue_delimiter='',
       ),
       r'^ [^\S\n]*'
