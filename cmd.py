@@ -1129,8 +1129,9 @@ class FixedDelimitersReplacement(
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                PlaceholderMaster.protect(
-                  build_attributes_sequence(combined_attribute_specifications)
+                build_attributes_sequence(
+                  combined_attribute_specifications,
+                  use_protection=True,
                 )
       else:
         attributes_sequence = ''
@@ -1363,8 +1364,9 @@ class ExtensibleFenceReplacement(
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                PlaceholderMaster.protect(
-                  build_attributes_sequence(combined_attribute_specifications)
+                build_attributes_sequence(
+                  combined_attribute_specifications,
+                  use_protection=True,
                 )
       else:
         attributes_sequence = ''
@@ -1552,8 +1554,9 @@ class PartitioningReplacement(
                     + none_to_empty_string(matched_attribute_specifications)
                 )
         attributes_sequence = \
-                PlaceholderMaster.protect(
-                  build_attributes_sequence(combined_attribute_specifications)
+                build_attributes_sequence(
+                  combined_attribute_specifications,
+                  use_protection=True,
                 )
       else:
         attributes_sequence = ''
@@ -1841,8 +1844,9 @@ class SpecifiedImageReplacement(
                 alt_src_title_attribute_specifications
       
       attributes_sequence = \
-              PlaceholderMaster.protect(
-                build_attributes_sequence(combined_attribute_specifications)
+              build_attributes_sequence(
+                combined_attribute_specifications,
+                use_protection=True,
               )
       
       substitute = f'<img{attributes_sequence}>'
@@ -1978,8 +1982,9 @@ class ReferencedImageReplacement(
                 alt_src_title_referenced_attribute_specifications
       
       attributes_sequence = \
-              PlaceholderMaster.protect(
-                build_attributes_sequence(combined_attribute_specifications)
+              build_attributes_sequence(
+                combined_attribute_specifications,
+                use_protection=True,
               )
       
       substitute = f'<img{attributes_sequence}>'
@@ -2114,8 +2119,9 @@ class ExplicitLinkReplacement(
         combined_attribute_specifications = href_attribute_specification
       
       attributes_sequence = \
-              PlaceholderMaster.protect(
-                build_attributes_sequence(combined_attribute_specifications)
+              build_attributes_sequence(
+                combined_attribute_specifications,
+                use_protection=True,
               )
       
       content = href
@@ -2264,8 +2270,9 @@ class SpecifiedLinkReplacement(
         combined_attribute_specifications = href_title_attribute_specifications
       
       attributes_sequence = \
-              PlaceholderMaster.protect(
-                build_attributes_sequence(combined_attribute_specifications)
+              build_attributes_sequence(
+                combined_attribute_specifications,
+                use_protection=True,
               )
       
       substitute = f'<a{attributes_sequence}>{content}</a>'
@@ -2396,8 +2403,9 @@ class ReferencedLinkReplacement(
                 href_title_referenced_attribute_specifications
       
       attributes_sequence = \
-              PlaceholderMaster.protect(
-                build_attributes_sequence(combined_attribute_specifications)
+              build_attributes_sequence(
+                combined_attribute_specifications,
+                use_protection=True,
               )
       
       substitute = f'<a{attributes_sequence}>{content}</a>'
@@ -4554,7 +4562,7 @@ def extract_attribute_name_and_value(attribute_specification_match):
   return None
 
 
-def build_attributes_sequence(attribute_specifications):
+def build_attributes_sequence(attribute_specifications, use_protection=False):
   """
   Convert CMD attribute specifications to an attribute sequence.
   
@@ -4624,6 +4632,9 @@ def build_attributes_sequence(attribute_specifications):
       value = PlaceholderMaster.unprotect(value)
       value = escape_attribute_value_html(value)
       attribute_sequence += f' {name}="{value}"'
+  
+  if use_protection:
+    attribute_sequence = PlaceholderMaster.protect(attribute_sequence)
   
   return attribute_sequence
 
