@@ -817,6 +817,20 @@ bs<https://example.com>
 bs<mailto:mail@example.com>
 
 s<{href='https://evil.com'}https://example.com>
+
+## `#specified-links`
+
+[](empty/content)
+[Empty href](<>)
+[No href]{-href}()
+[Text]("title only")
+[
+  Spacious text.
+](
+  <spacious/href>
+  'spacious title'
+)
+[Link]{href=H title=T}(href "title")
 '''
         ################################################################
         # END CMD
@@ -1122,6 +1136,13 @@ https://example.com
 &lt;<a href="https://example.com">example.com</a>&gt;
 &lt;<a href="mailto:mail@example.com">mail@example.com</a>&gt;
 <a href="https://evil.com">example.com</a>
+## <code>#specified-links</code>
+<a href="empty/content"></a>
+<a href="">Empty href</a>
+<a>No href</a>
+<a title="title only">Text</a>
+<a href="spacious/href" title="spacious title">Spacious text.</a>
+<a href="H" title="T">Link</a>
 </body>
 </html>
 '''

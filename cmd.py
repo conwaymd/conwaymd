@@ -4964,11 +4964,15 @@ ExplicitLinkReplacement: #explicit-links
 - concluding_replacements:
     #angle-bracket-wrap
 
+SpecifiedLinkReplacement: #specified-links
+- queue_position: AFTER #explicit-links
+- attribute_specifications: EMPTY
+
 RegexDictionaryReplacement: #ensure-trailing-newline
 * (?<! \n ) \Z --> \n
 
 ReplacementSequence: #whitespace
-- queue_position: AFTER #explicit-links
+- queue_position: AFTER #specified-links
 - replacements:
     #reduce-whitespace
     #ensure-trailing-newline
