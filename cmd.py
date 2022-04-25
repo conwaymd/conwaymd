@@ -4879,7 +4879,7 @@ def build_block_tag_regex(require_anchoring):
   block_tag_name_regex = \
           '|'.join(re.escape(tag_name) for tag_name in BLOCK_TAG_NAMES)
   after_tag_name_regex = \
-          fr'(?: [\s>] | {re.escape(PlaceholderMaster.MARKER)} )'
+          fr'[\s{PlaceholderMaster.MARKER}>]'
   block_tag_regex = \
           f'[<] [/]? (?: {block_tag_name_regex} ) {after_tag_name_regex}'
   
