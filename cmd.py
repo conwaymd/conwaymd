@@ -545,6 +545,31 @@ class ReplacementWithAttributeSpecifications(Replacement, abc.ABC):
     self._attribute_specifications = value
 
 
+class ReplacementWithProhibitedContent(Replacement, abc.ABC):
+  """
+  Base class for a replacement rule with `prohibited_content`.
+  
+  Not to be used when authoring CMD documents.
+  (Hypothetical) CMD replacement rule syntax:
+  ````
+  ReplacementWithProhibitedContent: #«id»
+  - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
+  ````
+  """
+  
+  def __init__(self, id_, verbose_mode_enabled):
+    super().__init__(id_, verbose_mode_enabled)
+    self._prohibited_content_regex = None
+  
+  @property
+  def prohibited_content_regex(self):
+    return self._prohibited_content_regex
+  
+  @prohibited_content_regex.setter
+  def prohibited_content_regex(self, value):
+    self._prohibited_content_regex = value
+
+
 class ReplacementWithContentReplacements(Replacement, abc.ABC):
   """
   Base class for a replacement rule with `content_replacements`.
