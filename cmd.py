@@ -116,7 +116,7 @@ class PlaceholderMaster:
               )
               {MARKER}
             ''',
-            flags=re.VERBOSE
+            flags=re.VERBOSE,
           )
   
   @staticmethod
