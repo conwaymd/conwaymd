@@ -1741,6 +1741,7 @@ class ReferenceDefinitionReplacement(
 
 class SpecifiedImageReplacement(
   ReplacementWithAttributeSpecifications,
+  ReplacementWithProhibitedContent,
   Replacement,
 ):
   """
@@ -1751,6 +1752,7 @@ class SpecifiedImageReplacement(
   SpecifiedImageReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - attribute_specifications: (def) NONE | EMPTY | «string»
+  - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
   ````
   """
   
@@ -1763,6 +1765,7 @@ class SpecifiedImageReplacement(
     return (
       'queue_position',
       'attribute_specifications',
+      'prohibited_content',
     )
   
   def _validate_mandatory_attributes(self):
@@ -1774,6 +1777,7 @@ class SpecifiedImageReplacement(
             re.compile(
               SpecifiedImageReplacement.build_regex_pattern(
                 self._attribute_specifications,
+                self._prohibited_content_regex,
               ),
               flags=re.ASCII | re.VERBOSE,
             )
@@ -1790,10 +1794,16 @@ class SpecifiedImageReplacement(
     )
   
   @staticmethod
-  def build_regex_pattern(attribute_specifications):
+  def build_regex_pattern(attribute_specifications, prohibited_content_regex):
     
     exclamation_mark_regex = '[!]'
-    alt_text_regex = r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
+    alt_text_regex = \
+            build_content_regex(
+              prohibited_content_regex,
+              permitted_content_regex=r'[^\]]',
+              capture_group_name='alt_text',
+            )
+    bracketed_alt_text_regex = fr'\[ [\s]* {alt_text_regex} [\s]* \]'
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
@@ -1810,7 +1820,7 @@ class SpecifiedImageReplacement(
     return ''.join(
       [
         exclamation_mark_regex,
-        alt_text_regex,
+        bracketed_alt_text_regex,
         attribute_specifications_regex,
         opening_parenthesis_regex,
         whitespace_then_uri_regex,
@@ -2167,6 +2177,7 @@ class ExplicitLinkReplacement(
 
 class SpecifiedLinkReplacement(
   ReplacementWithAttributeSpecifications,
+  ReplacementWithProhibitedContent,
   Replacement,
 ):
   """
@@ -2177,6 +2188,7 @@ class SpecifiedLinkReplacement(
   SpecifiedLinkReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - attribute_specifications: (def) NONE | EMPTY | «string»
+  - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
   ````
   """
   
@@ -2189,6 +2201,7 @@ class SpecifiedLinkReplacement(
     return (
       'queue_position',
       'attribute_specifications',
+      'prohibited_content',
     )
   
   def _validate_mandatory_attributes(self):
@@ -2200,6 +2213,7 @@ class SpecifiedLinkReplacement(
             re.compile(
               SpecifiedLinkReplacement.build_regex_pattern(
                 self._attribute_specifications,
+                self._prohibited_content_regex,
               ),
               flags=re.ASCII | re.VERBOSE,
             )
@@ -2216,9 +2230,15 @@ class SpecifiedLinkReplacement(
     )
   
   @staticmethod
-  def build_regex_pattern(attribute_specifications):
+  def build_regex_pattern(attribute_specifications, prohibited_content_regex):
     
-    link_text_regex = r'\[ [\s]* (?P<link_text> [^\]]*? ) [\s]* \]'
+    link_text_regex = \
+            build_content_regex(
+              prohibited_content_regex,
+              permitted_content_regex=r'[^\]]',
+              capture_group_name='link_text',
+            )
+    bracketed_link_text_regex = fr'\[ [\s]* {link_text_regex} [\s]* \]'
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
@@ -2234,7 +2254,7 @@ class SpecifiedLinkReplacement(
     
     return ''.join(
       [
-        link_text_regex,
+        bracketed_link_text_regex,
         attribute_specifications_regex,
         opening_parenthesis_regex,
         whitespace_then_uri_regex,
@@ -4964,6 +4984,7 @@ def build_attribute_specifications_regex(
 def build_content_regex(
   prohibited_content_regex=None,
   permitted_content_regex=r'[\s\S]',
+  capture_group_name='content',
 ):
   
   if prohibited_content_regex is None:
@@ -4972,7 +4993,7 @@ def build_content_regex(
     permitted_atom_regex = \
             f'(?: (?! {prohibited_content_regex} ) {permitted_content_regex} )'
   
-  return f'''(?P<content> {permitted_atom_regex}*? )'''
+  return f'''(?P<{capture_group_name}> {permitted_atom_regex}*? )'''
 
 
 def build_extensible_delimiter_closing_regex():
@@ -5362,6 +5383,7 @@ ReferenceDefinitionReplacement: #reference-definitions
 SpecifiedImageReplacement: #specified-images
 - queue_position: AFTER #reference-definitions
 - attribute_specifications: EMPTY
+- prohibited_content: BLOCKS
 
 ReferencedImageReplacement: #referenced-images
 - queue_position: AFTER #specified-images
@@ -5392,6 +5414,7 @@ ExplicitLinkReplacement: #explicit-links
 SpecifiedLinkReplacement: #specified-links
 - queue_position: AFTER #explicit-links
 - attribute_specifications: EMPTY
+- prohibited_content: BLOCKS
 
 ReferencedLinkReplacement: #referenced-links
 - queue_position: AFTER #specified-links

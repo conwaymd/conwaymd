@@ -232,7 +232,7 @@ class TestCmd(unittest.TestCase):
   def test_specified_image_replacement_build_regex_pattern(self):
     
     self.assertEqual(
-      cmd.SpecifiedImageReplacement.build_regex_pattern(None),
+      cmd.SpecifiedImageReplacement.build_regex_pattern(None, None),
       '[!]'
       r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
       r'\('
@@ -255,9 +255,9 @@ class TestCmd(unittest.TestCase):
     )
     
     self.assertEqual(
-      cmd.SpecifiedImageReplacement.build_regex_pattern(''),
+      cmd.SpecifiedImageReplacement.build_regex_pattern('', 'a'),
       '[!]'
-      r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
+      r'\[ [\s]* (?P<alt_text> (?: (?! a ) [^\]] )*? ) [\s]* \]'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
       r'\('
         fr'(?: [\s]* '
@@ -859,6 +859,13 @@ https://example.com
 )
 ![alt]{alt=A src=S title=T}(src "title")
 
+""
+  ![Images/links cannot
+""
+--
+  span](across/blocks)
+--
+
 ## `#referenced-images`
 
 [label]{.test}: file.svg "title"
@@ -1236,6 +1243,12 @@ https://example.com
 <img alt="Alt text." src="" title="title only">
 <img alt="Spacious alt." src="spacious/src" title="spacious title">
 <img alt="A" src="S" title="T">
+<blockquote>
+![Images/links cannot
+</blockquote>
+<p>
+span](across/blocks)
+</p>
 <h2><code>#referenced-images</code></h2>
 <img alt="Alt text." src="file.svg" title="title" class="test">
 <img alt="Space &amp; case test" src="file.svg" title="title" class="test">
