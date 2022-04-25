@@ -1899,6 +1899,7 @@ class SpecifiedImageReplacement(
 
 class ReferencedImageReplacement(
   ReplacementWithAttributeSpecifications,
+  ReplacementWithProhibitedContent,
   Replacement,
 ):
   """
@@ -1909,6 +1910,7 @@ class ReferencedImageReplacement(
   ReferencedImageReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - attribute_specifications: (def) NONE | EMPTY | «string»
+  - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
   ````
   """
   
@@ -1922,6 +1924,7 @@ class ReferencedImageReplacement(
     return (
       'queue_position',
       'attribute_specifications',
+      'prohibited_content',
     )
   
   def _validate_mandatory_attributes(self):
@@ -1933,6 +1936,7 @@ class ReferencedImageReplacement(
             re.compile(
               ReferencedImageReplacement.build_regex_pattern(
                 self._attribute_specifications,
+                self._prohibited_content_regex,
               ),
               flags=re.ASCII | re.VERBOSE,
             )
@@ -1947,23 +1951,35 @@ class ReferencedImageReplacement(
     )
   
   @staticmethod
-  def build_regex_pattern(attribute_specifications):
+  def build_regex_pattern(attribute_specifications, prohibited_content_regex):
     
     exclamation_mark_regex = '[!]'
-    alt_text_regex = r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
+    alt_text_regex = \
+            build_content_regex(
+              prohibited_content_regex,
+              permitted_content_regex=r'[^\]]',
+              capture_group_name='alt_text',
+            )
+    bracketed_alt_text_regex = fr'\[ [\s]* {alt_text_regex} [\s]* \]'
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
               require_newline=False,
             )
-    label_regex = r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
+    label_regex = \
+            build_content_regex(
+              prohibited_content_regex,
+              permitted_content_regex=r'[^\]]',
+              capture_group_name='label',
+            )
+    bracketed_label_regex = fr'(?: \[ [\s]* {label_regex} [\s]* \] )?'
     
     return ''.join(
       [
         exclamation_mark_regex,
-        alt_text_regex,
+        bracketed_alt_text_regex,
         attribute_specifications_regex,
-        label_regex,
+        bracketed_label_regex,
       ]
     )
   
@@ -2332,6 +2348,7 @@ class SpecifiedLinkReplacement(
 
 class ReferencedLinkReplacement(
   ReplacementWithAttributeSpecifications,
+  ReplacementWithProhibitedContent,
   Replacement,
 ):
   """
@@ -2342,6 +2359,7 @@ class ReferencedLinkReplacement(
   ReferencedLinkReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - attribute_specifications: (def) NONE | EMPTY | «string»
+  - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
   ````
   """
   
@@ -2355,6 +2373,7 @@ class ReferencedLinkReplacement(
     return (
       'queue_position',
       'attribute_specifications',
+      'prohibited_content',
     )
   
   def _validate_mandatory_attributes(self):
@@ -2366,6 +2385,7 @@ class ReferencedLinkReplacement(
             re.compile(
               ReferencedLinkReplacement.build_regex_pattern(
                 self._attribute_specifications,
+                self._prohibited_content_regex,
               ),
               flags=re.ASCII | re.VERBOSE,
             )
@@ -2380,21 +2400,33 @@ class ReferencedLinkReplacement(
     )
   
   @staticmethod
-  def build_regex_pattern(attribute_specifications):
+  def build_regex_pattern(attribute_specifications, prohibited_content_regex):
     
-    link_text_regex = r'\[ [\s]* (?P<link_text> [^\]]*? ) [\s]* \]'
+    link_text_regex = \
+            build_content_regex(
+              prohibited_content_regex,
+              permitted_content_regex=r'[^\]]',
+              capture_group_name='link_text',
+            )
+    bracketed_link_text_regex = fr'\[ [\s]* {link_text_regex} [\s]* \]'
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
               require_newline=False,
             )
-    label_regex = r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
+    label_regex = \
+            build_content_regex(
+              prohibited_content_regex,
+              permitted_content_regex=r'[^\]]',
+              capture_group_name='label',
+            )
+    bracketed_label_regex = fr'(?: \[ [\s]* {label_regex} [\s]* \] )?'
     
     return ''.join(
       [
-        link_text_regex,
+        bracketed_link_text_regex,
         attribute_specifications_regex,
-        label_regex,
+        bracketed_label_regex,
       ]
     )
   
@@ -5388,6 +5420,7 @@ SpecifiedImageReplacement: #specified-images
 ReferencedImageReplacement: #referenced-images
 - queue_position: AFTER #specified-images
 - attribute_specifications: EMPTY
+- prohibited_content: BLOCKS
 
 RegexDictionaryReplacement: #suppress-scheme
 - positive_flag: SUPPRESS_SCHEME
@@ -5419,6 +5452,7 @@ SpecifiedLinkReplacement: #specified-links
 ReferencedLinkReplacement: #referenced-links
 - queue_position: AFTER #specified-links
 - attribute_specifications: EMPTY
+- prohibited_content: BLOCKS
 
 RegexDictionaryReplacement: #escape-idle-html
 - queue_position: AFTER #referenced-links

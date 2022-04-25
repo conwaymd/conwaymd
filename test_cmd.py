@@ -281,14 +281,14 @@ class TestCmd(unittest.TestCase):
   def test_referenced_image_replacement_build_regex_pattern(self):
     
     self.assertEqual(
-      cmd.ReferencedImageReplacement.build_regex_pattern(None),
+      cmd.ReferencedImageReplacement.build_regex_pattern(None, None),
       '[!]'
       r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
       r'(?: \[ [\s]* (?P<label> [^\]]*? ) [\s]* \] )?'
     )
     
     self.assertEqual(
-      cmd.ReferencedImageReplacement.build_regex_pattern(''),
+      cmd.ReferencedImageReplacement.build_regex_pattern('', None),
       '[!]'
       r'\[ [\s]* (?P<alt_text> [^\]]*? ) [\s]* \]'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
@@ -878,6 +878,15 @@ https://example.com
 
 ![Untouched][Nonexistent label]
 
+
+""
+  ![Images/links cannot
+""
+--
+  span across blocks][label]
+--
+(but note that the trailing `[label]` will be consumed by itself).
+
 ## `#explicit-links`
 
 <https://example.com>
@@ -1255,6 +1264,13 @@ span](across/blocks)
 <img alt="Hooray!" src="yay.png" class="test2 no-label">
 <img alt="Class dismissed." src="file.svg" title="title" class="dismissed">
 ![Untouched][Nonexistent label]
+<blockquote>
+![Images/links cannot
+</blockquote>
+<p>
+span across blocks]<a href="file.svg" title="title" class="test">label</a>
+</p>
+(but note that the trailing <code>[label]</code> will be consumed by itself).
 <h2><code>#explicit-links</code></h2>
 <a href="https://example.com">https://example.com</a>
 &lt;<a href="https://example.com">https://example.com</a>&gt;
