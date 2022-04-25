@@ -3026,6 +3026,12 @@ class ReplacementMaster:
     elif class_name == 'PartitioningReplacement':
       replacement = \
               PartitioningReplacement(id_, self._verbose_mode_enabled)
+    elif class_name == 'InlineAssortedDelimitersReplacement':
+      replacement = \
+              InlineAssortedDelimitersReplacement(
+                id_,
+                self._verbose_mode_enabled,
+              )
     elif class_name == 'HeadingReplacement':
       replacement = HeadingReplacement(id_, self._verbose_mode_enabled)
     elif class_name == 'ReferenceDefinitionReplacement':
