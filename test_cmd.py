@@ -751,6 +751,25 @@ Header-after-data (seriously, why would you have this?):
 '''
 """
 r'''
+## `#headings`
+
+### Level 3
+#### Level 4
+##### Level 5
+###### Level 6
+
+###
+### Non-empty
+### Insufficient closing hashes #
+### Excessive closing hashes #######
+###{}
+###{} Non-empty
+###{.class-1 title="This be fancy"} Fancy
+### Trailing whitespace     	
+### Trailing whitespace after hashes #  	
+
+#missing-whitespace
+####### Excessive opening hashes
 
 ## `#paragraphs`
 
@@ -872,26 +891,6 @@ s<{href='https://evil.com'}https://example.com>
 [Class dismissed.]{-class .dismissed}[label2]
 
 [Untouched][Nonexistent label]
-
-## `#headings`
-
-### Level 3
-#### Level 4
-##### Level 5
-###### Level 6
-
-###
-### Non-empty
-### Insufficient closing hashes #
-### Excessive closing hashes #######
-###{}
-###{} Non-empty
-###{.class-1 title="This be fancy"} Fancy
-### Trailing whitespace     	
-### Trailing whitespace after hashes #  	
-
-#missing-whitespace
-####### Excessive opening hashes
 '''
         ################################################################
         # END CMD
@@ -1150,6 +1149,22 @@ Header-after-data (seriously, why would you have this?):
 <td>Data2</td>
 </tr>
 </table>
+<h2><code>#headings</code></h2>
+<h3>Level 3</h3>
+<h4>Level 4</h4>
+<h5>Level 5</h5>
+<h6>Level 6</h6>
+<h3></h3>
+<h3>Non-empty</h3>
+<h3>Insufficient closing hashes</h3>
+<h3>Excessive closing hashes</h3>
+<h3></h3>
+<h3>Non-empty</h3>
+<h3 class="class-1" title="This be fancy">Fancy</h3>
+<h3>Trailing whitespace</h3>
+<h3>Trailing whitespace after hashes</h3>
+#missing-whitespace
+####### Excessive opening hashes
 <h2><code>#paragraphs</code></h2>
 <p class="eight">
 This be a paragraph.
@@ -1213,22 +1228,6 @@ https://example.com
 <a href="yay.html" class="test2 no-label">Rejoice</a>
 <a href="/file" title="title" class="dismissed">Class dismissed.</a>
 [Untouched][Nonexistent label]
-<h2><code>#headings</code></h2>
-<h3>Level 3</h3>
-<h4>Level 4</h4>
-<h5>Level 5</h5>
-<h6>Level 6</h6>
-<h3></h3>
-<h3>Non-empty</h3>
-<h3>Insufficient closing hashes</h3>
-<h3>Excessive closing hashes</h3>
-<h3></h3>
-<h3>Non-empty</h3>
-<h3 class="class-1" title="This be fancy">Fancy</h3>
-<h3>Trailing whitespace</h3>
-<h3>Trailing whitespace after hashes</h3>
-#missing-whitespace
-####### Excessive opening hashes
 </body>
 </html>
 '''
