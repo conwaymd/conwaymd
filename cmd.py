@@ -5506,49 +5506,11 @@ RegexDictionaryReplacement: #comments
   [>]
     -->
 
-RegexDictionaryReplacement: #boilerplate
-- queue_position: AFTER #comments
-* \A -->
-    <!DOCTYPE html>
-      <html lang="%lang">
-        <head>
-          <meta charset="utf-8">
-          %head-elements-before-viewport
-          <meta name="viewport" content="%viewport-content">
-          %head-elements-after-viewport
-          <title>%title</title>
-          <style>
-            %styles
-          </style>
-        </head>
-      <body>
-* \Z -->
-      </body>
-    </html>
-
-OrdinaryDictionaryReplacement: #boilerplate-properties
-- queue_position: AFTER #boilerplate
-* %lang --> en
-* %head-elements-before-viewport -->
-* %viewport-content --> width=device-width, initial-scale=1
-* %head-elements-after-viewport -->
-* %title --> Title
-* %styles -->
-
-RegexDictionaryReplacement: #boilerplate-protect
-- queue_position: AFTER #boilerplate-properties
-* <style>[\s]*?</style>[\s]* -->
-* <style>[\s\S]*?</style> --> \g<0>
-* <head>[\s\S]*?</head> --> \g<0>
-- concluding_replacements:
-    #reduce-whitespace
-    #placeholder-protect
-
 RegexDictionaryReplacement: #prepend-newline
 * \A --> \n
 
 ExtensibleFenceReplacement: #divisions
-- queue_position: AFTER #boilerplate-protect
+- queue_position: AFTER #comments
 - syntax_type: BLOCK
 - extensible_delimiter: ||
 - attribute_specifications: EMPTY
@@ -5718,8 +5680,46 @@ ExtensibleFenceReplacement: #inline-code
     #placeholder-protect
 - tag_name: code
 
-OrdinaryDictionaryReplacement: #backslash-escapes
+RegexDictionaryReplacement: #boilerplate
 - queue_position: AFTER #inline-code
+* \A -->
+    <!DOCTYPE html>
+      <html lang="%lang">
+        <head>
+          <meta charset="utf-8">
+          %head-elements-before-viewport
+          <meta name="viewport" content="%viewport-content">
+          %head-elements-after-viewport
+          <title>%title</title>
+          <style>
+            %styles
+          </style>
+        </head>
+      <body>
+* \Z -->
+      </body>
+    </html>
+
+OrdinaryDictionaryReplacement: #boilerplate-properties
+- queue_position: AFTER #boilerplate
+* %lang --> en
+* %head-elements-before-viewport -->
+* %viewport-content --> width=device-width, initial-scale=1
+* %head-elements-after-viewport -->
+* %title --> Title
+* %styles -->
+
+RegexDictionaryReplacement: #boilerplate-protect
+- queue_position: AFTER #boilerplate-properties
+* <style>[\s]*?</style>[\s]* -->
+* <style>[\s\S]*?</style> --> \g<0>
+* <head>[\s\S]*?</head> --> \g<0>
+- concluding_replacements:
+    #reduce-whitespace
+    #placeholder-protect
+
+OrdinaryDictionaryReplacement: #backslash-escapes
+- queue_position: AFTER #boilerplate-protect
 * \\ --> \
 * \# --> #
 * \& --> &amp;
