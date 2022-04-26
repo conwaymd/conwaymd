@@ -5878,7 +5878,7 @@ def extract_cmd_name(cmd_file_name_argument):
 def generate_html_file(
   cmd_file_name_argument,
   verbose_mode_enabled,
-  uses_command_line_argument
+  uses_command_line_argument,
 ):
   
   cmd_name = extract_cmd_name(cmd_file_name_argument)
