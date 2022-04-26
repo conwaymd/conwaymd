@@ -5816,7 +5816,7 @@ PlaceholderUnprotectionReplacement: #placeholder-unprotect
 '''
 
 
-def cmd_to_html(cmd, cmd_file_name=None, verbose_mode_enabled=False):
+def cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled=False):
   """
   Convert CMD to HTML.
   """
