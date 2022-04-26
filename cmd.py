@@ -2934,6 +2934,7 @@ class ReplacementMaster:
     self,
     rules_inclusion_match,
     rules_file_name,
+    cmd_name,
     line_number,
   ):
     
@@ -2975,7 +2976,11 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    self.legislate(replacement_rules, rules_file_name=included_file_name)
+    self.legislate(
+      replacement_rules,
+      rules_file_name=included_file_name,
+      cmd_name=cmd_name,
+    )
   
   @staticmethod
   def compute_class_declaration_match(line):
@@ -4697,7 +4702,7 @@ class ReplacementMaster:
     # class_name, replacement, attribute_name, attribute_value, substitution,
     # line_number_range_start
   
-  def legislate(self, replacement_rules, rules_file_name, cmd_name=None):
+  def legislate(self, replacement_rules, rules_file_name, cmd_name):
     
     if replacement_rules is None:
       return
@@ -4775,6 +4780,7 @@ class ReplacementMaster:
         self.process_rules_inclusion_line(
           rules_inclusion_match,
           rules_file_name,
+          cmd_name,
           line_number,
         )
         continue
