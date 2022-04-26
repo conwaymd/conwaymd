@@ -428,7 +428,7 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
   ReplacementWithSubstitutions: #«id»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    "«substitute»" | '«substitute»' | «substitute»
+    VERSION | "«substitute»" | '«substitute»' | «substitute»
   [...]
   ````
   """
@@ -849,7 +849,7 @@ class OrdinaryDictionaryReplacement(
   - negative_flag: (def) NONE | «FLAG_NAME»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    "«substitute»" | '«substitute»' | «substitute»
+    VERSION | "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -933,7 +933,7 @@ class RegexDictionaryReplacement(
   - negative_flag: (def) NONE | «FLAG_NAME»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    "«substitute»" | '«substitute»' | «substitute»
+    VERSION | "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -4318,6 +4318,8 @@ class ReplacementMaster:
           {re.escape(longest_substitution_delimiter)}
         [\s]*
           (?:
+            (?P<version_keyword> VERSION )
+              |
             "(?P<double_quoted_substitute> [\s\S]*? )"
               |
             '(?P<single_quoted_substitute> [\s\S]*? )'
@@ -4360,17 +4362,20 @@ class ReplacementMaster:
       else:
         pattern = substitution_match.group('bare_pattern')
     
-    double_quoted_substitute = \
-            substitution_match.group('double_quoted_substitute')
-    if double_quoted_substitute is not None:
-      substitute = double_quoted_substitute
+    if substitution_match.group('version_keyword') is not None:
+      substitute = __version__
     else:
-      single_quoted_substitute = \
-              substitution_match.group('single_quoted_substitute')
-      if single_quoted_substitute is not None:
-        substitute = single_quoted_substitute
+      double_quoted_substitute = \
+              substitution_match.group('double_quoted_substitute')
+      if double_quoted_substitute is not None:
+        substitute = double_quoted_substitute
       else:
-        substitute = substitution_match.group('bare_substitute')
+        single_quoted_substitute = \
+                substitution_match.group('single_quoted_substitute')
+        if single_quoted_substitute is not None:
+          substitute = single_quoted_substitute
+        else:
+          substitute = substitution_match.group('bare_substitute')
     
     replacement.add_substitution(pattern, substitute)
   
@@ -4404,17 +4409,20 @@ class ReplacementMaster:
       else:
         pattern = substitution_match.group('bare_pattern')
     
-    double_quoted_substitute = \
-      substitution_match.group('double_quoted_substitute')
-    if double_quoted_substitute is not None:
-      substitute = double_quoted_substitute
+    if substitution_match.group('version_keyword') is not None:
+      substitute = escape_regex_substitute(__version__)
     else:
-      single_quoted_substitute = \
-        substitution_match.group('single_quoted_substitute')
-      if single_quoted_substitute is not None:
-        substitute = single_quoted_substitute
+      double_quoted_substitute = \
+        substitution_match.group('double_quoted_substitute')
+      if double_quoted_substitute is not None:
+        substitute = double_quoted_substitute
       else:
-        substitute = substitution_match.group('bare_substitute')
+        single_quoted_substitute = \
+          substitution_match.group('single_quoted_substitute')
+        if single_quoted_substitute is not None:
+          substitute = single_quoted_substitute
+        else:
+          substitute = substitution_match.group('bare_substitute')
     
     try:
       pattern_compiled = \
@@ -4959,6 +4967,10 @@ def de_indent(string):
           )
   
   return string
+
+
+def escape_regex_substitute(substitute):
+  return substitute.replace('\\', r'\\')
 
 
 def escape_attribute_value_html(value):
