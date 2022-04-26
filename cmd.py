@@ -5740,6 +5740,7 @@ OrdinaryDictionaryReplacement: #boilerplate-properties
 OrdinaryDictionaryReplacement: #cmd-properties
 - queue_position: AFTER #boilerplate-properties
 * %cmd-version --> CMD_VERSION
+* %cmd-name --> CMD_NAME
 
 RegexDictionaryReplacement: #boilerplate-protect
 - queue_position: AFTER #cmd-properties
