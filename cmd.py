@@ -428,7 +428,7 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
   ReplacementWithSubstitutions: #«id»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    CMD_VERSION | "«substitute»" | '«substitute»' | «substitute»
+    CMD_VERSION | CMD_NAME | "«substitute»" | '«substitute»' | «substitute»
   [...]
   ````
   """
@@ -849,7 +849,7 @@ class OrdinaryDictionaryReplacement(
   - negative_flag: (def) NONE | «FLAG_NAME»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    CMD_VERSION | "«substitute»" | '«substitute»' | «substitute»
+    CMD_VERSION | CMD_NAME | "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -933,7 +933,7 @@ class RegexDictionaryReplacement(
   - negative_flag: (def) NONE | «FLAG_NAME»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    CMD_VERSION | "«substitute»" | '«substitute»' | «substitute»
+    CMD_VERSION | CMD_NAME | "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -4317,6 +4317,8 @@ class ReplacementMaster:
           (?:
             (?P<cmd_version_keyword> CMD_VERSION )
               |
+            (?P<cmd_name_keyword> CMD_NAME )
+              |
             "(?P<double_quoted_substitute> [\s\S]*? )"
               |
             '(?P<single_quoted_substitute> [\s\S]*? )'
@@ -4362,6 +4364,8 @@ class ReplacementMaster:
     
     if substitution_match.group('cmd_version_keyword') is not None:
       substitute = __version__
+    elif substitution_match.group('cmd_name_keyword') is not None:
+      substitute = cmd_name
     else:
       double_quoted_substitute = \
               substitution_match.group('double_quoted_substitute')
@@ -4410,6 +4414,8 @@ class ReplacementMaster:
     
     if substitution_match.group('cmd_version_keyword') is not None:
       substitute = escape_regex_substitute(__version__)
+    elif substitution_match.group('cmd_name_keyword') is not None:
+      substitute = escape_regex_substitute(cmd_name)
     else:
       double_quoted_substitute = \
         substitution_match.group('double_quoted_substitute')
