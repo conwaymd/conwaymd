@@ -2883,10 +2883,7 @@ class ReplacementMaster:
     end_line_number=None,
   ):
     
-    if rules_file_name is None:
-      source_file = 'STANDARD_RULES'
-    else:
-      source_file = f'`{rules_file_name}`'
+    source_file = f'`{rules_file_name}`'
     
     if end_line_number is None or start_line_number == end_line_number - 1:
       line_number_range = f'line {start_line_number}'
@@ -2978,7 +2975,7 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
-    self.legislate(replacement_rules, included_file_name)
+    self.legislate(replacement_rules, rules_file_name=included_file_name)
   
   @staticmethod
   def compute_class_declaration_match(line):
@@ -4689,7 +4686,7 @@ class ReplacementMaster:
     # class_name, replacement, attribute_name, attribute_value, substitution,
     # line_number_range_start
   
-  def legislate(self, replacement_rules, rules_file_name=None):
+  def legislate(self, replacement_rules, rules_file_name):
     
     if replacement_rules is None:
       return
@@ -5842,8 +5839,14 @@ def cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled=False):
   replacement_rules, main_content = extract_rules_and_content(cmd)
   
   replacement_master = ReplacementMaster(cmd_file_name, verbose_mode_enabled)
-  replacement_master.legislate(STANDARD_RULES)
-  replacement_master.legislate(replacement_rules, cmd_file_name)
+  replacement_master.legislate(
+    STANDARD_RULES,
+    rules_file_name='STANDARD_RULES',
+  )
+  replacement_master.legislate(
+    replacement_rules,
+    rules_file_name=cmd_file_name,
+  )
   html = replacement_master.execute(main_content)
   
   return html
