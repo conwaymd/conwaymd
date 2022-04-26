@@ -5427,6 +5427,14 @@ def extract_rules_and_content(cmd):
   return replacement_rules, main_content
 
 
+def extract_separator_normalised_cmd_name(cmd_file_name):
+  
+  cmd_name = re.sub(r'[.](cmd) \Z', '', cmd_file_name, flags=re.VERBOSE)
+  separator_normalised_cmd_name = cmd_name.replace('\\', '/')
+  
+  return separator_normalised_cmd_name
+
+
 STANDARD_RULES = \
 r'''# STANDARD_RULES
 
@@ -5860,6 +5868,8 @@ def extract_cmd_name(cmd_file_name_argument):
   """
   Extract name-without-extension from a CMD file name argument.
   
+  Here, CMD file name argument may be of the form
+  `«cmd_name».cmd`, `«cmd_name».`, or `«cmd_name»`.
   The path is normalised by resolving `./` and `../`.
   """
   
