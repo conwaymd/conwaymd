@@ -5709,8 +5709,12 @@ OrdinaryDictionaryReplacement: #boilerplate-properties
 * %title --> Title
 * %styles -->
 
-RegexDictionaryReplacement: #boilerplate-protect
+OrdinaryDictionaryReplacement: #cmd-properties
 - queue_position: AFTER #boilerplate-properties
+* %version --> VERSION
+
+RegexDictionaryReplacement: #boilerplate-protect
+- queue_position: AFTER #cmd-properties
 * <style>[\s]*?</style>[\s]* -->
 * <style>[\s\S]*?</style> --> \g<0>
 * <head>[\s\S]*?</head> --> \g<0>
