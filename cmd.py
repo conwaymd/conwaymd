@@ -5917,7 +5917,7 @@ def parse_command_line_arguments():
   argument_parser.add_argument(
     '-v', '--version',
     action='version',
-    version=f'{argument_parser.prog} {__version__}',
+    version=f'{argument_parser.prog} version {__version__}',
   )
   argument_parser.add_argument(
     '-x', '--verbose',
