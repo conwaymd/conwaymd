@@ -931,7 +931,9 @@ class RegexDictionaryReplacement(
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  * "«pattern»" | «pattern» --> "«substitute»" | «substitute»
+  * "«pattern»" | '«pattern»' | «pattern»
+      -->
+    "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
