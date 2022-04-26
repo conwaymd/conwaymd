@@ -879,7 +879,7 @@ then it `<p>will work</p>`.
 
 ## `#cmd-properties`
 
-CMD version is v%version.
+CMD version is v%cmd-version.
 
 ## `#backslash-escapes`
 
