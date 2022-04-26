@@ -5865,12 +5865,7 @@ def extract_cmd_name(cmd_file_name_argument):
   
   cmd_file_name_argument = os.path.normpath(cmd_file_name_argument)
   cmd_name = \
-          re.sub(
-            r'[.](cmd)? \Z',
-            '',
-            cmd_file_name_argument,
-            flags=re.VERBOSE,
-          )
+          re.sub(r'[.](cmd)? \Z', '', cmd_file_name_argument, flags=re.VERBOSE)
   
   return cmd_name
 
