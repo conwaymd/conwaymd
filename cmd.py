@@ -5523,7 +5523,7 @@ OrdinaryDictionaryReplacement: #boilerplate-properties
 
 RegexDictionaryReplacement: #boilerplate-protect
 - queue_position: AFTER #boilerplate-properties
-* <style>[\s]*?</style> -->
+* <style>[\s]*?</style>[\s]* -->
 * <style>[\s\S]*?</style> --> \g<0>
 * <head>[\s\S]*?</head> --> \g<0>
 - concluding_replacements:
