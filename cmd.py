@@ -4334,6 +4334,7 @@ class ReplacementMaster:
     replacement,
     substitution,
     rules_file_name,
+    cmd_name,
     line_number_range_start,
     line_number,
   ):
@@ -4381,6 +4382,7 @@ class ReplacementMaster:
     replacement,
     substitution,
     rules_file_name,
+    cmd_name,
     line_number_range_start,
     line_number,
   ):
@@ -4459,6 +4461,7 @@ class ReplacementMaster:
     attribute_value,
     substitution,
     rules_file_name,
+    cmd_name,
     line_number_range_start,
     line_number,
   ):
@@ -4470,6 +4473,7 @@ class ReplacementMaster:
           replacement,
           substitution,
           rules_file_name,
+          cmd_name,
           line_number_range_start,
           line_number,
         )
@@ -4478,6 +4482,7 @@ class ReplacementMaster:
           replacement,
           substitution,
           rules_file_name,
+          cmd_name,
           line_number_range_start,
           line_number,
         )
@@ -4686,7 +4691,7 @@ class ReplacementMaster:
     # class_name, replacement, attribute_name, attribute_value, substitution,
     # line_number_range_start
   
-  def legislate(self, replacement_rules, rules_file_name):
+  def legislate(self, replacement_rules, rules_file_name, cmd_name=None):
     
     if replacement_rules is None:
       return
@@ -4715,6 +4720,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     rules_file_name,
+                    cmd_name,
                     line_number_range_start,
                     line_number,
                   )
@@ -4745,6 +4751,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     rules_file_name,
+                    cmd_name,
                     line_number_range_start,
                     line_number,
                   )
@@ -4780,6 +4787,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     rules_file_name,
+                    cmd_name,
                     line_number_range_start,
                     line_number,
                   )
@@ -4816,6 +4824,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     rules_file_name,
+                    cmd_name,
                     line_number_range_start,
                     line_number,
                   )
@@ -4844,6 +4853,7 @@ class ReplacementMaster:
                     attribute_value,
                     substitution,
                     rules_file_name,
+                    cmd_name,
                     line_number_range_start,
                     line_number,
                   )
@@ -4884,6 +4894,7 @@ class ReplacementMaster:
         attribute_value,
         substitution,
         rules_file_name,
+        cmd_name,
         line_number_range_start,
         line_number,
       )
@@ -5845,15 +5856,19 @@ def cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled=False):
   """
   
   replacement_rules, main_content = extract_rules_and_content(cmd)
+  separator_normalised_cmd_name = \
+          extract_separator_normalised_cmd_name(cmd_file_name)
   
   replacement_master = ReplacementMaster(cmd_file_name, verbose_mode_enabled)
   replacement_master.legislate(
     STANDARD_RULES,
     rules_file_name='STANDARD_RULES',
+    cmd_name=separator_normalised_cmd_name,
   )
   replacement_master.legislate(
     replacement_rules,
     rules_file_name=cmd_file_name,
+    cmd_name=separator_normalised_cmd_name,
   )
   html = replacement_master.execute(main_content)
   
