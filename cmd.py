@@ -938,7 +938,7 @@ class OrdinaryDictionaryReplacement(
   
   def sequential_apply(self, string):
     
-    for pattern, substitute in self._substitute_from_pattern:
+    for pattern, substitute in self._substitute_from_pattern.items():
       string = string.replace(pattern, substitute)
     
     for replacement in self._concluding_replacements:
