@@ -54,13 +54,13 @@ class TestCmd(unittest.TestCase):
   def test_ordinary_dictionary_replacement_build_regex_pattern(self):
     
     self.assertEqual(
-      cmd.OrdinaryDictionaryReplacement.build_regex_pattern(
+      cmd.OrdinaryDictionaryReplacement.build_simultaneous_regex_pattern(
         substitute_from_pattern={},
       ),
       ''
     )
     self.assertEqual(
-      cmd.OrdinaryDictionaryReplacement.build_regex_pattern(
+      cmd.OrdinaryDictionaryReplacement.build_simultaneous_regex_pattern(
         substitute_from_pattern={
           'a': 'b',
           'b': 'c',
