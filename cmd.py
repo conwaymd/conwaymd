@@ -881,11 +881,20 @@ class OrdinaryDictionaryReplacement(
     self._apply_substitutions_simultaneously = value
   
   def _validate_mandatory_attributes(self):
-    
     if self._apply_substitutions_simultaneously is None:
       raise MissingAttributeException('apply_mode')
   
   def _set_apply_method_variables(self):
+    if self._apply_substitutions_simultaneously:
+      self.set_simultaneous_apply_method_variables()
+  
+  def _apply(self, string):
+    if self._apply_substitutions_simultaneously:
+      return self.simultaneous_apply(string)
+    else:
+      return self.sequential_apply(string)
+  
+  def set_simultaneous_apply_method_variables(self):
     self._simultaneous_regex_pattern_compiled = \
             re.compile(
               OrdinaryDictionaryReplacement.build_simultaneous_regex_pattern(
@@ -896,17 +905,6 @@ class OrdinaryDictionaryReplacement(
             self.build_simultaneous_substitute_function(
               self._substitute_from_pattern,
             )
-  
-  def _apply(self, string):
-    if len(self._substitute_from_pattern) > 0:
-      string = \
-              re.sub(
-                self._simultaneous_regex_pattern_compiled,
-                self._simultaneous_substitute_function,
-                string,
-              )
-    
-    return string
   
   @staticmethod
   def build_simultaneous_regex_pattern(substitute_from_pattern):
@@ -925,6 +923,28 @@ class OrdinaryDictionaryReplacement(
       return substitute
     
     return substitute_function
+  
+  def simultaneous_apply(self, string):
+    
+    if len(self._substitute_from_pattern) > 0:
+      string = \
+              re.sub(
+                self._simultaneous_regex_pattern_compiled,
+                self._simultaneous_substitute_function,
+                string,
+              )
+    
+    return string
+  
+  def sequential_apply(self, string):
+    
+    for pattern, substitute in self._substitute_from_pattern:
+      string = string.replace(pattern, substitute)
+    
+    for replacement in self._concluding_replacements:
+      string = replacement.apply(string)
+    
+    return string
 
 
 class RegexDictionaryReplacement(
