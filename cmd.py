@@ -5555,6 +5555,7 @@ DeIndentationReplacement: #de-indent
 
 OrdinaryDictionaryReplacement: #escape-html
 - negative_flag: KEEP_HTML_UNESCAPED
+- apply_mode: SIMULTANEOUS
 * & --> &amp;
 * < --> &lt;
 * > --> &gt;
@@ -5814,6 +5815,7 @@ RegexDictionaryReplacement: #boilerplate
 
 OrdinaryDictionaryReplacement: #boilerplate-properties
 - queue_position: AFTER #boilerplate
+- apply_mode: SIMULTANEOUS
 * %lang --> en
 * %head-elements-before-viewport -->
 * %viewport-content --> width=device-width, initial-scale=1
@@ -5823,6 +5825,7 @@ OrdinaryDictionaryReplacement: #boilerplate-properties
 
 OrdinaryDictionaryReplacement: #cmd-properties
 - queue_position: AFTER #boilerplate-properties
+- apply_mode: SIMULTANEOUS
 * %cmd-version --> CMD_VERSION
 * %cmd-name --> CMD_NAME
 
@@ -5837,6 +5840,7 @@ RegexDictionaryReplacement: #boilerplate-protect
 
 OrdinaryDictionaryReplacement: #backslash-escapes
 - queue_position: AFTER #boilerplate-protect
+- apply_mode: SIMULTANEOUS
 * \\ --> \
 * \# --> #
 * \& --> &amp;
