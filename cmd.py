@@ -856,8 +856,8 @@ class OrdinaryDictionaryReplacement(
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
     self._apply_substitutions_sequentially = None
-    self._regex_pattern_compiled = None
-    self._substitute_function = None
+    self._simultaneous_regex_pattern_compiled = None
+    self._simultaneous_substitute_function = None
   
   def attribute_names(self):
     return (
@@ -886,14 +886,14 @@ class OrdinaryDictionaryReplacement(
       raise MissingAttributeException('apply_mode')
   
   def _set_apply_method_variables(self):
-    self._regex_pattern_compiled = \
+    self._simultaneous_regex_pattern_compiled = \
             re.compile(
-              OrdinaryDictionaryReplacement.build_regex_pattern(
+              OrdinaryDictionaryReplacement.build_simultaneous_regex_pattern(
                 self._substitute_from_pattern,
               )
             )
-    self._substitute_function = \
-            self.build_substitute_function(
+    self._simultaneous_substitute_function = \
+            self.build_simultaneous_substitute_function(
               self._substitute_from_pattern,
             )
   
@@ -901,18 +901,18 @@ class OrdinaryDictionaryReplacement(
     if len(self._substitute_from_pattern) > 0:
       string = \
               re.sub(
-                self._regex_pattern_compiled,
-                self._substitute_function,
+                self._simultaneous_regex_pattern_compiled,
+                self._simultaneous_substitute_function,
                 string,
               )
     
     return string
   
   @staticmethod
-  def build_regex_pattern(substitute_from_pattern):
+  def build_simultaneous_regex_pattern(substitute_from_pattern):
     return '|'.join(re.escape(pattern) for pattern in substitute_from_pattern)
   
-  def build_substitute_function(self, substitute_from_pattern):
+  def build_simultaneous_substitute_function(self, substitute_from_pattern):
     
     def substitute_function(match):
       
