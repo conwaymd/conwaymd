@@ -618,10 +618,28 @@ FixedDelimitersReplacement: #comment-breaker
     #placeholder-protect
 - closing_delimiter: |>
 
+OrdinaryDictionaryReplacement: #test-apply-mode-sequential
+- queue_position: BEFORE #placeholder-unprotect
+- apply_mode: SEQUENTIAL
+* @1 --> @2
+* @2 --> @3
+* @3 --> @4
+* @4 --> @5
+
+OrdinaryDictionaryReplacement: #test-apply-mode-simultaneous
+- queue_position: BEFORE #placeholder-unprotect
+- apply_mode: SIMULTANEOUS
+* !1 --> !2
+* !2 --> !3
+* !3 --> !4
+* !4 --> !5
+
 %%%
 
 # `test_cmd_to_html`
 
+Sequential `OrdinaryDictionaryReplacement` result: @1, @2, @3, @4
+Simultaneous `OrdinaryDictionaryReplacement` result: !1, !2, !3, !4
 ``{title=&<>"} Attribute specification escape test. ``
 ``{title='"'} Attribute specification double-quote escape test. ``
 ``{title="`?` <`` <`!`> ``>"}
@@ -1077,6 +1095,8 @@ font-family: serif;
 </head>
 <body>
 <h1><code>test_cmd_to_html</code></h1>
+Sequential <code>OrdinaryDictionaryReplacement</code> result: @5, @5, @5, @5
+Simultaneous <code>OrdinaryDictionaryReplacement</code> result: !2, !3, !4, !5
 <code title="&amp;&lt;&gt;&quot;">Attribute specification escape test.</code>
 <code title="&quot;">Attribute specification double-quote escape test.</code>
 <pre title="`?` &lt;`!`&gt;"><code>Attribute specification prevail test.
