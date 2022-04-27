@@ -838,15 +838,13 @@ class OrdinaryDictionaryReplacement(
   """
   A replacement rule for a dictionary of ordinary substitutions.
   
-  Substitutions shall be applied simultaneously,
-  that earlier substitutions be not sabotaged by newer ones.
-  
   CMD replacement rule syntax:
   ````
   OrdinaryDictionaryReplacement: #«id»
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
+  - apply_mode: SEQUENTIAL | SIMULTANEOUS (mandatory)
   * "«pattern»" | '«pattern»' | «pattern»
       -->
     CMD_VERSION | CMD_NAME | "«substitute»" | '«substitute»' | «substitute»
@@ -857,6 +855,7 @@ class OrdinaryDictionaryReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
+    self._apply_substitutions_sequentially = None
     self._regex_pattern_compiled = None
     self._substitute_function = None
   
@@ -865,11 +864,26 @@ class OrdinaryDictionaryReplacement(
       'queue_position',
       'positive_flag',
       'negative_flag',
+      'apply_mode',
       'concluding_replacements',
     )
   
+  @property
+  def apply_substitutions_sequentially(self):
+    return self._apply_substitutions_sequentially
+  
+  @apply_substitutions_sequentially.setter
+  def apply_substitutions_sequentially(self, value):
+    if self._is_committed:
+      raise CommittedMutateException(
+        'error: cannot set `apply_mode` after `commit()`'
+      )
+    self._apply_substitutions_sequentially = value
+  
   def _validate_mandatory_attributes(self):
-    pass
+    
+    if self._apply_substitutions_sequentially is None:
+      raise MissingAttributeException('apply_mode')
   
   def _set_apply_method_variables(self):
     self._regex_pattern_compiled = \
@@ -3275,6 +3289,47 @@ class ReplacementMaster:
     )
   
   @staticmethod
+  def compute_apply_mode_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<apply_mode> SEQUENTIAL | SIMULTANEOUS )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE
+    )
+  
+  @staticmethod
+  def stage_apply_mode(
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
+  ):
+    
+    apply_mode_match = \
+            ReplacementMaster.compute_apply_mode_match(attribute_value)
+    
+    invalid_value = apply_mode_match.group('invalid_value')
+    if invalid_value is not None:
+      ReplacementMaster.print_error(
+        f'invalid value `{invalid_value}` for attribute `apply_mode`',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
+    apply_mode = apply_mode_match.group('apply_mode')
+    replacement.apply_substitutions_sequentially = apply_mode == 'SEQUENTIAL'
+  
+  @staticmethod
   def stage_attribute_specifications(
     replacement,
     attribute_value,
@@ -4510,6 +4565,14 @@ class ReplacementMaster:
       
       if attribute_name == 'allowed_flags':
         ReplacementMaster.stage_allowed_flags(
+          replacement,
+          attribute_value,
+          rules_file_name,
+          line_number_range_start,
+          line_number,
+        )
+      elif attribute_name == 'apply_mode':
+        ReplacementMaster.stage_apply_mode(
           replacement,
           attribute_value,
           rules_file_name,
