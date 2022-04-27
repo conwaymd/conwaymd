@@ -855,7 +855,7 @@ class OrdinaryDictionaryReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._apply_substitutions_sequentially = None
+    self._apply_substitutions_simultaneously = None
     self._simultaneous_regex_pattern_compiled = None
     self._simultaneous_substitute_function = None
   
@@ -869,20 +869,20 @@ class OrdinaryDictionaryReplacement(
     )
   
   @property
-  def apply_substitutions_sequentially(self):
-    return self._apply_substitutions_sequentially
+  def apply_substitutions_simultaneously(self):
+    return self._apply_substitutions_simultaneously
   
-  @apply_substitutions_sequentially.setter
-  def apply_substitutions_sequentially(self, value):
+  @apply_substitutions_simultaneously.setter
+  def apply_substitutions_simultaneously(self, value):
     if self._is_committed:
       raise CommittedMutateException(
         'error: cannot set `apply_mode` after `commit()`'
       )
-    self._apply_substitutions_sequentially = value
+    self._apply_substitutions_simultaneously = value
   
   def _validate_mandatory_attributes(self):
     
-    if self._apply_substitutions_sequentially is None:
+    if self._apply_substitutions_simultaneously is None:
       raise MissingAttributeException('apply_mode')
   
   def _set_apply_method_variables(self):
@@ -3327,7 +3327,8 @@ class ReplacementMaster:
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     apply_mode = apply_mode_match.group('apply_mode')
-    replacement.apply_substitutions_sequentially = apply_mode == 'SEQUENTIAL'
+    replacement.apply_substitutions_simultaneously = \
+            apply_mode == 'SIMULTANEOUS'
   
   @staticmethod
   def stage_attribute_specifications(
