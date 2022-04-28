@@ -595,7 +595,8 @@ Whitespace before closing delimiter:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Title</title>
 </head>
-<body></body>
+<body>
+</body>
 </html>
 '''
     )

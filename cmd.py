@@ -5808,7 +5808,7 @@ RegexDictionaryReplacement: #boilerplate
           %styles
         </style>
       </head>
-      <body>
+      <body>\n
 * \Z -->
       </body>
     </html>
