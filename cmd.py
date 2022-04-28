@@ -5811,7 +5811,7 @@ RegexDictionaryReplacement: #boilerplate
       <body>\n
 * \Z -->
       </body>
-    </html>
+    </html>\n
 
 OrdinaryDictionaryReplacement: #boilerplate-properties
 - queue_position: AFTER #boilerplate
@@ -5936,15 +5936,10 @@ RegexDictionaryReplacement: #escape-idle-html
     --> &amp;
 * [<] (?= [\s] ) --> &lt;
 
-
-RegexDictionaryReplacement: #ensure-trailing-newline
-* (?<! \n ) \Z --> \n
-
 ReplacementSequence: #whitespace
 - queue_position: AFTER #escape-idle-html
 - replacements:
     #reduce-whitespace
-    #ensure-trailing-newline
 
 PlaceholderUnprotectionReplacement: #placeholder-unprotect
 - queue_position: AFTER #whitespace
