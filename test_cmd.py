@@ -586,6 +586,21 @@ Whitespace before closing delimiter:
   def test_cmd_to_html(self):
     
     self.assertEqual(
+      cmd.cmd_to_html('', 'test_cmd.py', verbose_mode_enabled=True),
+'''\
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Title</title>
+</head>
+<body></body>
+</html>
+'''
+    )
+    
+    self.assertEqual(
       cmd.cmd_to_html(
         ################################################################
         # START CMD
