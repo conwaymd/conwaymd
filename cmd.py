@@ -4141,6 +4141,15 @@ class ReplacementMaster:
       )
       sys.exit(GENERIC_ERROR_EXIT_CODE)
     
+    if queue_reference_replacement not in self._replacement_queue:
+      ReplacementMaster.print_error(
+        f'replacement `#{queue_reference_id}` not in queue',
+        rules_file_name,
+        line_number_range_start,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
     replacement.queue_position_type = queue_position_type
     replacement.queue_reference_replacement = queue_reference_replacement
   
