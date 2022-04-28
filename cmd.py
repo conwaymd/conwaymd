@@ -5797,17 +5797,17 @@ RegexDictionaryReplacement: #boilerplate
 - queue_position: AFTER #inline-code
 * \A -->
     <!DOCTYPE html>
-      <html lang="%lang">
-        <head>
-          <meta charset="utf-8">
-          %head-elements-before-viewport
-          <meta name="viewport" content="%viewport-content">
-          %head-elements-after-viewport
-          <title>%title</title>
-          <style>
-            %styles
-          </style>
-        </head>
+    <html lang="%lang">
+      <head>
+        <meta charset="utf-8">
+        %head-elements-before-viewport
+        <meta name="viewport" content="%viewport-content">
+        %head-elements-after-viewport
+        <title>%title</title>
+        <style>
+          %styles
+        </style>
+      </head>
       <body>
 * \Z -->
       </body>
