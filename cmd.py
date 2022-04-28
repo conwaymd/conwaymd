@@ -3846,11 +3846,11 @@ class ReplacementMaster:
   
   @staticmethod
   def stage_negative_flag(
-          replacement,
-          attribute_value,
-          rules_file_name,
-          line_number_range_start,
-          line_number,
+    replacement,
+    attribute_value,
+    rules_file_name,
+    line_number_range_start,
+    line_number,
   ):
     
     negative_flag_match = \
