@@ -889,6 +889,19 @@ r'''
 ### Trailing whitespace     	
 ### Trailing whitespace after hashes #  	
 
+### Below be
+  continuation
+  lines
+
+  ### And this also
+    hath a continuation
+
+### But this
+hath insufficient indentation
+
+###
+  Starter line may be empty
+
 #missing-whitespace
 ####### Excessive opening hashes
 
@@ -1363,6 +1376,15 @@ Header-after-data (seriously, why would you have this?):
 <h3 class="class-1" title="This be fancy">Fancy</h3>
 <h3>Trailing whitespace</h3>
 <h3>Trailing whitespace after hashes</h3>
+<h3>Below be
+continuation
+lines</h3>
+<h3>And this also
+hath a continuation</h3>
+<h3>But this</h3>
+hath insufficient indentation
+<h3>
+Starter line may be empty</h3>
 #missing-whitespace
 ####### Excessive opening hashes
 <h2><code>#paragraphs</code></h2>
