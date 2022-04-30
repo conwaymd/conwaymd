@@ -369,19 +369,25 @@ class TestCmd(unittest.TestCase):
       cmd.HeadingReplacement.build_regex_pattern(
         attribute_specifications=None,
       ),
-      r'^ [^\S\n]*'
+      r'^ (?P<anchoring_whitespace> [^\S\n]* )'
       '(?P<opening_hashes> [#]{1,6} )'
-      r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [^\S\n]* )?'
+      r'(?: [^\S\n]+ (?P<content_starter> [^\n]*? ) )? [^\S\n]*'
+      '(?P<content_continuation> '
+        r'(?: \n (?P=anchoring_whitespace) [^\S\n]+ [^\n]* )*'
+      ' )'
       '[#]*'
       r'[^\S\n]* $'
     )
     
     self.assertEqual(
       cmd.HeadingReplacement.build_regex_pattern(attribute_specifications=''),
-      r'^ [^\S\n]*'
+      r'^ (?P<anchoring_whitespace> [^\S\n]* )'
       '(?P<opening_hashes> [#]{1,6} )'
       r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} )?'
-      r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [^\S\n]* )?'
+      r'(?: [^\S\n]+ (?P<content_starter> [^\n]*? ) )? [^\S\n]*'
+      '(?P<content_continuation> '
+        r'(?: \n (?P=anchoring_whitespace) [^\S\n]+ [^\n]* )*'
+      ' )'
       '[#]*'
       r'[^\S\n]* $'
     )

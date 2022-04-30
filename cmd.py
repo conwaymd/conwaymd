@@ -1921,14 +1921,24 @@ class HeadingReplacement(
   def build_regex_pattern(attribute_specifications):
     
     block_anchoring_regex = \
-            build_block_anchoring_regex(syntax_type_is_block=True)
+            build_block_anchoring_regex(
+              syntax_type_is_block=True,
+              capture_anchoring_whitespace=True,
+            )
     opening_hashes_regex = '(?P<opening_hashes> [#]{1,6} )'
     attribute_specifications_regex = \
             build_attribute_specifications_regex(
               attribute_specifications,
               require_newline=False,
             )
-    content_regex = r'(?: [^\S\n]+ (?P<content> [^\n]*? ) [^\S\n]* )?'
+    content_starter_regex = \
+            r'(?: [^\S\n]+ (?P<content_starter> [^\n]*? ) )? [^\S\n]*'
+    content_continuation_regex = \
+            (
+              '(?P<content_continuation> '
+                r'(?: \n (?P=anchoring_whitespace) [^\S\n]+ [^\n]* )*'
+              ' )'
+            )
     closing_hashes_regex = '[#]*'
     trailing_horizontal_whitespace_regex = r'[^\S\n]* $'
     
@@ -1937,7 +1947,8 @@ class HeadingReplacement(
         block_anchoring_regex,
         opening_hashes_regex,
         attribute_specifications_regex,
-        content_regex,
+        content_starter_regex,
+        content_continuation_regex,
         closing_hashes_regex,
         trailing_horizontal_whitespace_regex,
       ]
@@ -1969,8 +1980,9 @@ class HeadingReplacement(
       else:
         attributes_sequence = ''
       
-      content = match.group('content')
-      content = none_to_empty_string(content)
+      content_starter = match.group('content_starter')
+      content_continuation = match.group('content_continuation')
+      content = none_to_empty_string(content_starter) + content_continuation
       
       substitute = f'<{tag_name}{attributes_sequence}>{content}</{tag_name}>'
       
