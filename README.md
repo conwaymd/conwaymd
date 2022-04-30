@@ -1,4 +1,4 @@
-# Conway-Markdown (CMD), v4
+# Conway-Markdown (CMD) v4
 
 Conway-Markdown is:
 
