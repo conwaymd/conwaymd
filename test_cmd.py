@@ -17,7 +17,7 @@ class TestCmd(unittest.TestCase):
   
   maxDiff = None
   
-  def text_placeholder_master_protect(self):
+  def test_placeholder_master_protect(self):
     self.assertEqual(
       cmd.PlaceholderMaster.protect(''),
       '\uF8FF\uF8FF'
@@ -579,7 +579,7 @@ Whitespace before closing delimiter:
       ('ABC\n', '123\n%%%%%%%\nXYZ')
     )
   
-  def text_extract_separator_normalised_cmd_name(self):
+  def test_extract_separator_normalised_cmd_name(self):
     self.assertEqual(
       cmd.extract_separator_normalised_cmd_name('path/to/cmd_name.cmd'),
       'path/to/cmd_name'
