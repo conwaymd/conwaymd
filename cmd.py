@@ -5166,7 +5166,7 @@ def compute_attribute_specification_matches(attribute_specifications):
           |
         [-] (?P<delete_name> [\S]+ )
           |
-        (?P<boolean_attribute> [\S]+ )
+        (?P<boolean_name> [\S]+ )
       ) ?
       [\s]*
     ''',
@@ -5249,9 +5249,9 @@ def extract_attribute_name_and_value(attribute_specification_match):
   if delete_name is not None:
     return delete_name,
   
-  boolean_attribute = attribute_specification_match.group('boolean_attribute')
-  if boolean_attribute is not None:
-    return boolean_attribute, None
+  boolean_name = attribute_specification_match.group('boolean_name')
+  if boolean_name is not None:
+    return boolean_name, None
   
   return None
 
@@ -5271,7 +5271,7 @@ def build_attributes_sequence(attribute_specifications, use_protection=False):
   w«width»
   h«height»
   -«delete_name»
-  «boolean_attribute»
+  «boolean_name»
   ````
   In the two forms with an explicit equals sign,
   the following abbreviations are allowed for `name`:
