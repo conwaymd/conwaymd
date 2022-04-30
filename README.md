@@ -67,7 +67,7 @@ it will not be turned into a proper Python package.
      -x, --verbose  run in verbose mode (prints every replacement applied)
    ```
 
-**WARNING: on Windows, be careful not to run the `.cmd` files by accident;
+**WARNING: on Windows, be careful not to run any `.cmd` files by accident;
 they might break your computer. God save!**
 
 ## Features
