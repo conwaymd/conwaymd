@@ -5262,8 +5262,8 @@ def build_attributes_sequence(attribute_specifications, use_protection=False):
   
   CMD attribute specifications are of the following forms:
   ````
-  name="«quoted_value»"
-  name=«bare_value»
+  «name»="«quoted_value»"
+  «name»=«bare_value»
   #«id»
   .«class»
   r«rowspan»
