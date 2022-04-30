@@ -1,6 +1,6 @@
 # Conway-Markdown (CMD)
 
-Conway-Markdown is:
+Conway-Markdown (CMD) is:
 
 - A replacement-driven markup language inspired by Markdown.
 - A demonstration of the folly of throwing regex at a parsing problem.
