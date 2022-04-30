@@ -6,8 +6,6 @@
 Convert Conway-Markdown (CMD) to HTML.
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 
-## Structure
-
 CMD files are parsed as
 ````
 «replacement_rules»
@@ -17,15 +15,10 @@ CMD files are parsed as
 where «delimiter» is the first occurrence of
 3-or-more percent signs on its own line.
 If the file is free of «delimiter»,
-thw whole file is parsed is parsed as «main_content».
+the whole file is parsed is parsed as «main_content».
 
-## Replacement rules
-
-TODO
-
-## Main content
-
-TODO
+For details on how «replacement_rules» and «main_content» are parsed,
+see <https://conway-markdown.github.io/>.
 """
 
 
