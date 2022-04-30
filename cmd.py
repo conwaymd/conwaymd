@@ -15,7 +15,7 @@ CMD files are parsed as
 where «delimiter» is the first occurrence of
 3-or-more percent signs on its own line.
 If the file is free of «delimiter»,
-the whole file is parsed is parsed as «main_content».
+the whole file is parsed as «main_content».
 
 For details on how «replacement_rules» and «main_content» are parsed,
 see <https://conway-markdown.github.io/>.
