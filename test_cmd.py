@@ -579,6 +579,12 @@ Whitespace before closing delimiter:
       ('ABC\n', '123\n%%%%%%%\nXYZ')
     )
   
+  def test_extract_basename(self):
+    self.assertEqual(
+      cmd.extract_basename('path/to/cmd_name'),
+      'cmd_name'
+    )
+  
   def test_extract_separator_normalised_cmd_name(self):
     self.assertEqual(
       cmd.extract_separator_normalised_cmd_name('path/to/cmd_name.cmd'),
