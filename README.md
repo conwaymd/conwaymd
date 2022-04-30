@@ -9,6 +9,8 @@ Conway-Markdown is:
 - Implemented in [Python 3.{whatever Debian stable is at}][python3].
 - Licensed under "MIT No Attribution" (MIT-0), see [LICENSE].
 
+For detailed documentation, see <<https://conway-markdown.github.io/>>.
+
 [python3]: https://packages.debian.org/stable/python3
 [LICENSE]: LICENSE
 
