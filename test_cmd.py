@@ -945,6 +945,7 @@ then it `<p>will work</p>`.
 
 CMD version is <code>v%cmd-version</code>.
 CMD name is <code>%cmd-name</code>.
+CMD basename is <code>%cmd-basename</code>.
 
 ## `#backslash-escapes`
 
@@ -1421,6 +1422,7 @@ then it <code>&lt;p&gt;will work&lt;/p&gt;</code>.
 <h2><code>#cmd-properties</code></h2>
 CMD version is <code>v3.999...</code>.
 CMD name is <code>test_cmd.py</code>.
+CMD basename is <code>test_cmd.py</code>.
 <h2><code>#backslash-escapes</code></h2>
 \ # &amp; ( ) * &lt; &gt; [ ] _ { | }
 \\3 \\4 \\\5 \\\6

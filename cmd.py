@@ -428,7 +428,8 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
   ReplacementWithSubstitutions: #«id»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    CMD_VERSION | CMD_NAME | "«substitute»" | '«substitute»' | «substitute»
+    CMD_VERSION | CMD_NAME | CMD_BASENAME |
+            "«substitute»" | '«substitute»' | «substitute»
   [...]
   ````
   """
@@ -847,7 +848,8 @@ class OrdinaryDictionaryReplacement(
   - apply_mode: SEQUENTIAL | SIMULTANEOUS (mandatory)
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    CMD_VERSION | CMD_NAME | "«substitute»" | '«substitute»' | «substitute»
+    CMD_VERSION | CMD_NAME | CMD_BASENAME |
+            "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -967,7 +969,8 @@ class RegexDictionaryReplacement(
   - negative_flag: (def) NONE | «FLAG_NAME»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    CMD_VERSION | CMD_NAME | "«substitute»" | '«substitute»' | «substitute»
+    CMD_VERSION | CMD_NAME | CMD_BASENAME |
+            "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
   ````
@@ -4421,6 +4424,8 @@ class ReplacementMaster:
               |
             (?P<cmd_name_keyword> CMD_NAME )
               |
+            (?P<cmd_basename_keyword> CMD_BASENAME )
+              |
             "(?P<double_quoted_substitute> [\s\S]*? )"
               |
             '(?P<single_quoted_substitute> [\s\S]*? )'
@@ -4468,6 +4473,8 @@ class ReplacementMaster:
       substitute = __version__
     elif substitution_match.group('cmd_name_keyword') is not None:
       substitute = cmd_name
+    elif substitution_match.group('cmd_basename_keyword') is not None:
+      substitute = extract_basename(cmd_name)
     else:
       double_quoted_substitute = \
               substitution_match.group('double_quoted_substitute')
@@ -4518,6 +4525,8 @@ class ReplacementMaster:
       substitute = escape_regex_substitute(__version__)
     elif substitution_match.group('cmd_name_keyword') is not None:
       substitute = escape_regex_substitute(cmd_name)
+    elif substitution_match.group('cmd_basename_keyword') is not None:
+      substitute = escape_regex_substitute(extract_basename(cmd_name))
     else:
       double_quoted_substitute = \
         substitution_match.group('double_quoted_substitute')
@@ -5555,6 +5564,10 @@ def extract_rules_and_content(cmd):
   return replacement_rules, main_content
 
 
+def extract_basename(name):
+  return re.sub(r'\A .* [/]', '', name, flags=re.VERBOSE)
+
+
 def extract_separator_normalised_cmd_name(cmd_file_name):
   
   cmd_name = re.sub(r'[.](cmd) \Z', '', cmd_file_name, flags=re.VERBOSE)
@@ -5849,6 +5862,9 @@ OrdinaryDictionaryReplacement: #cmd-properties
 - apply_mode: SIMULTANEOUS
 * %cmd-version --> CMD_VERSION
 * %cmd-name --> CMD_NAME
+* %cmd-basename --> CMD_BASENAME
+- concluding_replacements:
+    #placeholder-protect
 
 RegexDictionaryReplacement: #boilerplate-protect
 - queue_position: AFTER #cmd-properties
