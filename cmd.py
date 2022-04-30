@@ -2898,7 +2898,7 @@ class ReplacementMaster:
   """
   Object governing the parsing and application of replacement rules.
   
-  ## `legislate` ##
+  ## `legislate`
   
   Parses CMD replacement rule syntax.
   See the constant `CMD_REPLACEMENT_SYNTAX_HELP` above.
@@ -2907,7 +2907,7 @@ class ReplacementMaster:
   - Class declarations are _committed_.
   - Attribute and substitution declarations are _staged_.
   
-  ## `execute` ##
+  ## `execute`
   
   Applies the legislated replacements.
   """
