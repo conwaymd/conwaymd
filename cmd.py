@@ -5038,7 +5038,7 @@ class ReplacementMaster:
 
 def compute_longest_common_prefix(strings):
   
-  shortest_string = min(strings, key=len)
+  shortest_string = min(strings, key=len, default='')
   
   prefix = shortest_string
   while len(prefix) > 0:

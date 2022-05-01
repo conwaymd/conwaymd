@@ -394,6 +394,10 @@ class TestCmd(unittest.TestCase):
   
   def test_compute_longest_common_prefix(self):
     self.assertEqual(
+      cmd.compute_longest_common_prefix([]),
+      ''
+    )
+    self.assertEqual(
       cmd.compute_longest_common_prefix(['a', 'b', 'c', 'd']),
       ''
     )
@@ -714,6 +718,9 @@ BEFORE{ <`` Literal & < > ``> }AFTER
     Retained indentation:
       a lot.
    ```
+  Empty display code:
+  ``
+  ``
 
 ## `#comment-breaker` (custom)
 
@@ -1169,6 +1176,8 @@ and even whitespace before a break element:<br>
 <pre><code>    Retained indentation:
       a lot.
 </code></pre>
+Empty display code:
+<pre><code></code></pre>
 <h2><code>#comment-breaker</code> (custom)</h2>
 &lt;## Sundered be this. ##&gt;
 <strong>Unescaped!</strong>
