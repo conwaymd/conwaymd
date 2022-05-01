@@ -5366,6 +5366,11 @@ BLOCK_TAG_NAMES = [
   'pre',
   'section',
   'table',
+  'tbody',
+  'td',
+  'tfoot',
+  'th',
+  'thead',
   'ul',
 ]
 
