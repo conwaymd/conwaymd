@@ -774,6 +774,12 @@ Comments can remove code. <# `Like so.` #>
 Empty list:
 ======
 ======
+Empty items, indented source:
+  ==
+  -
+  -
+  -
+  ==
 
 ## `#ordered-lists`
 ++++
@@ -1232,6 +1238,14 @@ Hello!
 </ul>
 Empty list:
 <ul>
+</ul>
+Empty items, indented source:
+<ul>
+<li>
+-
+</li>
+<li>
+</li>
 </ul>
 <h2><code>#ordered-lists</code></h2>
 <ol>
