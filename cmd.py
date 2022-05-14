@@ -1570,10 +1570,10 @@ class PartitioningReplacement(
               allow_omission=False,
             )
     if attribute_specifications_regex == '':
-      attribute_specifications_or_whitespace_regex = r'[\s]+'
+      attribute_specifications_or_whitespace_regex = r'[\s]+?'
     else:
       attribute_specifications_or_whitespace_regex = \
-              fr'(?: {attribute_specifications_regex} | [\s]+ )'
+              fr'(?: {attribute_specifications_regex} | [\s]+? )'
     content_regex = build_content_regex()
     attribute_specifications_no_capture_regex = \
             build_attribute_specifications_regex(

@@ -168,7 +168,7 @@ class TestCmd(unittest.TestCase):
       ),
       r'^ [^\S\n]*'
       '(?: [-+*] )'
-      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} | [\s]+ )'
+      r'(?: \{ (?P<attribute_specifications> [^}]*? ) \} | [\s]+? )'
       r'(?P<content> [\s\S]*? )'
       r'(?= ^ [^\S\n]*(?: [-] )(?: \{ [^}]*? \} | [\s]+ ) | \Z )'
     )
@@ -181,7 +181,7 @@ class TestCmd(unittest.TestCase):
       ),
       r'^ [^\S\n]*'
       '(?: HELLO[:] )'
-      r'[\s]+'
+      r'[\s]+?'
       r'(?P<content> [\s\S]*? )'
       r'(?= \Z )'
     )
@@ -1242,7 +1242,8 @@ Empty list:
 Empty items, indented source:
 <ul>
 <li>
--
+</li>
+<li>
 </li>
 <li>
 </li>
