@@ -5897,7 +5897,7 @@ OrdinaryDictionaryReplacement: #backslash-escapes
 
 RegexDictionaryReplacement: #backslash-continuations
 - queue_position: AFTER #backslash-escapes
-* \\ \n [^\S\n]+ -->
+* \\ \n [^\S\n]* -->
 
 ReferenceDefinitionReplacement: #reference-definitions
 - queue_position: AFTER #backslash-continuations
