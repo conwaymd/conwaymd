@@ -1,59 +1,93 @@
 # Conway-Markdown (CMD)
 
-A replacement-based "variant" of Markdown, with fence-style constructs.
-Implemented in Python 3.6+.
+Conway-Markdown (CMD) is:
 
-Licensed under "MIT No Attribution" (MIT-0), see [LICENSE](LICENSE).
+- A replacement-driven markup language inspired by Markdown.
+- A demonstration of the folly of throwing regex at a parsing problem.
+- The result of someone joking that
+  "the filenames would look like Windows executables from the 90s".
+- Implemented in [Python 3.{whatever Debian stable is at}][python3].
+- Licensed under "MIT No Attribution" (MIT-0), see [LICENSE].
 
-For a detailed description of the syntax,
-see the [GitHub pages documentation][cmd-docs] ([repository][cmd-docs-repo]).
+For detailed documentation, see <<https://conway-markdown.github.io/>>.
 
-## Installation
+[python3]: https://packages.debian.org/stable/python3
+[LICENSE]: LICENSE
 
-Since this is just a crappy, single-file regex converter,
-there is no plan on turning it into a proper Python package any time soon.
-In the meantime:
-
-````bash
-$ cd some-directory/
-$ git clone https://github.com/conway-markdown/conway-markdown.git
-````
-
-* If you are using Linux or Mac,
-  make an alias for `some-directory/conway-markdown/cmd.py` and invoke that.
-* If you are using Windows,
-  add `some-directory` to the `%PATH%` variable and invoke `cmd.py`.
 
 ## Usage
 
-Convert a CMD file to HTML:
+Since this is just a shitty single-file script,
+it will not be turned into a proper Python package.
 
-````bash
-$ cmd.py [cmd_name[.[cmd]]]
-````
+### Linux terminals, macOS Terminal, Git BASH for Windows
 
-Omit `[cmd_name[.[cmd]]]` to convert all CMD files,
-except those listed in `.cmdignore`.
+1. Make an alias for `cmd.py`
+   in whatever dotfile you configure your aliases in:
+
+   ```bashrc
+   alias cmd='path/to/cmd.py'
+   ```
+
+2. Invoke the alias to convert a CMD file to HTML:
+
+   ```bash
+   $ cmd [-h] [-v] [-x] [file.cmd]
+
+   Convert Conway-Markdown (CMD) to HTML.
+
+   positional arguments:
+     file.cmd       Name of CMD file to be converted. Abbreviate as `file` or
+                    `file.` for increased productivity. Omit to convert all CMD
+                    files under the working directory.
+
+   optional arguments:
+     -h, --help     show this help message and exit
+     -v, --version  show program's version number and exit
+     -x, --verbose  run in verbose mode (prints every replacement applied)
+   ```
+
+### Windows Command Prompt
+
+1. Add the folder containing `cmd.py` to the `%PATH%` variable
+
+2. Invoke `cmd.py` to convert a CMD file to HTML:
+
+   ```cmd
+   > cmd.py [-h] [-v] [-x] [file.cmd]
+
+   Convert Conway-Markdown (CMD) to HTML.
+
+   positional arguments:
+     file.cmd       Name of CMD file to be converted. Abbreviate as `file` or
+                    `file.` for increased productivity. Omit to convert all CMD
+                    files under the working directory.
+
+   optional arguments:
+     -h, --help     show this help message and exit
+     -v, --version  show program's version number and exit
+     -x, --verbose  run in verbose mode (prints every replacement applied)
+   ```
+
+**WARNING: on Windows, be careful not to run any `.cmd` files by accident;
+they might break your computer. God save!**
+
 
 ## Features
 
-1. Set the [width][attributes] of [images]
-2. Add [`id` and `class`][attributes] to elements
-3. Write [arbitrary text] outside of code elements
-   without using backslash escapes or HTML (ampersand) entities
-4. [Include] content from another file (e.g.&nbsp;a template)
-5. Use [`<b>`, `<i>`, and `<cite>` elements][semantics],
-   not just `<strong>` and `<em>`
-6. Use [`<div>` elements][blocks] without falling back to HTML
-7. [Define your own syntax][regex] as you go.
+- [Specify element attributes] (e.g. `id` and `class`)
+- [Write arbitrary text outside code]
+- [Use `<b>`, `<i>`, and `<cite>` elements], not just `<strong>` and `<em>`
+- [Use `<div>` elements] without falling back to HTML
+- [Define your own syntax] as you go
 
-[cmd-docs]: https://conway-markdown.github.io/
-[cmd-docs-repo]: https://github.com/conway-markdown/conway-markdown.github.io
-
-[images]: https://conway-markdown.github.io/#images
-[attributes]: https://conway-markdown.github.io/#attribute-specifications
-[arbitrary text]: https://conway-markdown.github.io/#cmd-literals
-[include]: https://conway-markdown.github.io/#inclusions
-[semantics]: https://conway-markdown.github.io/#inline-semantics
-[blocks]: https://conway-markdown.github.io/#blocks
-[regex]: https://conway-markdown.github.io/#regex-replacements
+[Specify element attributes]:
+  https://conway-markdown.github.io/#cmd-attribute-specifications
+[Write arbitrary text outside code]:
+  https://conway-markdown.github.io/#literals
+[Use `<b>`, `<i>`, and `<cite>` elements]:
+  https://conway-markdown.github.io/#inline-semantics
+[Use `<div>` elements]:
+  https://conway-markdown.github.io/#divisions
+[Define your own syntax]:
+  https://conway-markdown.github.io/#replacement-rule-syntax
