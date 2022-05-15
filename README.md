@@ -72,6 +72,22 @@ it will not be turned into a proper Python package.
 **WARNING: on Windows, be careful not to run any `.cmd` files by accident;
 they might break your computer. God save!**
 
+
 ## Features
 
-TODO
+- [Specify element attributes] (e.g. `id` and `class`)
+- [Write arbitrary text outside code]
+- [Use `<b>`, `<i>`, and `<cite>` elements], not just `<strong>` and `<em>`
+- [Use `<div>` elements] without falling back to HTML
+- [Define your own syntax] as you go
+
+[Specify element attributes]:
+  https://conway-markdown.github.io/#cmd-attribute-specifications
+[Write arbitrary text outside code]:
+  https://conway-markdown.github.io/#literals
+[Use `<b>`, `<i>`, and `<cite>` elements]:
+  https://conway-markdown.github.io/#inline-semantics
+[Use `<div>` elements]:
+  https://conway-markdown.github.io/#divisions
+[Define your own syntax]:
+  https://conway-markdown.github.io/#replacement-rule-syntax
