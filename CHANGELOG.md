@@ -1,12 +1,15 @@
 # Changelog
 
-This be the changelog for Conway-Markdown (CMD),
-which adhereth unto [Semantic Versioning](https://semver.org/).
-
 
 ## [Unreleased]
 
-**Rewritten from scratch.**
+
+## [v4.0.0] CMDv4 (2022-05-16)
+
+**SEVERELY BREAKING CHANGE!**
+
+Rewritten from scratch.
+Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 ## [v3.1.0] CMD name without directory (2021-07-20)
@@ -134,7 +137,9 @@ which adhereth unto [Semantic Versioning](https://semver.org/).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v3.1.0...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.0.0...HEAD
+[v4.0.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v3.1.0...v4.0.0
 [v3.1.0]:
   https://github.com/conway-markdown/conway-markdown/compare/v3.0.0...v3.1.0
 [v3.0.0]:

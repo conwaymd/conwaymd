@@ -32,7 +32,7 @@ import traceback
 import warnings
 
 
-__version__ = '3.999...'
+__version__ = '4.0.0'
 
 
 GENERIC_ERROR_EXIT_CODE = 1
