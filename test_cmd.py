@@ -980,6 +980,9 @@ This be \
 This be not \\
     continuation, for the backslash is escaped.
 
+Continuation \
+without indent
+
 ## `#reference-definitions`
 
 [good]: https://example.com
@@ -1462,6 +1465,8 @@ CMD basename is <code>test_cmd.py</code>.
 This be continuation.
 This be not \
 continuation, for the backslash is escaped.
+Continuation \
+without indent
 <h2><code>#reference-definitions</code></h2>
 "No"
 [bad]:
