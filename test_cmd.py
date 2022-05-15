@@ -1453,7 +1453,9 @@ code`.
 then it <code>&lt;p&gt;will work&lt;/p&gt;</code>.
 </div>
 <h2><code>#cmd-properties</code></h2>
-CMD version is <code>v3.999...</code>.
+'''
+f'CMD version is <code>v{cmd.__version__}</code>.'
+r'''
 CMD name is <code>test_cmd.py</code>.
 CMD basename is <code>test_cmd.py</code>.
 <h2><code>#backslash-escapes</code></h2>
