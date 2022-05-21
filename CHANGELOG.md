@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Made attribute `apply_mode` default to `SIMULTANEOUS`
+
 
 ## [v4.0.0] CMDv4 (2022-05-16)
 

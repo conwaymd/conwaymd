@@ -838,7 +838,7 @@ class OrdinaryDictionaryReplacement(
   - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
   - positive_flag: (def) NONE | «FLAG_NAME»
   - negative_flag: (def) NONE | «FLAG_NAME»
-  - apply_mode: SEQUENTIAL | SIMULTANEOUS (mandatory)
+  - apply_mode: (def) SIMULTANEOUS | SEQUENTIAL
   * "«pattern»" | '«pattern»' | «pattern»
       -->
     CMD_VERSION | CMD_NAME | CMD_BASENAME |
@@ -850,7 +850,7 @@ class OrdinaryDictionaryReplacement(
   
   def __init__(self, id_, verbose_mode_enabled):
     super().__init__(id_, verbose_mode_enabled)
-    self._apply_substitutions_simultaneously = None
+    self._apply_substitutions_simultaneously = True
     self._simultaneous_regex_pattern_compiled = None
     self._simultaneous_substitute_function = None
   
@@ -876,8 +876,7 @@ class OrdinaryDictionaryReplacement(
     self._apply_substitutions_simultaneously = value
   
   def _validate_mandatory_attributes(self):
-    if self._apply_substitutions_simultaneously is None:
-      raise MissingAttributeException('apply_mode')
+    pass
   
   def _set_apply_method_variables(self):
     if self._apply_substitutions_simultaneously:
@@ -3302,7 +3301,7 @@ class ReplacementMaster:
       r'''
         [\s]*
         (?:
-          (?P<apply_mode> SEQUENTIAL | SIMULTANEOUS )
+          (?P<apply_mode> SIMULTANEOUS | SEQUENTIAL )
             |
           (?P<invalid_value> [\s\S]*? )
         )
