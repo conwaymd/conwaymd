@@ -626,7 +626,6 @@ r'''# Da Rules
 
 OrdinaryDictionaryReplacement: #boilerplate-properties-override
 - queue_position: BEFORE #boilerplate-properties
-- apply_mode: SIMULTANEOUS
 * %lang --> en-AU
 * %title --> "This be a __test__ "
 * %styles -->
