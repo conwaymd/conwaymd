@@ -3297,26 +3297,6 @@ class ReplacementMaster:
     replacement.flag_name_from_letter = flag_name_from_letter
   
   @staticmethod
-  def compute_attribute_specifications_match(attribute_value):
-    return re.fullmatch(
-      r'''
-        [\s]*
-        (?:
-          (?P<none_keyword> NONE )
-            |
-          (?P<empty_keyword> EMPTY )
-            |
-          (?P<attribute_specifications> [\S][\s\S]*? )
-            |
-          (?P<invalid_value> [\s\S]*? )
-        )
-        [\s]*
-      ''',
-      attribute_value,
-      flags=re.ASCII | re.VERBOSE,
-    )
-  
-  @staticmethod
   def compute_apply_mode_match(attribute_value):
     return re.fullmatch(
       r'''
@@ -3357,6 +3337,26 @@ class ReplacementMaster:
     apply_mode = apply_mode_match.group('apply_mode')
     replacement.apply_substitutions_simultaneously = \
             apply_mode == 'SIMULTANEOUS'
+  
+  @staticmethod
+  def compute_attribute_specifications_match(attribute_value):
+    return re.fullmatch(
+      r'''
+        [\s]*
+        (?:
+          (?P<none_keyword> NONE )
+            |
+          (?P<empty_keyword> EMPTY )
+            |
+          (?P<attribute_specifications> [\S][\s\S]*? )
+            |
+          (?P<invalid_value> [\s\S]*? )
+        )
+        [\s]*
+      ''',
+      attribute_value,
+      flags=re.ASCII | re.VERBOSE,
+    )
   
   @staticmethod
   def stage_attribute_specifications(
