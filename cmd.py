@@ -3189,10 +3189,20 @@ class ReplacementMaster:
   
   @staticmethod
   def process_substitution_declaration_line(
+    replacement,
     substitution_declaration_match,
     substitution,
+    rules_file_name,
     line_number,
   ):
+    
+    if replacement is None:
+      ReplacementMaster.print_error(
+        f'substitution declaration without an active class declaration',
+        rules_file_name,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
     
     partial_substitution = \
             substitution_declaration_match.group('partial_substitution')
@@ -4985,8 +4995,10 @@ class ReplacementMaster:
                   )
         substitution, line_number_range_start = \
                 ReplacementMaster.process_substitution_declaration_line(
+                  replacement,
                   substitution_declaration_match,
                   substitution,
+                  rules_file_name,
                   line_number,
                 )
         continue

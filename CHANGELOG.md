@@ -5,6 +5,8 @@
 
 - Added check for an active class declaration
   when processing attribute declarations
+- Added check for an active class declaration
+  when processing substitution declarations
 
 
 ## [v4.1.0] Apply simultaneously by default (2022-05-21)
