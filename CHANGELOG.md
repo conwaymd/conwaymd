@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+- Added check for an active class declaration
+  when processing attribute declarations
+
 
 ## [v4.1.0] Apply simultaneously by default (2022-05-21)
 

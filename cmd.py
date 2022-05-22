@@ -3151,6 +3151,14 @@ class ReplacementMaster:
     line_number,
   ):
     
+    if replacement is None:
+      ReplacementMaster.print_error(
+        f'attribute declaration without an active class declaration',
+        rules_file_name,
+        line_number,
+      )
+      sys.exit(GENERIC_ERROR_EXIT_CODE)
+    
     attribute_name = attribute_declaration_match.group('attribute_name')
     if attribute_name not in replacement.attribute_names():
       ReplacementMaster.print_error(
