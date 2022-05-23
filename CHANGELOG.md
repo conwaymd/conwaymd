@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v4.1.1] URI greed (2022-05-23)
+
 - Fixed specified links URI too greedy
 - Added check for an active class declaration
   when processing attribute declarations
@@ -148,7 +151,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v4.1.0...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.1.1...HEAD
+[v4.1.1]:
+  https://github.com/conway-markdown/conway-markdown/compare/v4.1.0...v4.1.1
 [v4.1.0]:
   https://github.com/conway-markdown/conway-markdown/compare/v4.0.0...v4.1.0
 [v4.0.0]:
