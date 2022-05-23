@@ -1075,6 +1075,10 @@ s<{href='https://evil.com'}https://example.com>
 
 [![alt](src "title")](href 'title2')
 
+In brackets href: ([text](href))
+In brackets title: ([text]("title"))
+In brackets both: ([text](href "title"))
+
 ## `#referenced-links`
 
 [label2]{.test}: /file "title"
@@ -1514,6 +1518,9 @@ span across blocks]<a href="file.svg" title="title" class="test">label</a>
 <a href="spacious/href" title="spacious title">Spacious text.</a>
 <a href="H" title="T">Link</a>
 <a href="href" title="title2"><img alt="alt" src="src" title="title"></a>
+In brackets href: (<a href="href)">text</a>
+In brackets title: (<a href="&quot;title&quot;)">text</a>
+In brackets both: (<a href="href" title="title">text</a>)
 <h2><code>#referenced-links</code></h2>
 <a href="/file" title="title" class="test">Content.</a>
 <a href="/file" title="title" class="test">Space &amp; case test</a>
