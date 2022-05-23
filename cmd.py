@@ -2051,7 +2051,7 @@ class ReferenceDefinitionReplacement(
             )
     colon_regex = '[:]'
     maybe_hanging_whitespace_regex = build_maybe_hanging_whitespace_regex()
-    uri_regex = build_uri_regex()
+    uri_regex = build_uri_regex(be_greedy=True)
     whitespace_then_uri_regex = f'{maybe_hanging_whitespace_regex}{uri_regex}'
     title_regex = build_title_regex()
     whitespace_then_title_regex = \
@@ -2183,7 +2183,7 @@ class SpecifiedImageReplacement(
               require_newline=False,
             )
     opening_parenthesis_regex = r'\('
-    uri_regex = build_uri_regex()
+    uri_regex = build_uri_regex(be_greedy=True)
     whitespace_then_uri_regex = fr'(?: [\s]* {uri_regex} )?'
     title_regex = build_title_regex()
     whitespace_then_title_regex = fr'(?: [\s]* {title_regex} )?'
@@ -2634,7 +2634,7 @@ class SpecifiedLinkReplacement(
               require_newline=False,
             )
     opening_parenthesis_regex = r'\('
-    uri_regex = build_uri_regex()
+    uri_regex = build_uri_regex(be_greedy=True)
     whitespace_then_uri_regex = fr'(?: [\s]* {uri_regex} )?'
     title_regex = build_title_regex()
     whitespace_then_title_regex = fr'(?: [\s]* {title_regex} )?'
@@ -5518,12 +5518,18 @@ def build_extensible_delimiter_closing_regex():
   return '(?P=extensible_delimiter)'
 
 
-def build_uri_regex():
+def build_uri_regex(be_greedy):
+  
+  if be_greedy:
+    greed = ''
+  else:
+    greed = '?'
+  
   return (
     '(?: '
       r'[<] (?P<angle_bracketed_uri> [^>]*? ) [>]'
         ' | '
-      r'(?P<bare_uri> [\S]+ )'
+      fr'(?P<bare_uri> [\S]+{greed} )'
     ' )'
   )
 
