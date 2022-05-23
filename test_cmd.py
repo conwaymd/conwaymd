@@ -1076,7 +1076,7 @@ s<{href='https://evil.com'}https://example.com>
 [![alt](src "title")](href 'title2')
 
 In brackets href: ([text](href))
-In brackets title: ([text]("title"))
+In brackets title: ([text]("title only"))
 In brackets both: ([text](href "title"))
 
 ## `#referenced-links`
@@ -1519,7 +1519,7 @@ span across blocks]<a href="file.svg" title="title" class="test">label</a>
 <a href="H" title="T">Link</a>
 <a href="href" title="title2"><img alt="alt" src="src" title="title"></a>
 In brackets href: (<a href="href">text</a>)
-In brackets title: (<a href="&quot;title&quot;">text</a>)
+In brackets title: (<a title="title only">text</a>)
 In brackets both: (<a href="href" title="title">text</a>)
 <h2><code>#referenced-links</code></h2>
 <a href="/file" title="title" class="test">Content.</a>
