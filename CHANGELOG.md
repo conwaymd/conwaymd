@@ -3,6 +3,7 @@
 
 ## [Unreleased]
 
+- Fixed specified links URI too greedy
 - Added check for an active class declaration
   when processing attribute declarations
 - Added check for an active class declaration

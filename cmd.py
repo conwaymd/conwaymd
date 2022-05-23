@@ -2183,7 +2183,7 @@ class SpecifiedImageReplacement(
               require_newline=False,
             )
     opening_parenthesis_regex = r'\('
-    uri_regex = build_uri_regex(be_greedy=True)
+    uri_regex = build_uri_regex(be_greedy=False)
     whitespace_then_uri_regex = fr'(?: [\s]* {uri_regex} )?'
     title_regex = build_title_regex()
     whitespace_then_title_regex = fr'(?: [\s]* {title_regex} )?'
@@ -2634,7 +2634,7 @@ class SpecifiedLinkReplacement(
               require_newline=False,
             )
     opening_parenthesis_regex = r'\('
-    uri_regex = build_uri_regex(be_greedy=True)
+    uri_regex = build_uri_regex(be_greedy=False)
     whitespace_then_uri_regex = fr'(?: [\s]* {uri_regex} )?'
     title_regex = build_title_regex()
     whitespace_then_title_regex = fr'(?: [\s]* {title_regex} )?'
