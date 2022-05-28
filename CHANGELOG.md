@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Implemented `CLEAN_URL` keyword for substitutes
+
 
 ## [v4.1.1] URI greed (2022-05-23)
 

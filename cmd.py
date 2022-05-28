@@ -421,7 +421,7 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
   ReplacementWithSubstitutions: #«id»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    CMD_VERSION | CMD_NAME | CMD_BASENAME |
+    CMD_VERSION | CMD_NAME | CMD_BASENAME | CLEAN_URL |
             "«substitute»" | '«substitute»' | «substitute»
   [...]
   ````
@@ -841,7 +841,7 @@ class OrdinaryDictionaryReplacement(
   - apply_mode: (def) SIMULTANEOUS | SEQUENTIAL
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    CMD_VERSION | CMD_NAME | CMD_BASENAME |
+    CMD_VERSION | CMD_NAME | CMD_BASENAME | CLEAN_URL |
             "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
@@ -961,7 +961,7 @@ class RegexDictionaryReplacement(
   - negative_flag: (def) NONE | «FLAG_NAME»
   * "«pattern»" | '«pattern»' | «pattern»
       -->
-    CMD_VERSION | CMD_NAME | CMD_BASENAME |
+    CMD_VERSION | CMD_NAME | CMD_BASENAME | CLEAN_URL |
             "«substitute»" | '«substitute»' | «substitute»
   [...]
   - concluding_replacements: (def) NONE | #«id» [...]
@@ -4436,6 +4436,8 @@ class ReplacementMaster:
               |
             (?P<cmd_basename_keyword> CMD_BASENAME )
               |
+            (?P<clean_url_keyword> CLEAN_URL )
+              |
             "(?P<double_quoted_substitute> [\s\S]*? )"
               |
             '(?P<single_quoted_substitute> [\s\S]*? )'
@@ -4485,6 +4487,8 @@ class ReplacementMaster:
       substitute = cmd_name
     elif substitution_match.group('cmd_basename_keyword') is not None:
       substitute = extract_basename(cmd_name)
+    elif substitution_match.group('clean_url_keyword') is not None:
+      substitute = make_clean_url(cmd_name)
     else:
       double_quoted_substitute = \
               substitution_match.group('double_quoted_substitute')
@@ -4537,6 +4541,8 @@ class ReplacementMaster:
       substitute = escape_regex_substitute(cmd_name)
     elif substitution_match.group('cmd_basename_keyword') is not None:
       substitute = escape_regex_substitute(extract_basename(cmd_name))
+    elif substitution_match.group('clean_url_keyword') is not None:
+      substitute = escape_regex_substitute(make_clean_url(cmd_name))
     else:
       double_quoted_substitute = \
         substitution_match.group('double_quoted_substitute')
@@ -5589,6 +5595,15 @@ def extract_rules_and_content(cmd):
 
 def extract_basename(name):
   return re.sub(r'\A .* [/]', '', name, flags=re.VERBOSE)
+
+
+def make_clean_url(cmd_name):
+  return re.sub(
+    r'(?P<last_separator> \A | [/] ) index \Z',
+    r'\g<last_separator>',
+    cmd_name,
+    flags=re.VERBOSE,
+  )
 
 
 def extract_separator_normalised_cmd_name(cmd_file_name):
