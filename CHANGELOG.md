@@ -4,6 +4,7 @@
 ## [Unreleased]
 
 - Implemented `CLEAN_URL` keyword for substitutes
+- Added `%clean-url` to `#cmd-properties` in `STANDARD_RULES`
 
 
 ## [v4.1.1] URI greed (2022-05-23)
