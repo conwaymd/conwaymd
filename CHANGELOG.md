@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v4.2.0] Clean URLs (2022-05-28)
+
 - Implemented `CLEAN_URL` keyword for substitutes
 - Added `%clean-url` to `#cmd-properties` in `STANDARD_RULES`
 
@@ -154,7 +157,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v4.1.1...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.2.0...HEAD
+[v4.2.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v4.1.1...v4.2.0
 [v4.1.1]:
   https://github.com/conway-markdown/conway-markdown/compare/v4.1.0...v4.1.1
 [v4.1.0]:
