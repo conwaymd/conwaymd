@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Allowed full stop `.` in CMD replacement IDs
+
 
 ## [v4.2.1] CMDR comments fix (2022-05-29)
 
