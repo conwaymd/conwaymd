@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Fixed CMDR comments inadvertently committing replacements
+
 
 ## [v4.2.0] Clean URLs (2022-05-28)
 

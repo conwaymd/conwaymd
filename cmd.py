@@ -4848,8 +4848,7 @@ class ReplacementMaster:
     for line_number, line \
     in enumerate(replacement_rules.splitlines(), start=1):
       
-      if ReplacementMaster.is_whitespace_only(line) \
-      or ReplacementMaster.is_comment(line):
+      if ReplacementMaster.is_whitespace_only(line):
         if attribute_name is not None or substitution is not None:
           attribute_name, attribute_value, \
           substitution, \
@@ -4876,6 +4875,9 @@ class ReplacementMaster:
                     rules_file_name,
                     line_number,
                   )
+        continue
+      
+      if ReplacementMaster.is_comment(line):
         continue
       
       rules_inclusion_match = \
