@@ -642,7 +642,7 @@ Whitespace before closing delimiter:
         ################################################################
 r'''# Da Rules
 
-OrdinaryDictionaryReplacement: #boilerplate-properties-override
+OrdinaryDictionaryReplacement: #.boilerplate-properties-override
 - queue_position: BEFORE #boilerplate-properties
 * %lang --> en-AU
 * %title --> "This be a __test__ "
@@ -654,7 +654,7 @@ OrdinaryDictionaryReplacement: #boilerplate-properties-override
       font-family: serif;
     }
 
-FixedDelimitersReplacement: #comment-breaker
+FixedDelimitersReplacement: #.comment-breaker
 - queue_position: BEFORE #comments
 - syntax_type: INLINE
 - allowed_flags:
@@ -667,7 +667,7 @@ FixedDelimitersReplacement: #comment-breaker
     #placeholder-protect
 - closing_delimiter: |>
 
-OrdinaryDictionaryReplacement: #test-apply-mode-sequential
+OrdinaryDictionaryReplacement: #.test-apply-mode-sequential
 - queue_position: BEFORE #placeholder-unprotect
 - apply_mode: SEQUENTIAL
 * @1 --> @2
@@ -675,7 +675,7 @@ OrdinaryDictionaryReplacement: #test-apply-mode-sequential
 * @3 --> @4
 * @4 --> @5
 
-OrdinaryDictionaryReplacement: #test-apply-mode-simultaneous
+OrdinaryDictionaryReplacement: #.test-apply-mode-simultaneous
 - queue_position: BEFORE #placeholder-unprotect
 - apply_mode: SIMULTANEOUS
 * !1 --> !2
@@ -1589,7 +1589,7 @@ across lines</b>.
     self.assertEqual(
       cmd.cmd_to_html(
 r'''
-RegexDictionaryReplacement: #delete-everything
+RegexDictionaryReplacement: #.delete-everything
 - queue_position: AFTER #placeholder-unprotect
 * [\s\S]* -->
 
