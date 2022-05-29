@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [4.3.0] Full stops in replacement IDs (2022-05-29)
+
 - Allowed full stop `.` in CMD replacement IDs
 
 
@@ -164,7 +167,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v4.2.1...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.3.0...HEAD
+[v4.3.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v4.2.1...v4.3.0
 [v4.2.1]:
   https://github.com/conway-markdown/conway-markdown/compare/v4.2.0...v4.2.1
 [v4.2.0]:
