@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v4.2.1] CMDR comments fix (2022-05-29)
+
 - Fixed CMDR comments inadvertently committing replacements
 
 
@@ -159,7 +162,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v4.2.0...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.2.1...HEAD
+[v4.2.1]:
+  https://github.com/conway-markdown/conway-markdown/compare/v4.2.0...v4.2.1
 [v4.2.0]:
   https://github.com/conway-markdown/conway-markdown/compare/v4.1.1...v4.2.0
 [v4.1.1]:
