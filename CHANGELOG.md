@@ -4,7 +4,7 @@
 ## [Unreleased]
 
 
-## [4.3.0] Full stops in replacement IDs (2022-05-29)
+## [v4.3.0] Full stops in replacement IDs (2022-05-29)
 
 - Allowed full stop `.` in CMD replacement IDs
 
