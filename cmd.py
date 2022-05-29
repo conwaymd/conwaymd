@@ -4090,7 +4090,7 @@ class ReplacementMaster:
             |
           (?P<queue_position_type> BEFORE | AFTER )
           [ ]
-          [#] (?P<queue_reference_id> [a-z-]+ )
+          [#] (?P<queue_reference_id> [a-z-.]+ )
             |
           (?P<invalid_value> [\s\S]*? )
         )

@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Fixed `queue_position` not allowing full stop in ID
+
 
 ## [v4.3.0] Full stops in replacement IDs (2022-05-29)
 
