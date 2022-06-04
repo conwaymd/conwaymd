@@ -5916,8 +5916,10 @@ RegexDictionaryReplacement: #boilerplate-protect
 OrdinaryDictionaryReplacement: #backslash-escapes
 - queue_position: AFTER #boilerplate-protect
 * \\ --> \
+* \" --> "
 * \# --> #
 * \& --> &amp;
+* \' --> '
 * \( --> (
 * \) --> )
 * \* --> *

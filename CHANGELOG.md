@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Added backslash escapes for single and double quotes
+
 
 ## [v4.3.1] queue_position ID fix (2022-05-29)
 

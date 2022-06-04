@@ -986,7 +986,7 @@ Clean URL is <code>%clean-url</code>.
 
 ## `#backslash-escapes`
 
-\\ \# \& \( \) \* \< \> \[ \] \_ \{ \| \}
+\\ \" \# \& \' \( \) \* \< \> \[ \] \_ \{ \| \}
 \\\3 \\\\4 \\\\\5 \\\\\\6
 [space]\ [space]
 [tab]\t[tab]
@@ -1482,7 +1482,7 @@ CMD name is <code>test_cmd.py</code>.
 CMD basename is <code>test_cmd.py</code>.
 Clean URL is <code>test_cmd.py</code>.
 <h2><code>#backslash-escapes</code></h2>
-\ # &amp; ( ) * &lt; &gt; [ ] _ { | }
+\ " # &amp; ' ( ) * &lt; &gt; [ ] _ { | }
 \\3 \\4 \\\5 \\\6
 [space] [space]
 [tab]	[tab]
