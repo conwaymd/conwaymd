@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v4.4.0] Quote escapes (2022-06-04)
+
 - Added backslash escapes for single and double quotes
 
 
@@ -174,7 +177,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v4.3.1...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.4.0...HEAD
+[v4.4.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v4.3.1...v4.4.0
 [v4.3.1]:
   https://github.com/conway-markdown/conway-markdown/compare/v4.3.0...v4.3.1
 [v4.3.0]:
