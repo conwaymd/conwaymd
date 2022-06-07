@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v4.5.0] CLI multiple CMD files (2022-06-07)
+
 - Made command line accept multiple CMD file name arguments
 
 
@@ -179,7 +182,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v4.4.0...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.5.0...HEAD
+[v4.5.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v4.4.0...v4.5.0
 [v4.4.0]:
   https://github.com/conway-markdown/conway-markdown/compare/v4.3.1...v4.4.0
 [v4.3.1]:
