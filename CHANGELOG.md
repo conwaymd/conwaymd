@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Made command line accept multiple CMD file name arguments
+
 
 ## [v4.4.0] Quote escapes (2022-06-04)
 

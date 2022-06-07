@@ -32,7 +32,7 @@ it will not be turned into a proper Python package.
 2. Invoke the alias to convert a CMD file to HTML:
 
    ```bash
-   $ cmd [-h] [-v] [-x] [file.cmd]
+   $ cmd [-h] [-v] [-x] [file.cmd ...]
 
    Convert Conway-Markdown (CMD) to HTML.
 
@@ -54,7 +54,7 @@ it will not be turned into a proper Python package.
 2. Invoke `cmd.py` to convert a CMD file to HTML:
 
    ```cmd
-   > cmd.py [-h] [-v] [-x] [file.cmd]
+   > cmd.py [-h] [-v] [-x] [file.cmd ...]
 
    Convert Conway-Markdown (CMD) to HTML.
 

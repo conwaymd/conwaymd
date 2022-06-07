@@ -6136,11 +6136,11 @@ def parse_command_line_arguments():
     help=VERBOSE_MODE_HELP,
   )
   argument_parser.add_argument(
-    'cmd_file_name_argument',
-    default='',
+    'cmd_file_name_arguments',
+    default=[],
     help=CMD_FILE_NAME_HELP,
     metavar='file.cmd',
-    nargs='?',
+    nargs='*',
   )
   
   return argument_parser.parse_args()
@@ -6149,16 +6149,16 @@ def parse_command_line_arguments():
 def main():
   
   parsed_arguments = parse_command_line_arguments()
-  cmd_file_name_argument = parsed_arguments.cmd_file_name_argument
+  cmd_file_name_arguments = parsed_arguments.cmd_file_name_arguments
   verbose_mode_enabled = parsed_arguments.verbose_mode_enabled
   
-  if cmd_file_name_argument != '':
-    generate_html_file(
-      cmd_file_name_argument,
-      verbose_mode_enabled,
-      uses_command_line_argument=True,
-    )
-    return
+  if len(cmd_file_name_arguments) > 0:
+    for cmd_file_name_argument in cmd_file_name_arguments:
+      generate_html_file(
+        cmd_file_name_argument,
+        verbose_mode_enabled,
+        uses_command_line_argument=True,
+      )
   else:
     for path, _, file_names in os.walk(os.curdir):
       for file_name in file_names:
