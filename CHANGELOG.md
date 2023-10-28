@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Reformatted with 4-space indent and 120 code points per line
+
 
 ## [v4.5.0] CLI multiple CMD files (2022-06-07)
 
