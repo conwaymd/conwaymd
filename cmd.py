@@ -5396,21 +5396,13 @@ def main():
 
     if len(cmd_file_name_arguments) > 0:
         for cmd_file_name_argument in cmd_file_name_arguments:
-            generate_html_file(
-                cmd_file_name_argument,
-                verbose_mode_enabled,
-                uses_command_line_argument=True,
-            )
+            generate_html_file(cmd_file_name_argument, verbose_mode_enabled, uses_command_line_argument=True)
     else:
         for path, _, file_names in os.walk(os.curdir):
             for file_name in file_names:
                 if is_cmd_file(file_name):
                     cmd_file_name = os.path.join(path, file_name)
-                    generate_html_file(
-                        cmd_file_name,
-                        verbose_mode_enabled,
-                        uses_command_line_argument=False,
-                    )
+                    generate_html_file(cmd_file_name, verbose_mode_enabled, uses_command_line_argument=False)
 
 
 if __name__ == '__main__':
