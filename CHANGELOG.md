@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v4.5.2] Sorted walk (2023-11-12)
+
 - Enforced sorting of automatic walk over CMD files
 
 
@@ -189,7 +192,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v4.5.1...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.5.2...HEAD
+[v4.5.2]:
+  https://github.com/conway-markdown/conway-markdown/compare/v4.5.1...v4.5.2
 [v4.5.1]:
   https://github.com/conway-markdown/conway-markdown/compare/v4.5.0...v4.5.1
 [v4.5.0]:

@@ -27,7 +27,7 @@ import sys
 import traceback
 import warnings
 
-__version__ = '4.5.1'
+__version__ = '4.5.2'
 
 GENERIC_ERROR_EXIT_CODE = 1
 COMMAND_LINE_ERROR_EXIT_CODE = 2
