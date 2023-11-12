@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Enforced sorting of automatic walk over CMD files
+
 
 ## [v4.5.1] Source reformat (2023-11-12)
 
