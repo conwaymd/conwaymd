@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v4.5.1] Source reformat (2023-11-12)
+
 - Reformatted with 4-space indent and 120 code points per line
 
 
@@ -184,7 +187,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v4.5.0...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.5.1...HEAD
+[v4.5.1]:
+  https://github.com/conway-markdown/conway-markdown/compare/v4.5.0...v4.5.1
 [v4.5.0]:
   https://github.com/conway-markdown/conway-markdown/compare/v4.4.0...v4.5.0
 [v4.4.0]:
