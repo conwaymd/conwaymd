@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Allowed digits in replacement rule IDs
+
 
 ## [v4.5.2] Sorted walk (2023-11-12)
 

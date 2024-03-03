@@ -2623,7 +2623,7 @@ class ReplacementMaster:
             r'''
                 (?P<class_name> [A-Za-z]+ ) [:]
                 [\s]+
-                [#] (?P<id_> [a-z-.]+ )
+                [#] (?P<id_> [a-z0-9-.]+ )
             ''',
             line,
             flags=re.ASCII | re.VERBOSE,
@@ -2975,7 +2975,7 @@ class ReplacementMaster:
                 (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
                     |
                 (?:
-                    [#] (?P<id_> [a-z-.]+ ) (?= [\s] | \Z )
+                    [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
                         |
                     (?P<invalid_syntax> [\S]+ )
                 )
@@ -3046,7 +3046,7 @@ class ReplacementMaster:
                 (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
                     |
                 (?:
-                    [#] (?P<id_> [a-z-.]+ ) (?= [\s] | \Z )
+                    [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
                         |
                     (?P<invalid_syntax> [\S]+ )
                 )
@@ -3602,7 +3602,7 @@ class ReplacementMaster:
                 (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
                     |
                 (?:
-                    [#] (?P<id_> [a-z-.]+ ) (?= [\s] | \Z )
+                    [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
                         |
                     (?P<invalid_syntax> [\S]+ )
                 )
