@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v4.6.0] Digits in IDs (2024-03-03)
+
 - Allowed digits in replacement rule IDs
 
 
@@ -194,7 +197,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conway-markdown/conway-markdown/compare/v4.5.2...HEAD
+  https://github.com/conway-markdown/conway-markdown/compare/v4.6.0...HEAD
+[v4.6.0]:
+  https://github.com/conway-markdown/conway-markdown/compare/v4.5.2...v4.6.0
 [v4.5.2]:
   https://github.com/conway-markdown/conway-markdown/compare/v4.5.1...v4.5.2
 [v4.5.1]:
