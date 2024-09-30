@@ -14,16 +14,6 @@ import unittest
 class TestCmd(unittest.TestCase):
     maxDiff = None
 
-    def test_placeholder_master_protect(self):
-        self.assertEqual(cmd.PlaceholderMaster.protect(''), '\uF8FF\uF8FF')
-        self.assertEqual(cmd.PlaceholderMaster.protect('$'), '\uF8FF\uE024\uF8FF')
-        self.assertEqual(cmd.PlaceholderMaster.protect('£'), '\uF8FF\uE0C2\uE0A3\uF8FF')
-        self.assertEqual(cmd.PlaceholderMaster.protect('ह'), '\uF8FF\uE0E0\uE0A4\uE0B9\uF8FF')
-        self.assertEqual(cmd.PlaceholderMaster.protect('€'), '\uF8FF\uE0E2\uE082\uE0AC\uF8FF')
-        self.assertEqual(cmd.PlaceholderMaster.protect('한'), '\uF8FF\uE0ED\uE095\uE09C\uF8FF')
-        self.assertEqual(cmd.PlaceholderMaster.protect('𐍈'), '\uF8FF\uE0F0\uE090\uE08D\uE088\uF8FF')
-        self.assertEqual(cmd.PlaceholderMaster.protect('一鿐'), '\uF8FF\uE0E4\uE0B8\uE080\uE0E9\uE0BF\uE090\uF8FF')
-
     def test_ordinary_dictionary_replacement_build_regex_pattern(self):
         self.assertEqual(
             cmd.OrdinaryDictionaryReplacement.build_simultaneous_regex_pattern(substitute_from_pattern={}),
