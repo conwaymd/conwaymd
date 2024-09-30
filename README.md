@@ -15,62 +15,76 @@ For detailed documentation, see <<https://conway-markdown.github.io/>>.
 [LICENSE]: LICENSE
 
 
-## Usage
+## Installation
 
-Since this is just a shitty single-file script,
-it will not be turned into a proper Python package.
+```bash
+$ pip3 install conway-markdown
+```
 
-### Linux terminals, macOS Terminal, Git BASH for Windows
 
-1. Make an alias for `cmd.py`
-   in whatever dotfile you configure your aliases in:
+## Usage (command line)
 
-   ```bashrc
-   alias cmd='path/to/cmd.py'
-   ```
+```bash
+$ cmd [-h] [-v] [-a] [-x] [file.cmd ...]
 
-2. Invoke the alias to convert a CMD file to HTML:
+Convert Conway-Markdown (CMD) to HTML.
 
-   ```bash
-   $ cmd [-h] [-v] [-x] [file.cmd ...]
+positional arguments:
+  file.cmd       name of CMD file to be converted (can be abbreviated as
+                 `file` or `file.` for increased productivity)
 
-   Convert Conway-Markdown (CMD) to HTML.
+options:
+  -h, --help     show this help message and exit
+  -v, --version  show program's version number and exit
+  -a, --all      convert all CMD files under the working directory
+  -x, --verbose  run in verbose mode (prints every replacement applied)
+```
 
-   positional arguments:
-     file.cmd       Name of CMD file to be converted. Abbreviate as `file` or
-                    `file.` for increased productivity. Omit to convert all CMD
-                    files under the working directory.
+On Windows:
+- Use the alias `cmdpy` instead of `cmd` to avoid summoning Command Prompt.
+- **Beware not to run any `.cmd` files by accident; they might break your computer. God save!**
 
-   optional arguments:
-     -h, --help     show this help message and exit
-     -v, --version  show program's version number and exit
-     -x, --verbose  run in verbose mode (prints every replacement applied)
-   ```
 
-### Windows Command Prompt
+## Usage (scripting example)
 
-1. Add the folder containing `cmd.py` to the `%PATH%` variable
+```python
+from cmd.core import cmd_to_html
 
-2. Invoke `cmd.py` to convert a CMD file to HTML:
+cmd_content = '''
+# Test
+==
+- This is a *near*-minimal test.
+- Here be [__dragons__].
+==
+[__dragons__]: https://example.com/
+'''
 
-   ```cmd
-   > cmd.py [-h] [-v] [-x] [file.cmd ...]
+html_content = cmd_to_html(cmd_content, cmd_file_name='index.cmd')
 
-   Convert Conway-Markdown (CMD) to HTML.
+print(html_content)
+```
 
-   positional arguments:
-     file.cmd       Name of CMD file to be converted. Abbreviate as `file` or
-                    `file.` for increased productivity. Omit to convert all CMD
-                    files under the working directory.
-
-   optional arguments:
-     -h, --help     show this help message and exit
-     -v, --version  show program's version number and exit
-     -x, --verbose  run in verbose mode (prints every replacement applied)
-   ```
-
-**WARNING: on Windows, be careful not to run any `.cmd` files by accident;
-they might break your computer. God save!**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Title</title>
+</head>
+<body>
+<h1>Test</h1>
+<ul>
+<li>
+This is a <em>near</em>-minimal test.
+</li>
+<li>
+Here be <a href="https://example.com/"><b>dragons</b></a>.
+</li>
+</ul>
+</body>
+</html>
+```
 
 
 ## Features
