@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
-
 """
-# cmd.py
+# Conway-Markdown: core.py
 
-Convert Conway-Markdown (CMD) to HTML.
+Core conversion logic.
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 
 CMD files are parsed as
