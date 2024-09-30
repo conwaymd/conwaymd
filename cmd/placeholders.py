@@ -1,8 +1,9 @@
 """
 # Conway-Markdown: placeholders.py
 
-Placeholder protection.
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
+
+Placeholder protection.
 """
 
 import re

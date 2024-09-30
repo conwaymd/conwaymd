@@ -1,8 +1,9 @@
 """
 # Conway-Markdown: core.py
 
-Core conversion logic.
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
+
+Core conversion logic.
 
 CMD files are parsed as
 ````

@@ -1,8 +1,9 @@
 """
 # Conway-Markdown: utilities.py
 
-Common utility functions.
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
+
+Common utility functions.
 """
 
 import re

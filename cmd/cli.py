@@ -1,8 +1,9 @@
 """
 # Conway-Markdown: cli.py
 
-Command-line interface.
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
+
+Command-line interface.
 """
 
 import argparse

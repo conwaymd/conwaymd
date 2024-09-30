@@ -1,8 +1,9 @@
 """
 # Conway-Markdown: idioms.py
 
-Common idioms.
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
+
+Common idioms.
 """
 
 import re
