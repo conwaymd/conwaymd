@@ -95,6 +95,19 @@ def escape_regex_substitute(substitute):
     return substitute.replace('\\', r'\\')
 
 
+def extract_basename(name):
+    return re.sub(pattern=r'\A .* [/]', repl='', string=name, flags=re.VERBOSE)
+
+
+def make_clean_url(cmd_name):
+    return re.sub(
+        pattern=r'(?P<last_separator> \A | [/] ) index \Z',
+        repl=r'\g<last_separator>',
+        string=cmd_name,
+        flags=re.VERBOSE,
+    )
+
+
 def none_to_empty_string(string):
     if string is None:
         return ''
