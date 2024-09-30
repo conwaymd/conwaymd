@@ -3,7 +3,7 @@
 
 Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 
-The high power that governs the conversion logic.
+The higher power that governs the conversion logic.
 """
 
 import os
