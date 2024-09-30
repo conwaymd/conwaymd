@@ -1000,6 +1000,7 @@ across lines</b>.
             ################################################################
             # END HTML
             ################################################################
+            ,
         )
 
         self.assertEqual(
@@ -1017,7 +1018,7 @@ Everything is everything, and everything is dumb.
                 ,
                 'test_cmd.py',
             ),
-            ''
+            '',
         )
 
 

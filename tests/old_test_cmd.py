@@ -25,7 +25,6 @@ class TestCmd(unittest.TestCase):
         self.assertEqual(cmd.PlaceholderMaster.protect('一鿐'), '\uF8FF\uE0E4\uE0B8\uE080\uE0E9\uE0BF\uE090\uF8FF')
 
     def test_ordinary_dictionary_replacement_build_regex_pattern(self):
-
         self.assertEqual(
             cmd.OrdinaryDictionaryReplacement.build_simultaneous_regex_pattern(substitute_from_pattern={}),
             ''
@@ -413,32 +412,6 @@ Whitespace before closing delimiter:
         self.assertEqual(cmd.escape_attribute_value_html('&#x123456;'), '&#x123456;')
         self.assertEqual(cmd.escape_attribute_value_html('&#XAbCdeF;'), '&#XAbCdeF;')
         self.assertEqual(cmd.escape_attribute_value_html('&#x1234567;'), '&amp;#x1234567;')
-
-    def test_build_attributes_sequence(self):
-        self.assertEqual(cmd.build_attributes_sequence(''), '')
-        self.assertEqual(cmd.build_attributes_sequence('  '), '')
-        self.assertEqual(cmd.build_attributes_sequence('\t'), '')
-        self.assertEqual(cmd.build_attributes_sequence('   \n name=value\n    '), ' name="value"')
-        self.assertEqual(cmd.build_attributes_sequence(' empty1="" empty2=  boolean'), ' empty1="" empty2="" boolean')
-        self.assertEqual(
-            cmd.build_attributes_sequence('qv="quoted value" bv=bare-value'),
-            ' qv="quoted value" bv="bare-value"'
-        )
-        self.assertEqual(cmd.build_attributes_sequence('-before before after -after'), ' before')
-        self.assertEqual(cmd.build_attributes_sequence('-before before=no after=yes -after'), ' before="no"')
-        self.assertEqual(cmd.build_attributes_sequence('.1 .2 .3 .4 #a #b #c -id -class'), '')
-        self.assertEqual(
-            cmd.build_attributes_sequence('#=top .=good    l=en    r=3    c=2'),
-            ' id="top" class="good" lang="en" rowspan="3" colspan="2"'
-        )
-        self.assertEqual(
-            cmd.build_attributes_sequence('id=x #y .a .b name=value .=c class="d"'),
-            ' id="y" class="a b c d" name="value"'
-        )
-        self.assertEqual(
-            cmd.build_attributes_sequence('w="320" h=16 s="font-weight: bold"'),
-            ' width="320" height="16" style="font-weight: bold"'
-        )
 
     def test_build_flags_regex(self):
         self.assertEqual(cmd.build_flags_regex({}, False), '')
