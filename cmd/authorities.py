@@ -36,7 +36,7 @@ from cmd.employables import (
 from cmd.exceptions import MissingAttributeException
 from cmd.idioms import build_block_tag_regex
 from cmd.references import ReferenceMaster
-from cmd.utilities import escape_regex_substitute, extract_basename, make_clean_url, none_to_empty_string
+from cmd.utilities import none_to_empty_string
 
 
 CMD_REPLACEMENT_SYNTAX_HELP = '''\
@@ -1943,3 +1943,20 @@ class ReplacementAuthority:
             string = replacement.apply(string)
 
         return string
+
+
+def escape_regex_substitute(substitute):
+    return substitute.replace('\\', r'\\')
+
+
+def extract_basename(name):
+    return re.sub(pattern=r'\A .* [/]', repl='', string=name, flags=re.VERBOSE)
+
+
+def make_clean_url(cmd_name):
+    return re.sub(
+        pattern=r'(?P<last_separator> \A | [/] ) index \Z',
+        repl=r'\g<last_separator>',
+        string=cmd_name,
+        flags=re.VERBOSE,
+    )
