@@ -19,8 +19,8 @@ DESCRIPTION = '''
     Convert Conway-Markdown (CMD) to HTML.
 '''
 CMD_FILE_NAME_HELP = '''
-    Name of CMD file to be converted.
-    Abbreviate as `file` or `file.` for increased productivity.
+    name of CMD file to be converted
+    (can be abbreviated as `file` or `file.` for increased productivity)
 '''
 ALL_MODE_HELP = '''
     convert all CMD files under the working directory
