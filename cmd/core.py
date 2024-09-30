@@ -69,7 +69,7 @@ In CMD replacement rule syntax, a line must be one of the following:
 '''
 
 
-class ReplacementMaster:
+class ReplacementAuthority:
     """
     Object governing the parsing and application of replacement rules.
 
@@ -150,7 +150,7 @@ class ReplacementMaster:
                             f'`{opened_file_name}`'
                             for opened_file_name in self._opened_file_names
                         )
-                        ReplacementMaster.print_error(
+                        ReplacementAuthority.print_error(
                             f'recursive inclusion: {recursive_inclusion_string}',
                             rules_file_name,
                             line_number,
@@ -159,7 +159,7 @@ class ReplacementMaster:
                 self._opened_file_names.append(included_file_name)
                 replacement_rules = included_file.read()
         except FileNotFoundError:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'file `{included_file_name}` (relative to terminal) not found',
                 rules_file_name,
                 line_number,
@@ -221,7 +221,7 @@ class ReplacementMaster:
         elif class_name == 'ReferencedLinkReplacement':
             replacement = ReferencedLinkReplacement(id_, self._reference_master, self._verbose_mode_enabled)
         else:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'unrecognised replacement class `{class_name}`',
                 rules_file_name,
                 line_number,
@@ -229,7 +229,7 @@ class ReplacementMaster:
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         if id_ in self._replacement_from_id:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'replacement already declared with id `{id_}`',
                 rules_file_name,
                 line_number,
@@ -261,7 +261,7 @@ class ReplacementMaster:
         line_number,
     ):
         if replacement is None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'attribute declaration without an active class declaration',
                 rules_file_name,
                 line_number,
@@ -270,7 +270,7 @@ class ReplacementMaster:
 
         attribute_name = attribute_declaration_match.group('attribute_name')
         if attribute_name not in replacement.attribute_names():
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'unrecognised attribute `{attribute_name}` for `{class_name}`',
                 rules_file_name,
                 line_number,
@@ -301,7 +301,7 @@ class ReplacementMaster:
         line_number,
     ):
         if replacement is None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'substitution declaration without an active class declaration',
                 rules_file_name,
                 line_number,
@@ -339,7 +339,7 @@ class ReplacementMaster:
         elif substitution is not None:
             substitution = substitution + '\n' + continuation
         else:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 'continuation only allowed for attribute or substitution declarations',
                 rules_file_name,
                 line_number,
@@ -372,9 +372,9 @@ class ReplacementMaster:
     def stage_allowed_flags(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
         flag_name_from_letter = {}
 
-        for allowed_flag_match in ReplacementMaster.compute_allowed_flag_matches(attribute_value):
+        for allowed_flag_match in ReplacementAuthority.compute_allowed_flag_matches(attribute_value):
             if allowed_flag_match.group('whitespace_only') is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `` for attribute `allowed_flags`',
                     rules_file_name,
                     line_number_range_start,
@@ -384,7 +384,7 @@ class ReplacementMaster:
 
             invalid_syntax = allowed_flag_match.group('invalid_syntax')
             if invalid_syntax is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `{invalid_syntax}` for attribute `allowed_flags`',
                     rules_file_name,
                     line_number_range_start,
@@ -419,11 +419,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_apply_mode(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        apply_mode_match = ReplacementMaster.compute_apply_mode_match(attribute_value)
+        apply_mode_match = ReplacementAuthority.compute_apply_mode_match(attribute_value)
 
         invalid_value = apply_mode_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `apply_mode`',
                 rules_file_name,
                 line_number_range_start,
@@ -462,11 +462,11 @@ class ReplacementMaster:
         line_number_range_start,
         line_number,
     ):
-        attribute_specifications_match = ReplacementMaster.compute_attribute_specifications_match(attribute_value)
+        attribute_specifications_match = ReplacementAuthority.compute_attribute_specifications_match(attribute_value)
 
         invalid_value = attribute_specifications_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `attribute_specifications`',
                 rules_file_name,
                 line_number_range_start,
@@ -502,11 +502,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_closing_delimiter(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        closing_delimiter_match = ReplacementMaster.compute_closing_delimiter_match(attribute_value)
+        closing_delimiter_match = ReplacementAuthority.compute_closing_delimiter_match(attribute_value)
 
         invalid_value = closing_delimiter_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `closing_delimiter`',
                 rules_file_name,
                 line_number_range_start,
@@ -546,9 +546,9 @@ class ReplacementMaster:
     ):
         concluding_replacements = []
 
-        for concluding_replacement_match in ReplacementMaster.compute_concluding_replacement_matches(attribute_value):
+        for concluding_replacement_match in ReplacementAuthority.compute_concluding_replacement_matches(attribute_value):
             if concluding_replacement_match.group('whitespace_only') is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `` for attribute `concluding_replacements`',
                     rules_file_name,
                     line_number_range_start,
@@ -558,7 +558,7 @@ class ReplacementMaster:
 
             invalid_syntax = concluding_replacement_match.group('invalid_syntax')
             if invalid_syntax is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `{invalid_syntax}` for attribute `concluding_replacements`',
                     rules_file_name,
                     line_number_range_start,
@@ -576,7 +576,7 @@ class ReplacementMaster:
                 try:
                     concluding_replacement = self._replacement_from_id[concluding_replacement_id]
                 except KeyError:
-                    ReplacementMaster.print_error(
+                    ReplacementAuthority.print_error(
                         f'undefined replacement `#{concluding_replacement_id}`',
                         rules_file_name,
                         line_number_range_start,
@@ -617,9 +617,9 @@ class ReplacementMaster:
     ):
         content_replacements = []
 
-        for content_replacement_match in ReplacementMaster.compute_content_replacement_matches(attribute_value):
+        for content_replacement_match in ReplacementAuthority.compute_content_replacement_matches(attribute_value):
             if content_replacement_match.group('whitespace_only') is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `` for attribute `content_replacements`',
                     rules_file_name,
                     line_number_range_start,
@@ -629,7 +629,7 @@ class ReplacementMaster:
 
             invalid_syntax = content_replacement_match.group('invalid_syntax')
             if invalid_syntax is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `{invalid_syntax}` for attribute `content_replacements`',
                     rules_file_name,
                     line_number_range_start,
@@ -647,7 +647,7 @@ class ReplacementMaster:
                 try:
                     content_replacement = self._replacement_from_id[content_replacement_id]
                 except KeyError:
-                    ReplacementMaster.print_error(
+                    ReplacementAuthority.print_error(
                         f'undefined replacement `#{content_replacement_id}`',
                         rules_file_name,
                         line_number_range_start,
@@ -690,9 +690,9 @@ class ReplacementMaster:
     ):
         tag_name_from_delimiter_length_from_character = {}
 
-        for delimiter_conversion_match in ReplacementMaster.compute_delimiter_conversion_matches(attribute_value):
+        for delimiter_conversion_match in ReplacementAuthority.compute_delimiter_conversion_matches(attribute_value):
             if delimiter_conversion_match.group('whitespace_only') is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `` for attribute `delimiter_conversion`',
                     rules_file_name,
                     line_number_range_start,
@@ -702,7 +702,7 @@ class ReplacementMaster:
 
             invalid_syntax = delimiter_conversion_match.group('invalid_syntax')
             if invalid_syntax is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `{invalid_syntax}` for attribute `delimiter_conversion`',
                     rules_file_name,
                     line_number_range_start,
@@ -747,11 +747,11 @@ class ReplacementMaster:
         line_number_range_start,
         line_number,
     ):
-        ending_pattern_match = ReplacementMaster.compute_ending_pattern_match(attribute_value)
+        ending_pattern_match = ReplacementAuthority.compute_ending_pattern_match(attribute_value)
 
         invalid_value = ending_pattern_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `ending_pattern`',
                 rules_file_name,
                 line_number_range_start,
@@ -767,17 +767,17 @@ class ReplacementMaster:
         try:
             ending_pattern_compiled = re.compile(pattern=ending_pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
         except re.error as pattern_exception:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'bad regex pattern `{ending_pattern}`',
                 rules_file_name,
                 line_number_range_start,
                 line_number,
             )
-            ReplacementMaster.print_traceback(pattern_exception)
+            ReplacementAuthority.print_traceback(pattern_exception)
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         if len(ending_pattern_compiled.groupindex) > 0:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'named capture groups not allowed in `ending_pattern`',
                 rules_file_name,
                 line_number_range_start,
@@ -807,11 +807,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_epilogue_delimiter(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        epilogue_delimiter_match = ReplacementMaster.compute_epilogue_delimiter_match(attribute_value)
+        epilogue_delimiter_match = ReplacementAuthority.compute_epilogue_delimiter_match(attribute_value)
 
         invalid_value = epilogue_delimiter_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `epilogue_delimiter`',
                 rules_file_name,
                 line_number_range_start,
@@ -852,11 +852,11 @@ class ReplacementMaster:
         line_number_range_start,
         line_number,
     ):
-        extensible_delimiter_match = ReplacementMaster.compute_extensible_delimiter_match(attribute_value)
+        extensible_delimiter_match = ReplacementAuthority.compute_extensible_delimiter_match(attribute_value)
 
         invalid_value = extensible_delimiter_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` not a character repeated for attribute `extensible_delimiter`',
                 rules_file_name,
                 line_number_range_start,
@@ -891,11 +891,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_negative_flag(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        negative_flag_match = ReplacementMaster.compute_negative_flag_match(attribute_value)
+        negative_flag_match = ReplacementAuthority.compute_negative_flag_match(attribute_value)
 
         invalid_value = negative_flag_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `negative_flag`',
                 rules_file_name,
                 line_number_range_start,
@@ -927,11 +927,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_opening_delimiter(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        opening_delimiter_match = ReplacementMaster.compute_opening_delimiter_match(attribute_value)
+        opening_delimiter_match = ReplacementAuthority.compute_opening_delimiter_match(attribute_value)
 
         invalid_value = opening_delimiter_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `opening_delimiter`',
                 rules_file_name,
                 line_number_range_start,
@@ -962,11 +962,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_positive_flag(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        positive_flag_match = ReplacementMaster.compute_positive_flag_match(attribute_value)
+        positive_flag_match = ReplacementAuthority.compute_positive_flag_match(attribute_value)
 
         invalid_value = positive_flag_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `positive_flag`',
                 rules_file_name,
                 line_number_range_start,
@@ -1000,11 +1000,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_prohibited_content(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        prohibited_content_match = ReplacementMaster.compute_prohibited_content_match(attribute_value)
+        prohibited_content_match = ReplacementAuthority.compute_prohibited_content_match(attribute_value)
 
         invalid_value = prohibited_content_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `prohibited_content`',
                 rules_file_name,
                 line_number_range_start,
@@ -1040,11 +1040,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_prologue_delimiter(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        prologue_delimiter_match = ReplacementMaster.compute_prologue_delimiter_match(attribute_value)
+        prologue_delimiter_match = ReplacementAuthority.compute_prologue_delimiter_match(attribute_value)
 
         invalid_value = prologue_delimiter_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `prologue_delimiter`',
                 rules_file_name,
                 line_number_range_start,
@@ -1081,11 +1081,11 @@ class ReplacementMaster:
         )
 
     def stage_queue_position(self, replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        queue_position_match = ReplacementMaster.compute_queue_position_match(attribute_value)
+        queue_position_match = ReplacementAuthority.compute_queue_position_match(attribute_value)
 
         invalid_value = queue_position_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `queue_position`',
                 rules_file_name,
                 line_number_range_start,
@@ -1098,7 +1098,7 @@ class ReplacementMaster:
 
         if queue_position_match.group('root_keyword') is not None:
             if self._root_replacement_id is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'root replacement already declared (`#{self._root_replacement_id}`)',
                     rules_file_name,
                     line_number_range_start,
@@ -1113,7 +1113,7 @@ class ReplacementMaster:
         queue_reference_id = queue_position_match.group('queue_reference_id')
 
         if queue_reference_id == replacement.id_:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'self-referential `queue_position`',
                 rules_file_name,
                 line_number_range_start,
@@ -1124,7 +1124,7 @@ class ReplacementMaster:
         try:
             queue_reference_replacement = self._replacement_from_id[queue_reference_id]
         except KeyError:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'undefined replacement `#{queue_reference_id}`',
                 rules_file_name,
                 line_number_range_start,
@@ -1133,7 +1133,7 @@ class ReplacementMaster:
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         if queue_reference_replacement not in self._replacement_queue:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'replacement `#{queue_reference_id}` not in queue',
                 rules_file_name,
                 line_number_range_start,
@@ -1166,9 +1166,9 @@ class ReplacementMaster:
     def stage_replacements(self, replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
         matched_replacements = []
 
-        for replacement_match in ReplacementMaster.compute_replacement_matches(attribute_value):
+        for replacement_match in ReplacementAuthority.compute_replacement_matches(attribute_value):
             if replacement_match.group('whitespace_only') is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `` for attribute `replacements`',
                     rules_file_name,
                     line_number_range_start,
@@ -1178,7 +1178,7 @@ class ReplacementMaster:
 
             invalid_syntax = replacement_match.group('invalid_syntax')
             if invalid_syntax is not None:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'invalid specification `{invalid_syntax}` for attribute `replacements`',
                     rules_file_name,
                     line_number_range_start,
@@ -1196,7 +1196,7 @@ class ReplacementMaster:
                 try:
                     matched_replacement = self._replacement_from_id[matched_replacement_id]
                 except KeyError:
-                    ReplacementMaster.print_error(
+                    ReplacementAuthority.print_error(
                         f'undefined replacement `#{matched_replacement_id}`',
                         rules_file_name,
                         line_number_range_start,
@@ -1226,11 +1226,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_starting_pattern(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        starting_pattern_match = ReplacementMaster.compute_starting_pattern_match(attribute_value)
+        starting_pattern_match = ReplacementAuthority.compute_starting_pattern_match(attribute_value)
 
         invalid_value = starting_pattern_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `starting_pattern`',
                 rules_file_name,
                 line_number_range_start,
@@ -1243,17 +1243,17 @@ class ReplacementMaster:
         try:
             starting_pattern_compiled = re.compile(pattern=starting_pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
         except re.error as pattern_exception:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'bad regex pattern `{starting_pattern}`',
                 rules_file_name,
                 line_number_range_start,
                 line_number,
             )
-            ReplacementMaster.print_traceback(pattern_exception)
+            ReplacementAuthority.print_traceback(pattern_exception)
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         if len(starting_pattern_compiled.groupindex) > 0:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'named capture groups not allowed in `starting_pattern`',
                 rules_file_name,
                 line_number_range_start,
@@ -1281,11 +1281,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_syntax_type(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        syntax_type_match = ReplacementMaster.compute_syntax_type_match(attribute_value)
+        syntax_type_match = ReplacementAuthority.compute_syntax_type_match(attribute_value)
 
         invalid_value = syntax_type_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `syntax_type`',
                 rules_file_name,
                 line_number_range_start,
@@ -1316,11 +1316,11 @@ class ReplacementMaster:
 
     @staticmethod
     def stage_tag_name(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        tag_name_match = ReplacementMaster.compute_tag_name_match(attribute_value)
+        tag_name_match = ReplacementAuthority.compute_tag_name_match(attribute_value)
 
         invalid_value = tag_name_match.group('invalid_value')
         if invalid_value is not None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'invalid value `{invalid_value}` for attribute `tag_name`',
                 rules_file_name,
                 line_number_range_start,
@@ -1384,9 +1384,9 @@ class ReplacementMaster:
         line_number_range_start,
         line_number,
     ):
-        substitution_match = ReplacementMaster.compute_substitution_match(substitution)
+        substitution_match = ReplacementAuthority.compute_substitution_match(substitution)
         if substitution_match is None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'missing delimiter `-->` in substitution `{substitution}`',
                 rules_file_name,
                 line_number_range_start,
@@ -1434,9 +1434,9 @@ class ReplacementMaster:
         line_number_range_start,
         line_number,
     ):
-        substitution_match = ReplacementMaster.compute_substitution_match(substitution)
+        substitution_match = ReplacementAuthority.compute_substitution_match(substitution)
         if substitution_match is None:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'missing delimiter `-->` in substitution `{substitution}`',
                 rules_file_name,
                 line_number_range_start,
@@ -1476,25 +1476,25 @@ class ReplacementMaster:
         try:
             pattern_compiled = re.compile(pattern=pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
         except re.error as pattern_exception:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'bad regex pattern `{pattern}`',
                 rules_file_name,
                 line_number_range_start,
                 line_number,
             )
-            ReplacementMaster.print_traceback(pattern_exception)
+            ReplacementAuthority.print_traceback(pattern_exception)
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         try:
             re.sub(pattern=pattern_compiled, repl=substitute, string='')
         except re.error as substitute_exception:
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'bad regex substitute `{substitute}` for pattern `{pattern}`',
                 rules_file_name,
                 line_number_range_start,
                 line_number,
             )
-            ReplacementMaster.print_traceback(substitute_exception)
+            ReplacementAuthority.print_traceback(substitute_exception)
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         replacement.add_substitution(pattern, substitute)
@@ -1513,7 +1513,7 @@ class ReplacementMaster:
     ):
         if substitution is not None:  # staging a substitution
             if class_name == 'OrdinaryDictionaryReplacement':
-                ReplacementMaster.stage_ordinary_substitution(
+                ReplacementAuthority.stage_ordinary_substitution(
                     replacement,
                     substitution,
                     rules_file_name,
@@ -1522,7 +1522,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif class_name == 'RegexDictionaryReplacement':
-                ReplacementMaster.stage_regex_substitution(
+                ReplacementAuthority.stage_regex_substitution(
                     replacement,
                     substitution,
                     rules_file_name,
@@ -1531,7 +1531,7 @@ class ReplacementMaster:
                     line_number,
                 )
             else:
-                ReplacementMaster.print_error(
+                ReplacementAuthority.print_error(
                     f'class `{class_name}` does not allow substitutions',
                     rules_file_name,
                     line_number_range_start,
@@ -1541,7 +1541,7 @@ class ReplacementMaster:
 
         else:  # staging an attribute declaration
             if attribute_name == 'allowed_flags':
-                ReplacementMaster.stage_allowed_flags(
+                ReplacementAuthority.stage_allowed_flags(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1549,7 +1549,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'apply_mode':
-                ReplacementMaster.stage_apply_mode(
+                ReplacementAuthority.stage_apply_mode(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1557,7 +1557,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'attribute_specifications':
-                ReplacementMaster.stage_attribute_specifications(
+                ReplacementAuthority.stage_attribute_specifications(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1589,7 +1589,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'delimiter_conversion':
-                ReplacementMaster.stage_delimiter_conversion(
+                ReplacementAuthority.stage_delimiter_conversion(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1597,7 +1597,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'ending_pattern':
-                ReplacementMaster.stage_ending_pattern(
+                ReplacementAuthority.stage_ending_pattern(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1605,7 +1605,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'epilogue_delimiter':
-                ReplacementMaster.stage_epilogue_delimiter(
+                ReplacementAuthority.stage_epilogue_delimiter(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1613,7 +1613,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'extensible_delimiter':
-                ReplacementMaster.stage_extensible_delimiter(
+                ReplacementAuthority.stage_extensible_delimiter(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1621,7 +1621,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'negative_flag':
-                ReplacementMaster.stage_negative_flag(
+                ReplacementAuthority.stage_negative_flag(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1629,7 +1629,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'opening_delimiter':
-                ReplacementMaster.stage_opening_delimiter(
+                ReplacementAuthority.stage_opening_delimiter(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1637,7 +1637,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'positive_flag':
-                ReplacementMaster.stage_positive_flag(
+                ReplacementAuthority.stage_positive_flag(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1645,7 +1645,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'prohibited_content':
-                ReplacementMaster.stage_prohibited_content(
+                ReplacementAuthority.stage_prohibited_content(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1653,7 +1653,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'prologue_delimiter':
-                ReplacementMaster.stage_prologue_delimiter(
+                ReplacementAuthority.stage_prologue_delimiter(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1677,7 +1677,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'starting_pattern':
-                ReplacementMaster.stage_starting_pattern(
+                ReplacementAuthority.stage_starting_pattern(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1685,7 +1685,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'syntax_type':
-                ReplacementMaster.stage_syntax_type(
+                ReplacementAuthority.stage_syntax_type(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1693,7 +1693,7 @@ class ReplacementMaster:
                     line_number,
                 )
             elif attribute_name == 'tag_name':
-                ReplacementMaster.stage_tag_name(
+                ReplacementAuthority.stage_tag_name(
                     replacement,
                     attribute_value,
                     rules_file_name,
@@ -1709,7 +1709,7 @@ class ReplacementMaster:
             replacement.commit()
         except MissingAttributeException as exception:
             missing_attribute = exception.missing_attribute
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 f'missing attribute `{missing_attribute}` for {class_name}',
                 rules_file_name,
                 line_number,
@@ -1753,7 +1753,7 @@ class ReplacementMaster:
         line_number = 0
 
         for line_number, line in enumerate(replacement_rules.splitlines(), start=1):
-            if ReplacementMaster.is_whitespace_only(line):
+            if ReplacementAuthority.is_whitespace_only(line):
                 if attribute_name is not None or substitution is not None:
                     attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.stage(
@@ -1779,10 +1779,10 @@ class ReplacementMaster:
                     )
                 continue
 
-            if ReplacementMaster.is_comment(line):
+            if ReplacementAuthority.is_comment(line):
                 continue
 
-            rules_inclusion_match = ReplacementMaster.compute_rules_inclusion_match(line)
+            rules_inclusion_match = ReplacementAuthority.compute_rules_inclusion_match(line)
             if rules_inclusion_match is not None:
                 if attribute_name is not None or substitution is not None:
                     attribute_name, attribute_value, substitution, line_number_range_start = (
@@ -1815,7 +1815,7 @@ class ReplacementMaster:
                 )
                 continue
 
-            class_declaration_match = ReplacementMaster.compute_class_declaration_match(line)
+            class_declaration_match = ReplacementAuthority.compute_class_declaration_match(line)
             if class_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     attribute_name, attribute_value, substitution, line_number_range_start = (
@@ -1849,7 +1849,7 @@ class ReplacementMaster:
                 )
                 continue
 
-            attribute_declaration_match = ReplacementMaster.compute_attribute_declaration_match(line)
+            attribute_declaration_match = ReplacementAuthority.compute_attribute_declaration_match(line)
             if attribute_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     attribute_name, attribute_value, substitution, line_number_range_start = (
@@ -1866,7 +1866,7 @@ class ReplacementMaster:
                         )
                     )
                 attribute_name, attribute_value, line_number_range_start = (
-                    ReplacementMaster.process_attribute_declaration_line(
+                    ReplacementAuthority.process_attribute_declaration_line(
                         attribute_declaration_match,
                         class_name,
                         replacement,
@@ -1877,7 +1877,7 @@ class ReplacementMaster:
                 )
                 continue
 
-            substitution_declaration_match = ReplacementMaster.compute_substitution_declaration_match(line)
+            substitution_declaration_match = ReplacementAuthority.compute_substitution_declaration_match(line)
             if substitution_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     attribute_name, attribute_value, substitution, line_number_range_start = (
@@ -1894,7 +1894,7 @@ class ReplacementMaster:
                         )
                     )
                 substitution, line_number_range_start = (
-                    ReplacementMaster.process_substitution_declaration_line(
+                    ReplacementAuthority.process_substitution_declaration_line(
                         replacement,
                         substitution_declaration_match,
                         substitution,
@@ -1904,10 +1904,10 @@ class ReplacementMaster:
                 )
                 continue
 
-            continuation_match = ReplacementMaster.compute_continuation_match(line)
+            continuation_match = ReplacementAuthority.compute_continuation_match(line)
             if continuation_match is not None:
                 attribute_value, substitution = (
-                    ReplacementMaster.process_continuation_line(
+                    ReplacementAuthority.process_continuation_line(
                         continuation_match,
                         attribute_name,
                         attribute_value,
@@ -1918,7 +1918,7 @@ class ReplacementMaster:
                 )
                 continue
 
-            ReplacementMaster.print_error(
+            ReplacementAuthority.print_error(
                 'invalid syntax\n\n' + CMD_REPLACEMENT_SYNTAX_HELP,
                 rules_file_name,
                 line_number,
@@ -2422,7 +2422,7 @@ def cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled=False):
     replacement_rules, main_content = extract_rules_and_content(cmd)
     separator_normalised_cmd_name = extract_separator_normalised_cmd_name(cmd_file_name)
 
-    replacement_master = ReplacementMaster(cmd_file_name, verbose_mode_enabled)
+    replacement_master = ReplacementAuthority(cmd_file_name, verbose_mode_enabled)
     replacement_master.legislate(
         STANDARD_RULES,
         rules_file_name='STANDARD_RULES',
