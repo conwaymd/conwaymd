@@ -1478,30 +1478,6 @@ Everything is everything, and everything is dumb.
             ''
         )
 
-    def test_is_cmd_file(self):
-        self.assertTrue(cmd.is_cmd_file('file.cmd'))
-        self.assertTrue(cmd.is_cmd_file('.cmd'))
-        self.assertFalse(cmd.is_cmd_file('file/cmd'))
-        self.assertFalse(cmd.is_cmd_file('file.'))
-        self.assertFalse(cmd.is_cmd_file('file'))
-
-    def test_extract_cmd_name(self):
-
-        self.assertEqual(cmd.extract_cmd_name('file.cmd'), 'file')
-        self.assertEqual(cmd.extract_cmd_name('file.'), 'file')
-        self.assertEqual(cmd.extract_cmd_name('file'), 'file')
-
-        if os.sep == '/':
-            self.assertEqual(cmd.extract_cmd_name('./././file.cmd'), 'file')
-            self.assertEqual(cmd.extract_cmd_name('./dir/../file.cmd'), 'file')
-            self.assertEqual(cmd.extract_cmd_name('./file.'), 'file')
-            self.assertEqual(cmd.extract_cmd_name('./file'), 'file')
-        elif os.sep == '\\':
-            self.assertEqual(cmd.extract_cmd_name(r'.\.\.\file.cmd'), 'file')
-            self.assertEqual(cmd.extract_cmd_name(r'.\dir\..\file.cmd'), 'file')
-            self.assertEqual(cmd.extract_cmd_name(r'.\file.'), 'file')
-            self.assertEqual(cmd.extract_cmd_name(r'.\file'), 'file')
-
 
 if __name__ == '__main__':
     unittest.main()
