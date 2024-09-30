@@ -1022,6 +1022,5 @@ Everything is everything, and everything is dumb.
         )
 
 
-
 if __name__ == '__main__':
     unittest.main()

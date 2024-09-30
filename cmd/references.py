@@ -45,7 +45,6 @@ class ReferenceMaster:
         self._reference_from_label = {}
 
     def store_definition(self, label, attribute_specifications, uri, title):
-
         label = ReferenceMaster.normalise_label(label)
         self._reference_from_label[label] = Reference(attribute_specifications, uri, title)
 

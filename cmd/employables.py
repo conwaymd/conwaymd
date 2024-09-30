@@ -1144,7 +1144,6 @@ class HeadingReplacement(
 
     @staticmethod
     def build_regex_pattern(attribute_specifications):
-
         block_anchoring_regex = (
             build_block_anchoring_regex(syntax_type_is_block=True, capture_anchoring_whitespace=True)
         )
@@ -1486,7 +1485,6 @@ class ReferencedImageReplacement(
 
     @staticmethod
     def build_regex_pattern(attribute_specifications, prohibited_content_regex):
-
         exclamation_mark_regex = '[!]'
         alt_text_regex = build_content_regex(
             prohibited_content_regex,
@@ -1599,7 +1597,6 @@ class ExplicitLinkReplacement(
         pass
 
     def _set_apply_method_variables(self):
-
         self._has_flags = len(self._flag_name_from_letter) > 0
         self._regex_pattern_compiled =  re.compile(
             pattern=ExplicitLinkReplacement.build_regex_pattern(

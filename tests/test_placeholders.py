@@ -6,7 +6,6 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 Perform unit testing for `placeholders.py`.
 """
 
-import os
 import unittest
 
 from cmd.placeholders import PlaceholderMaster
@@ -32,7 +31,6 @@ class TestPlaceholders(unittest.TestCase):
         self.assertEqual(PlaceholderMaster.unprotect('\uF8FF\uE0ED\uE095\uE09C\uF8FF'),'한')
         self.assertEqual(PlaceholderMaster.unprotect('\uF8FF\uE0F0\uE090\uE08D\uE088\uF8FF'),'𐍈')
         self.assertEqual(PlaceholderMaster.unprotect('\uF8FF\uE0E4\uE0B8\uE080\uE0E9\uE0BF\uE090\uF8FF'),'一鿐')
-
 
 
 if __name__ == '__main__':
