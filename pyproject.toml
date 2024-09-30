@@ -1,0 +1,28 @@
+[build-system]
+requires = ["flit_core >=3.8,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "conway-markdown"
+requires-python = ">=3.11"
+authors = [{name="Conway", email="pypi.sheep257@passmail.net"}]
+description = "Conway-Markdown (CMD)"
+readme = "README.md"
+keywords = ["conway-markdown", "html5"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT No Attribution License (MIT-0)",
+    "Operating System :: OS Independent",
+]
+dynamic = ["version"]
+
+[project.urls]
+repository = "https://github.com/conway-markdown/conway-markdown"
+issues = "https://github.com/conway-markdown/conway-markdown/issues"
+changelog = "https://github.com/conway-markdown/conway-markdown/blob/master/CHANGELOG.md"
+
+[project.scripts]
+cmd = "cmd.cli:main"
+cmdpy = "cmd.cli:main"
