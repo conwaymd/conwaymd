@@ -23,7 +23,7 @@ CMD_FILE_NAME_HELP = '''
     Abbreviate as `file` or `file.` for increased productivity.
 '''
 ALL_MODE_HELP = '''
-    convert all CMD files under the working directory.
+    convert all CMD files under the working directory
 '''
 VERBOSE_MODE_HELP = '''
     run in verbose mode (prints every replacement applied)
