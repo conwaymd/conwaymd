@@ -26,6 +26,12 @@ import traceback
 
 from cmd._version import __version__
 from cmd.constants import GENERIC_ERROR_EXIT_CODE, VERBOSE_MODE_DIVIDER_SYMBOL_COUNT
+from cmd.exceptions import (
+    CommittedMutateException,
+    MissingAttributeException,
+    UncommittedApplyException,
+    UnrecognisedLabelException,
+)
 from cmd.idioms import (
     build_attribute_specifications_regex,
     build_attributes_sequence,
@@ -41,88 +47,8 @@ from cmd.idioms import (
     build_uri_regex,
 )
 from cmd.placeholders import PlaceholderMaster
+from cmd.references import ReferenceMaster
 from cmd.utilities import de_indent, escape_regex_substitute, none_to_empty_string
-
-
-class CommittedMutateException(Exception):
-    pass
-
-
-class UncommittedApplyException(Exception):
-    pass
-
-
-class MissingAttributeException(Exception):
-    def __init__(self, missing_attribute):
-        self._missing_attribute = missing_attribute
-
-    @property
-    def missing_attribute(self):
-        return self._missing_attribute
-
-
-class UnrecognisedLabelException(Exception):
-    pass
-
-
-class Reference:
-    """
-    A reference to be used by links and images.
-
-    For a given «label» (normalised to lower case),
-    a reference consists of
-    - «attribute specifications»
-    - «uri»
-    - «title»
-    where «uri» is `href` for links and `src` for images.
-    """
-    def __init__(self, attribute_specifications, uri, title):
-        self._attribute_specifications = attribute_specifications
-        self._uri = uri
-        self._title = title
-
-    @property
-    def attribute_specifications(self):
-        return self._attribute_specifications
-
-    @property
-    def uri(self):
-        return self._uri
-
-    @property
-    def title(self):
-        return self._title
-
-
-class ReferenceMaster:
-    """
-    Object storing references to be used by links and images.
-    """
-    def __init__(self):
-        self._reference_from_label = {}
-
-    def store_definition(self, label, attribute_specifications, uri, title):
-
-        label = ReferenceMaster.normalise_label(label)
-        self._reference_from_label[label] = Reference(attribute_specifications, uri, title)
-
-    def load_definition(self, label):
-        label = ReferenceMaster.normalise_label(label)
-
-        try:
-            reference = self._reference_from_label[label]
-        except KeyError:
-            raise UnrecognisedLabelException
-
-        attribute_specifications = reference.attribute_specifications
-        uri = reference.uri
-        title = reference.title
-
-        return attribute_specifications, uri, title
-
-    @staticmethod
-    def normalise_label(label):
-        return label.lower()
 
 
 class Replacement(abc.ABC):
