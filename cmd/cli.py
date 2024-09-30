@@ -10,9 +10,9 @@ import re
 import sys
 
 from cmd._version import __version__
-from cmd.core import GENERIC_ERROR_EXIT_CODE, cmd_to_html
+from cmd.constants import COMMAND_LINE_ERROR_EXIT_CODE
+from cmd.core import cmd_to_html
 
-COMMAND_LINE_ERROR_EXIT_CODE = 2
 DESCRIPTION = '''
     Convert Conway-Markdown (CMD) to HTML.
 '''

@@ -27,9 +27,7 @@ import traceback
 import warnings
 
 from cmd._version import __version__
-
-GENERIC_ERROR_EXIT_CODE = 1
-VERBOSE_MODE_DIVIDER_SYMBOL_COUNT = 48
+from cmd.constants import GENERIC_ERROR_EXIT_CODE, VERBOSE_MODE_DIVIDER_SYMBOL_COUNT
 
 
 class CommittedMutateException(Exception):
