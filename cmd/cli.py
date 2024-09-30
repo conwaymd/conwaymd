@@ -15,14 +15,15 @@ from cmd._version import __version__
 from cmd.constants import COMMAND_LINE_ERROR_EXIT_CODE, GENERIC_ERROR_EXIT_CODE
 from cmd.core import cmd_to_html
 
-
 DESCRIPTION = '''
     Convert Conway-Markdown (CMD) to HTML.
 '''
 CMD_FILE_NAME_HELP = '''
     Name of CMD file to be converted.
     Abbreviate as `file` or `file.` for increased productivity.
-    Omit to convert all CMD files under the working directory.
+'''
+ALL_MODE_HELP = '''
+    convert all CMD files under the working directory.
 '''
 VERBOSE_MODE_HELP = '''
     run in verbose mode (prints every replacement applied)
@@ -52,6 +53,12 @@ def parse_command_line_arguments():
         '-v', '--version',
         action='version',
         version=f'{argument_parser.prog} version {__version__}',
+    )
+    argument_parser.add_argument(
+        '-a', '--all',
+        dest='all_mode_enabled',
+        action='store_true',
+        help=ALL_MODE_HELP,
     )
     argument_parser.add_argument(
         '-x', '--verbose',
@@ -99,12 +106,14 @@ def generate_html_file(cmd_file_name_argument, verbose_mode_enabled, uses_comman
 def main():
     parsed_arguments = parse_command_line_arguments()
     cmd_file_name_arguments = parsed_arguments.cmd_file_name_arguments
+    all_mode_enabled = parsed_arguments.all_mode_enabled
     verbose_mode_enabled = parsed_arguments.verbose_mode_enabled
 
-    if len(cmd_file_name_arguments) > 0:
-        for cmd_file_name_argument in cmd_file_name_arguments:
-            generate_html_file(cmd_file_name_argument, verbose_mode_enabled, uses_command_line_argument=True)
-    else:
+    if all_mode_enabled:
+        if len(cmd_file_name_arguments) > 0:
+            print('error: option -a (or --all) cannot be used with positional argument', file=sys.stderr)
+            sys.exit(COMMAND_LINE_ERROR_EXIT_CODE)
+
         cmd_file_names = [
             os.path.join(path, file_name)
             for path, _, file_names in os.walk(os.curdir)
@@ -113,6 +122,10 @@ def main():
         ]
         for cmd_file_name in sorted(cmd_file_names):
             generate_html_file(cmd_file_name, verbose_mode_enabled, uses_command_line_argument=False)
+
+    else:
+        for cmd_file_name_argument in cmd_file_name_arguments:
+            generate_html_file(cmd_file_name_argument, verbose_mode_enabled, uses_command_line_argument=True)
 
 
 if __name__ == '__main__':

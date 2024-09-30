@@ -4,6 +4,7 @@
 ## [Unreleased]
 
 - Refactored single-file script into multiple files
+- Introduced command line option `-a, --all` to confirm conversion of all files in working directory
 
 
 ## [v4.6.0] Digits in IDs (2024-03-03)
