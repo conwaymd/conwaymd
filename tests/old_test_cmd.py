@@ -342,24 +342,6 @@ class TestCmd(unittest.TestCase):
             r'[^\S\n]* $'
         )
 
-    def test_build_flags_regex(self):
-        self.assertEqual(cmd.build_flags_regex({}, False), '')
-        self.assertEqual(
-            cmd.build_flags_regex(
-                {
-                    'u': 'KEEP_HTML_UNESCAPED',
-                    'w': 'REDUCE_WHITESPACE',
-                    'i': 'KEEP_INDENTED',
-                },
-                True,
-            ),
-            '(?P<flags> [uwi]* )'
-        )
-
-    def test_build_extensible_delimiter_opening_regex(self):
-        self.assertEqual(cmd.build_extensible_delimiter_opening_regex('$', 5), r'(?P<extensible_delimiter> \${5,} )')
-
-
 
 if __name__ == '__main__':
     unittest.main()

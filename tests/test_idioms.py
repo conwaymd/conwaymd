@@ -6,10 +6,9 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 Perform unit testing for `idioms.py`.
 """
 
-import os
 import unittest
 
-from cmd.idioms import build_attributes_sequence
+from cmd.idioms import build_attributes_sequence, build_extensible_delimiter_opening_regex, build_flags_regex
 
 
 class TestIdioms(unittest.TestCase):
@@ -39,6 +38,22 @@ class TestIdioms(unittest.TestCase):
             ' width="320" height="16" style="font-weight: bold"',
         )
 
+    def test_build_extensible_delimiter_opening_regex(self):
+        self.assertEqual(build_extensible_delimiter_opening_regex('$', 5), r'(?P<extensible_delimiter> \${5,} )')
+
+    def test_build_flags_regex(self):
+        self.assertEqual(build_flags_regex({}, False), '')
+        self.assertEqual(
+            build_flags_regex(
+                {
+                    'u': 'KEEP_HTML_UNESCAPED',
+                    'w': 'REDUCE_WHITESPACE',
+                    'i': 'KEEP_INDENTED',
+                },
+                True,
+            ),
+            '(?P<flags> [uwi]* )',
+        )
 
 
 if __name__ == '__main__':
