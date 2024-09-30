@@ -22,10 +22,25 @@ import os
 import re
 import sys
 import traceback
-import warnings
 
 from cmd._version import __version__
 from cmd.constants import GENERIC_ERROR_EXIT_CODE, VERBOSE_MODE_DIVIDER_SYMBOL_COUNT
+from cmd.idioms import (
+    build_attribute_specifications_regex,
+    build_attributes_sequence,
+    build_block_anchoring_regex,
+    build_block_tag_regex,
+    build_captured_character_class_regex,
+    build_content_regex,
+    build_extensible_delimiter_closing_regex,
+    build_extensible_delimiter_opening_regex,
+    build_flags_regex,
+    build_maybe_hanging_whitespace_regex,
+    build_title_regex,
+    build_uri_regex,
+)
+from cmd.placeholders import PlaceholderMaster
+from cmd.utilities import de_indent, escape_regex_substitute, none_to_empty_string
 
 
 class CommittedMutateException(Exception):
@@ -47,123 +62,6 @@ class MissingAttributeException(Exception):
 
 class UnrecognisedLabelException(Exception):
     pass
-
-
-class PlaceholderMaster:
-    """
-    Static class providing placeholder protection to strings.
-
-    There are many instances in which the result of a replacement
-    should not be altered further by replacements to follow.
-    To protect a string from further alteration,
-    it is temporarily replaced by a placeholder
-    consisting of code points in the main Unicode Private Use Area.
-    Specifically, the placeholder shall be of the form
-    `«marker»«run_characters»«marker»`, where «marker» is `U+F8FF`,
-    and «run_characters» are between `U+E000` and `U+E0FF`
-    each representing a Unicode byte of the string.
-
-    The very first call to PlaceholderMaster should be to the
-    `replace_marker_occurrences(...)` method;
-    this replaces occurrences of «marker» themselves with a placeholder,
-    lest those occurrences of «marker» be confounding.
-    The very last call to PlaceholderMaster should be to unprotect
-    the text (restoring the strings were protected with a placeholder).
-
-    It is assumed the user will not define replacement rules that
-    tamper with strings of the form `«marker»«run_characters»«marker»`.
-    Note that the user should not be using Private Use Area code points
-    in the first place, see <https://www.w3.org/TR/charmod/#C073>.
-    """
-    def __new__(cls):
-        raise TypeError('PlaceholderMaster cannot be instantiated')
-
-    _RUN_CHARACTER_MIN = '\uE000'
-    _RUN_CHARACTER_MAX = '\uE100'
-    MARKER = '\uF8FF'
-    _REPLACEMENT_CHARACTER = '\uFFFD'
-
-    _RUN_CODE_POINT_MIN = ord(_RUN_CHARACTER_MIN)
-    _REPLACEMENT_CODE_POINT = ord(_REPLACEMENT_CHARACTER)
-
-    _PLACEHOLDER_PATTERN_COMPILED = \
-        re.compile(
-            f'{MARKER} (?P<run_characters> [{_RUN_CHARACTER_MIN}-{_RUN_CHARACTER_MAX}]* ) {MARKER}',
-            flags=re.VERBOSE,
-        )
-
-    @staticmethod
-    def _unprotect_substitute_function(placeholder_match):
-        run_characters = placeholder_match.group('run_characters')
-        string_bytes = \
-            bytes(
-                ord(character) - PlaceholderMaster._RUN_CODE_POINT_MIN
-                for character in run_characters
-            )
-
-        try:
-            string = string_bytes.decode()
-        except UnicodeDecodeError:
-            warnings.warn(
-                f'warning: placeholder encountered with run characters '
-                f'representing invalid byte sequence {string_bytes}; '
-                f'substituted with U+{PlaceholderMaster._REPLACEMENT_CODE_POINT:X} '
-                f'REPLACEMENT CHARACTER as a fallback\n\n'
-                f'Possible causes:\n'
-                f'- Confounding occurrences of «marker» have not been removed '
-                f'by calling PlaceholderMaster.replace_marker_occurrences(...)\n'
-                f'- A replacement rule has been defined that tampers with '
-                f'strings of the form `«marker»«run_characters»«marker»`'
-            )
-            string = PlaceholderMaster._REPLACEMENT_CHARACTER
-
-        return string
-
-    @staticmethod
-    def replace_marker_occurrences(string):
-        """
-        Replace occurrences of «marker» with a placeholder.
-
-        The intent here is to ensure that occurrences of «marker»
-        will not be confounding by the time `unprotect(...)` is called.
-        It just so happens that the act of replacing occurrences
-        of «marker» is equivalent to protecting them with a placeholder.
-        """
-        return re.sub(
-            PlaceholderMaster.MARKER,
-            PlaceholderMaster.protect(PlaceholderMaster.MARKER),
-            string,
-        )
-
-    @staticmethod
-    def protect(string):
-        """
-        Protect a string by converting it to a placeholder.
-        """
-        marker = PlaceholderMaster.MARKER
-
-        string = PlaceholderMaster.unprotect(string)
-        string_bytes = string.encode()
-        run_characters = \
-            ''.join(
-                chr(byte + PlaceholderMaster._RUN_CODE_POINT_MIN)
-                for byte in string_bytes
-            )
-
-        placeholder = f'{marker}{run_characters}{marker}'
-
-        return placeholder
-
-    @staticmethod
-    def unprotect(string):
-        """
-        Unprotect a string by restoring placeholders to their strings.
-        """
-        return re.sub(
-            PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED,
-            PlaceholderMaster._unprotect_substitute_function,
-            string,
-        )
 
 
 class Reference:
@@ -338,15 +236,12 @@ class Replacement(abc.ABC):
                 print('\n\n\n\n')
             except UnicodeEncodeError as unicode_encode_error:
                 # caused by Private Use Area code points used for placeholders
-                error_message = \
-                    (
-                        'bad print due to non-Unicode terminal encoding, '
-                        'likely `cp1252` on Git BASH for Windows. '
-                        'Try setting the `PYTHONIOENCODING` environment variable '
-                        'to `utf-8` (add `export PYTHONIOENCODING=utf-8` '
-                        'to `.bash_profile` and then source it). '
-                        'See <https://stackoverflow.com/a/7865013>.'
-                    )
+                error_message = (
+                    'bad print due to non-Unicode terminal encoding, likely `cp1252` on Git BASH for Windows. '
+                    'Try setting the `PYTHONIOENCODING` environment variable to `utf-8` '
+                    '(add `export PYTHONIOENCODING=utf-8` to `.bash_profile` and then source it). '
+                    'See <https://stackoverflow.com/a/7865013>.'
+                )
                 raise FileNotFoundError(error_message) from unicode_encode_error
 
         return string_after
@@ -831,10 +726,12 @@ class OrdinaryDictionaryReplacement(
             return self.sequential_apply(string)
 
     def set_simultaneous_apply_method_variables(self):
-        self._simultaneous_regex_pattern_compiled = \
-            re.compile(OrdinaryDictionaryReplacement.build_simultaneous_regex_pattern(self._substitute_from_pattern))
-        self._simultaneous_substitute_function = \
+        self._simultaneous_regex_pattern_compiled = re.compile(
+            pattern=OrdinaryDictionaryReplacement.build_simultaneous_regex_pattern(self._substitute_from_pattern),
+        )
+        self._simultaneous_substitute_function = (
             self.build_simultaneous_substitute_function(self._substitute_from_pattern)
+        )
 
     @staticmethod
     def build_simultaneous_regex_pattern(substitute_from_pattern):
@@ -857,12 +754,11 @@ class OrdinaryDictionaryReplacement(
 
     def simultaneous_apply(self, string):
         if len(self._substitute_from_pattern) > 0:
-            string = \
-                re.sub(
-                    self._simultaneous_regex_pattern_compiled,
-                    self._simultaneous_substitute_function,
-                    string,
-                )
+            string = re.sub(
+                pattern=self._simultaneous_regex_pattern_compiled,
+                repl=self._simultaneous_substitute_function,
+                string=string,
+            )
 
         return string
 
@@ -924,13 +820,12 @@ class RegexDictionaryReplacement(
 
     def _apply(self, string):
         for pattern, substitute_function in self._substitute_function_from_pattern.items():
-            string = \
-                re.sub(
-                    pattern,
-                    substitute_function,
-                    string,
-                    flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-                )
+            string = re.sub(
+                pattern=pattern,
+                repl=substitute_function,
+                string=string,
+                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+            )
 
         return string
 
@@ -1027,26 +922,24 @@ class FixedDelimitersReplacement(
 
     def _set_apply_method_variables(self):
         self._has_flags = len(self._flag_name_from_letter) > 0
-        self._regex_pattern_compiled = \
-            re.compile(
-                FixedDelimitersReplacement.build_regex_pattern(
-                    self._syntax_type_is_block,
-                    self._flag_name_from_letter,
-                    self._has_flags,
-                    self._opening_delimiter,
-                    self._attribute_specifications,
-                    self._prohibited_content_regex,
-                    self._closing_delimiter,
-                ),
-                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-            )
-        self._substitute_function = \
-            self.build_substitute_function(
+        self._regex_pattern_compiled = re.compile(
+            pattern=FixedDelimitersReplacement.build_regex_pattern(
+                self._syntax_type_is_block,
                 self._flag_name_from_letter,
                 self._has_flags,
+                self._opening_delimiter,
                 self._attribute_specifications,
-                self._tag_name,
-            )
+                self._prohibited_content_regex,
+                self._closing_delimiter,
+            ),
+            flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+        )
+        self._substitute_function = self.build_substitute_function(
+            self._flag_name_from_letter,
+            self._has_flags,
+            self._attribute_specifications,
+            self._tag_name,
+        )
 
     def _apply(self, string):
         return re.sub(
@@ -1068,8 +961,9 @@ class FixedDelimitersReplacement(
         block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block)
         flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
         opening_delimiter_regex = re.escape(opening_delimiter)
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=syntax_type_is_block)
+        )
         content_regex = build_content_regex(prohibited_content_regex)
         closing_delimiter_regex = re.escape(closing_delimiter)
 
@@ -1091,13 +985,15 @@ class FixedDelimitersReplacement(
         tag_name,
     ):
         def substitute_function(match):
-            enabled_flag_names = \
+            enabled_flag_names = (
                 ReplacementWithAllowedFlags.get_enabled_flag_names(match, flag_name_from_letter, has_flags)
+            )
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
+                combined_attribute_specifications = (
                     attribute_specifications + ' ' + none_to_empty_string(matched_attribute_specifications)
+                )
                 attributes_sequence = build_attributes_sequence(combined_attribute_specifications, use_protection=True)
             else:
                 attributes_sequence = ''
@@ -1226,28 +1122,26 @@ class ExtensibleFenceReplacement(
 
     def _set_apply_method_variables(self):
         self._has_flags = len(self._flag_name_from_letter) > 0
-        self._regex_pattern_compiled = \
-            re.compile(
-                ExtensibleFenceReplacement.build_regex_pattern(
-                    self._syntax_type_is_block,
-                    self._flag_name_from_letter,
-                    self._has_flags,
-                    self._prologue_delimiter,
-                    self._extensible_delimiter_character,
-                    self._extensible_delimiter_min_length,
-                    self._attribute_specifications,
-                    self._prohibited_content_regex,
-                    self._epilogue_delimiter,
-                ),
-                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-            )
-        self._substitute_function = \
-            self.build_substitute_function(
+        self._regex_pattern_compiled = re.compile(
+            pattern=ExtensibleFenceReplacement.build_regex_pattern(
+                self._syntax_type_is_block,
                 self._flag_name_from_letter,
                 self._has_flags,
+                self._prologue_delimiter,
+                self._extensible_delimiter_character,
+                self._extensible_delimiter_min_length,
                 self._attribute_specifications,
-                self._tag_name,
-            )
+                self._prohibited_content_regex,
+                self._epilogue_delimiter,
+            ),
+            flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+        )
+        self._substitute_function = self.build_substitute_function(
+            self._flag_name_from_letter,
+            self._has_flags,
+            self._attribute_specifications,
+            self._tag_name,
+        )
 
     def _apply(self, string):
         return re.sub(
@@ -1271,10 +1165,12 @@ class ExtensibleFenceReplacement(
         block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block)
         flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
         prologue_delimiter_regex = re.escape(prologue_delimiter)
-        extensible_delimiter_opening_regex = \
+        extensible_delimiter_opening_regex = (
             build_extensible_delimiter_opening_regex(extensible_delimiter_character, extensible_delimiter_min_length)
-        attribute_specifications_regex = \
+        )
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=syntax_type_is_block)
+        )
         content_regex = build_content_regex(prohibited_content_regex)
         extensible_delimiter_closing_regex = build_extensible_delimiter_closing_regex()
         epilogue_delimiter_regex = re.escape(epilogue_delimiter)
@@ -1293,15 +1189,20 @@ class ExtensibleFenceReplacement(
 
     def build_substitute_function(self, flag_name_from_letter, has_flags, attribute_specifications, tag_name):
         def substitute_function(match):
-            enabled_flag_names = \
+            enabled_flag_names = (
                 ReplacementWithAllowedFlags.get_enabled_flag_names(match, flag_name_from_letter, has_flags)
+            )
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    attribute_specifications + ' ' + none_to_empty_string(matched_attribute_specifications)
-                attributes_sequence = \
+                combined_attribute_specifications = (
+                    attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
+                attributes_sequence = (
                     build_attributes_sequence(combined_attribute_specifications, use_protection=True)
+                )
             else:
                 attributes_sequence = ''
 
@@ -1391,20 +1292,15 @@ class PartitioningReplacement(
             raise MissingAttributeException('starting_pattern')
 
     def _set_apply_method_variables(self):
-        self._regex_pattern_compiled = \
-            re.compile(
-                PartitioningReplacement.build_regex_pattern(
-                    self._starting_pattern,
-                    self._attribute_specifications,
-                    self._ending_pattern,
-                ),
-                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-            )
-        self._substitute_function = \
-            self.build_substitute_function(
+        self._regex_pattern_compiled = re.compile(
+            pattern=PartitioningReplacement.build_regex_pattern(
+                self._starting_pattern,
                 self._attribute_specifications,
-                self._tag_name,
-            )
+                self._ending_pattern,
+            ),
+            flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+        )
+        self._substitute_function = self.build_substitute_function(self._attribute_specifications, self._tag_name)
 
     def _apply(self, string):
         return re.sub(
@@ -1417,38 +1313,37 @@ class PartitioningReplacement(
     def build_regex_pattern(starting_pattern, attribute_specifications, ending_pattern):
         anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True)
         starting_regex = f'(?: {starting_pattern} )'
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False, allow_omission=False)
+        )
         if attribute_specifications_regex == '':
             attribute_specifications_or_whitespace_regex = r'[\s]+?'
         else:
-            attribute_specifications_or_whitespace_regex = \
-                fr'(?: {attribute_specifications_regex} | [\s]+? )'
+            attribute_specifications_or_whitespace_regex = fr'(?: {attribute_specifications_regex} | [\s]+? )'
         content_regex = build_content_regex()
-        attribute_specifications_no_capture_regex = \
-            build_attribute_specifications_regex(
-                attribute_specifications,
-                require_newline=False,
-                capture_attribute_specifications=False,
-                allow_omission=False,
-            )
+        attribute_specifications_no_capture_regex = build_attribute_specifications_regex(
+            attribute_specifications,
+            require_newline=False,
+            capture_attribute_specifications=False,
+            allow_omission=False,
+        )
         if attribute_specifications_no_capture_regex == '':
             attribute_specifications_no_capture_or_whitespace_regex = r'[\s]+'
         else:
-            attribute_specifications_no_capture_or_whitespace_regex = \
+            attribute_specifications_no_capture_or_whitespace_regex = (
                 fr'(?: {attribute_specifications_no_capture_regex} | [\s]+ )'
+            )
         if ending_pattern is None:
             ending_lookahead_regex = r'(?= \Z )'
         else:
             ending_regex = f'(?: {ending_pattern} )'
-            ending_lookahead_regex = \
-                (
-                    '(?= '
-                    + anchoring_regex
-                    + ending_regex
-                    + attribute_specifications_no_capture_or_whitespace_regex
-                    + r' | \Z )'
-                )
+            ending_lookahead_regex = (
+                '(?= '
+                + anchoring_regex
+                + ending_regex
+                + attribute_specifications_no_capture_or_whitespace_regex
+                + r' | \Z )'
+            )
 
         return ''.join([
             anchoring_regex,
@@ -1462,8 +1357,11 @@ class PartitioningReplacement(
         def substitute_function(match):
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    attribute_specifications + ' ' + none_to_empty_string(matched_attribute_specifications)
+                combined_attribute_specifications = (
+                    attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
                 attributes_sequence = build_attributes_sequence(combined_attribute_specifications, use_protection=True)
             else:
                 attributes_sequence = ''
@@ -1533,20 +1431,18 @@ class InlineAssortedDelimitersReplacement(
             raise MissingAttributeException('delimiter_conversion')
 
     def _set_apply_method_variables(self):
-        self._regex_pattern_compiled = \
-            re.compile(
-                InlineAssortedDelimitersReplacement.build_regex_pattern(
-                    self._tag_name_from_delimiter_length_from_character,
-                    self._attribute_specifications,
-                    self._prohibited_content_regex,
-                ),
-                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-            )
-        self._substitute_function = \
-            self.build_substitute_function(
+        self._regex_pattern_compiled = re.compile(
+            pattern=InlineAssortedDelimitersReplacement.build_regex_pattern(
                 self._tag_name_from_delimiter_length_from_character,
                 self._attribute_specifications,
-            )
+                self._prohibited_content_regex,
+            ),
+            flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+        )
+        self._substitute_function = self.build_substitute_function(
+            self._tag_name_from_delimiter_length_from_character,
+            self._attribute_specifications,
+        )
 
     def _apply(self, string):
         string_has_changed = True
@@ -1567,10 +1463,14 @@ class InlineAssortedDelimitersReplacement(
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    attribute_specifications + ' ' + none_to_empty_string(matched_attribute_specifications)
-                attributes_sequence = \
+                combined_attribute_specifications = (
+                    attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
+                attributes_sequence = (
                     build_attributes_sequence(combined_attribute_specifications, use_protection=True)
+                )
             else:
                 attributes_sequence = ''
 
@@ -1612,12 +1512,11 @@ class InlineAssortedDelimitersReplacement(
         either_class_regex = build_captured_character_class_regex(either_characters, 'either')
         double_class_regex = build_captured_character_class_regex(double_characters, 'double')
         class_regexes = [double_class_regex, either_class_regex, single_class_regex]
-        delimiter_character_alternatives = \
-            ' | '.join(
-                class_regex
-                for class_regex in class_regexes
-                if class_regex is not None
-            )
+        delimiter_character_alternatives = ' | '.join(
+            class_regex
+            for class_regex in class_regexes
+            if class_regex is not None
+        )
         delimiter_character_regex = f'(?P<delimiter_character> {delimiter_character_alternatives} )'
 
         if either_class_regex is not None:
@@ -1633,8 +1532,9 @@ class InlineAssortedDelimitersReplacement(
         opening_delimiter_regex = f'(?P<delimiter> {delimiter_character_regex} {repetition_regex} )'
 
         after_opening_delimiter_regex = r'(?! [\s] | [<][/] )'
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False)
+        )
         before_content_whitespace_regex = r'[\s]*'
 
         if prohibited_content_regex is None:
@@ -1687,11 +1587,10 @@ class HeadingReplacement(
         pass
 
     def _set_apply_method_variables(self):
-        self._regex_pattern_compiled = \
-            re.compile(
-                HeadingReplacement.build_regex_pattern(self._attribute_specifications),
-                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-            )
+        self._regex_pattern_compiled = re.compile(
+            pattern=HeadingReplacement.build_regex_pattern(self._attribute_specifications),
+            flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+        )
         self._substitute_function = HeadingReplacement.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string):
@@ -1704,14 +1603,17 @@ class HeadingReplacement(
     @staticmethod
     def build_regex_pattern(attribute_specifications):
 
-        block_anchoring_regex = \
+        block_anchoring_regex = (
             build_block_anchoring_regex(syntax_type_is_block=True, capture_anchoring_whitespace=True)
+        )
         opening_hashes_regex = '(?P<opening_hashes> [#]{1,6} )'
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False)
+        )
         content_starter_regex = r'(?: [^\S\n]+ (?P<content_starter> [^\n]*? ) )? [^\S\n]*'
-        content_continuation_regex = \
+        content_continuation_regex = (
             r'(?P<content_continuation> (?: \n (?P=anchoring_whitespace) [^\S\n]+ [^\n]* )* )'
+        )
         closing_hashes_regex = '[#]*'
         trailing_horizontal_whitespace_regex = r'[^\S\n]* $'
 
@@ -1734,8 +1636,11 @@ class HeadingReplacement(
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    attribute_specifications + ' ' + none_to_empty_string(matched_attribute_specifications)
+                combined_attribute_specifications = (
+                    attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
                 attributes_sequence = build_attributes_sequence(combined_attribute_specifications, use_protection=True)
             else:
                 attributes_sequence = ''
@@ -1781,11 +1686,10 @@ class ReferenceDefinitionReplacement(
         pass
 
     def _set_apply_method_variables(self):
-        self._regex_pattern_compiled = \
-            re.compile(
-                ReferenceDefinitionReplacement.build_regex_pattern(self._attribute_specifications),
-                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-            )
+        self._regex_pattern_compiled = re.compile(
+            pattern=ReferenceDefinitionReplacement.build_regex_pattern(self._attribute_specifications),
+            flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+        )
         self._substitute_function = self.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string):
@@ -1797,11 +1701,13 @@ class ReferenceDefinitionReplacement(
 
     @staticmethod
     def build_regex_pattern(attribute_specifications):
-        block_anchoring_regex = \
+        block_anchoring_regex = (
             build_block_anchoring_regex(syntax_type_is_block=True, capture_anchoring_whitespace=True)
+        )
         label_regex = r'\[ [\s]* (?P<label> [^\]]*? ) [\s]* \]'
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False)
+        )
         colon_regex = '[:]'
         maybe_hanging_whitespace_regex = build_maybe_hanging_whitespace_regex()
         uri_regex = build_uri_regex(be_greedy=True)
@@ -1828,8 +1734,11 @@ class ReferenceDefinitionReplacement(
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    attribute_specifications + ' ' + none_to_empty_string(matched_attribute_specifications)
+                combined_attribute_specifications = (
+                    attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
+                )
             else:
                 combined_attribute_specifications = ''
 
@@ -1884,14 +1793,13 @@ class SpecifiedImageReplacement(
         pass
 
     def _set_apply_method_variables(self):
-        self._regex_pattern_compiled = \
-            re.compile(
-                SpecifiedImageReplacement.build_regex_pattern(
-                    self._attribute_specifications,
-                    self._prohibited_content_regex,
-                ),
-                flags=re.ASCII | re.VERBOSE,
-            )
+        self._regex_pattern_compiled = re.compile(
+            pattern=SpecifiedImageReplacement.build_regex_pattern(
+                self._attribute_specifications,
+                self._prohibited_content_regex,
+            ),
+            flags=re.ASCII | re.VERBOSE,
+        )
         self._substitute_function = SpecifiedImageReplacement.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string):
@@ -1904,15 +1812,15 @@ class SpecifiedImageReplacement(
     @staticmethod
     def build_regex_pattern(attribute_specifications, prohibited_content_regex):
         exclamation_mark_regex = '[!]'
-        alt_text_regex = \
-            build_content_regex(
-                prohibited_content_regex,
-                permitted_content_regex=r'[^\]]',
-                capture_group_name='alt_text',
-            )
+        alt_text_regex = build_content_regex(
+            prohibited_content_regex,
+            permitted_content_regex=r'[^\]]',
+            capture_group_name='alt_text',
+        )
         bracketed_alt_text_regex = fr'\[ [\s]* {alt_text_regex} [\s]* \]'
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False)
+        )
         opening_parenthesis_regex = r'\('
         uri_regex = build_uri_regex(be_greedy=False)
         whitespace_then_uri_regex = fr'(?: [\s]* {uri_regex} )?'
@@ -1960,21 +1868,19 @@ class SpecifiedImageReplacement(
             else:
                 title_attribute_specification = ''
 
-            alt_src_title_attribute_specifications = \
-                ' '.join([
-                    alt_attribute_specification,
-                    src_attribute_specification,
-                    title_attribute_specification,
-                ])
+            alt_src_title_attribute_specifications = ' '.join([
+                alt_attribute_specification,
+                src_attribute_specification,
+                title_attribute_specification,
+            ])
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    ' '.join([
-                        alt_src_title_attribute_specifications,
-                        attribute_specifications,
-                        none_to_empty_string(matched_attribute_specifications),
-                    ])
+                combined_attribute_specifications = ' '.join([
+                    alt_src_title_attribute_specifications,
+                    attribute_specifications,
+                    none_to_empty_string(matched_attribute_specifications),
+                ])
             else:
                 combined_attribute_specifications = alt_src_title_attribute_specifications
 
@@ -2020,14 +1926,13 @@ class ReferencedImageReplacement(
         pass
 
     def _set_apply_method_variables(self):
-        self._regex_pattern_compiled = \
-            re.compile(
-                ReferencedImageReplacement.build_regex_pattern(
-                    self._attribute_specifications,
-                    self._prohibited_content_regex,
-                ),
-                flags=re.ASCII | re.VERBOSE,
-            )
+        self._regex_pattern_compiled = re.compile(
+            pattern=ReferencedImageReplacement.build_regex_pattern(
+                self._attribute_specifications,
+                self._prohibited_content_regex,
+            ),
+            flags=re.ASCII | re.VERBOSE,
+        )
         self._substitute_function = self.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string):
@@ -2041,21 +1946,20 @@ class ReferencedImageReplacement(
     def build_regex_pattern(attribute_specifications, prohibited_content_regex):
 
         exclamation_mark_regex = '[!]'
-        alt_text_regex = \
-            build_content_regex(
-                prohibited_content_regex,
-                permitted_content_regex=r'[^\]]',
-                capture_group_name='alt_text',
-            )
+        alt_text_regex = build_content_regex(
+            prohibited_content_regex,
+            permitted_content_regex=r'[^\]]',
+            capture_group_name='alt_text',
+        )
         bracketed_alt_text_regex = fr'\[ [\s]* {alt_text_regex} [\s]* \]'
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False)
-        label_regex = \
-            build_content_regex(
-                prohibited_content_regex,
-                permitted_content_regex=r'[^\]]',
-                capture_group_name='label',
-            )
+        )
+        label_regex = build_content_regex(
+            prohibited_content_regex,
+            permitted_content_regex=r'[^\]]',
+            capture_group_name='label',
+        )
         bracketed_label_regex = fr'(?: \[ [\s]* {label_regex} [\s]* \] )?'
 
         return ''.join([
@@ -2089,22 +1993,20 @@ class ReferencedImageReplacement(
             else:
                 title_attribute_specification = ''
 
-            alt_src_title_referenced_attribute_specifications = \
-                ' '.join([
-                    alt_attribute_specification,
-                    src_attribute_specification,
-                    title_attribute_specification,
-                    none_to_empty_string(referenced_attribute_specifications)
-                ])
+            alt_src_title_referenced_attribute_specifications = ' '.join([
+                alt_attribute_specification,
+                src_attribute_specification,
+                title_attribute_specification,
+                none_to_empty_string(referenced_attribute_specifications)
+            ])
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    ' '.join([
-                        alt_src_title_referenced_attribute_specifications,
-                        attribute_specifications,
-                        none_to_empty_string(matched_attribute_specifications),
-                    ])
+                combined_attribute_specifications = ' '.join([
+                    alt_src_title_referenced_attribute_specifications,
+                    attribute_specifications,
+                    none_to_empty_string(matched_attribute_specifications),
+                ])
             else:
                 combined_attribute_specifications = alt_src_title_referenced_attribute_specifications
 
@@ -2157,21 +2059,19 @@ class ExplicitLinkReplacement(
     def _set_apply_method_variables(self):
 
         self._has_flags = len(self._flag_name_from_letter) > 0
-        self._regex_pattern_compiled = \
-            re.compile(
-                ExplicitLinkReplacement.build_regex_pattern(
-                    self._flag_name_from_letter,
-                    self._has_flags,
-                    self._attribute_specifications,
-                ),
-                flags=re.ASCII | re.VERBOSE,
-            )
-        self._substitute_function = \
-            self.build_substitute_function(
+        self._regex_pattern_compiled =  re.compile(
+            pattern=ExplicitLinkReplacement.build_regex_pattern(
                 self._flag_name_from_letter,
                 self._has_flags,
                 self._attribute_specifications,
-            )
+            ),
+            flags=re.ASCII | re.VERBOSE,
+        )
+        self._substitute_function =  self.build_substitute_function(
+            self._flag_name_from_letter,
+            self._has_flags,
+            self._attribute_specifications,
+        )
 
     def _apply(self, string):
         return re.sub(
@@ -2184,8 +2084,9 @@ class ExplicitLinkReplacement(
     def build_regex_pattern(flag_name_from_letter, has_flags, attribute_specifications):
         flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
         opening_angle_bracket_regex = '[<]'
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False)
+        )
         uri_regex = r'(?P<uri> [a-zA-Z.+-]+ [:] [^\s>]*? )'
         closing_angle_bracket_regex = '[>]'
 
@@ -2199,8 +2100,9 @@ class ExplicitLinkReplacement(
 
     def build_substitute_function(self, flag_name_from_letter, has_flags, attribute_specifications):
         def substitute_function(match):
-            enabled_flag_names = \
+            enabled_flag_names = (
                 ReplacementWithAllowedFlags.get_enabled_flag_names(match, flag_name_from_letter, has_flags)
+            )
 
             href = match.group('uri')
             href_protected = PlaceholderMaster.protect(href)
@@ -2208,11 +2110,10 @@ class ExplicitLinkReplacement(
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    ' '.join([
-                        href_attribute_specification,
-                        none_to_empty_string(matched_attribute_specifications),
-                    ])
+                combined_attribute_specifications = ' '.join([
+                    href_attribute_specification,
+                    none_to_empty_string(matched_attribute_specifications),
+                ])
             else:
                 combined_attribute_specifications = href_attribute_specification
 
@@ -2263,14 +2164,13 @@ class SpecifiedLinkReplacement(
         pass
 
     def _set_apply_method_variables(self):
-        self._regex_pattern_compiled = \
-            re.compile(
-                SpecifiedLinkReplacement.build_regex_pattern(
-                    self._attribute_specifications,
-                    self._prohibited_content_regex,
-                ),
-                flags=re.ASCII | re.VERBOSE,
-            )
+        self._regex_pattern_compiled =  re.compile(
+            pattern=SpecifiedLinkReplacement.build_regex_pattern(
+                self._attribute_specifications,
+                self._prohibited_content_regex,
+            ),
+            flags=re.ASCII | re.VERBOSE,
+        )
         self._substitute_function = SpecifiedLinkReplacement.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string):
@@ -2282,15 +2182,15 @@ class SpecifiedLinkReplacement(
 
     @staticmethod
     def build_regex_pattern(attribute_specifications, prohibited_content_regex):
-        link_text_regex = \
-            build_content_regex(
-                prohibited_content_regex,
-                permitted_content_regex=r'[^\]]',
-                capture_group_name='link_text',
-            )
+        link_text_regex = build_content_regex(
+            prohibited_content_regex,
+            permitted_content_regex=r'[^\]]',
+            capture_group_name='link_text',
+        )
         bracketed_link_text_regex = fr'\[ [\s]* {link_text_regex} [\s]* \]'
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False)
+        )
         opening_parenthesis_regex = r'\('
         uri_regex = build_uri_regex(be_greedy=False)
         whitespace_then_uri_regex = fr'(?: [\s]* {uri_regex} )?'
@@ -2338,20 +2238,18 @@ class SpecifiedLinkReplacement(
             else:
                 title_attribute_specification = ''
 
-            href_title_attribute_specifications = \
-                ' '.join([
-                    href_attribute_specification,
-                    title_attribute_specification,
-                ])
+            href_title_attribute_specifications = ' '.join([
+                href_attribute_specification,
+                title_attribute_specification,
+            ])
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    ' '.join([
-                        href_title_attribute_specifications,
-                        attribute_specifications,
-                        none_to_empty_string(matched_attribute_specifications),
-                    ])
+                combined_attribute_specifications = ' '.join([
+                    href_title_attribute_specifications,
+                    attribute_specifications,
+                    none_to_empty_string(matched_attribute_specifications),
+                ])
             else:
                 combined_attribute_specifications = href_title_attribute_specifications
 
@@ -2397,14 +2295,13 @@ class ReferencedLinkReplacement(
         pass
 
     def _set_apply_method_variables(self):
-        self._regex_pattern_compiled = \
-            re.compile(
-                ReferencedLinkReplacement.build_regex_pattern(
-                    self._attribute_specifications,
-                    self._prohibited_content_regex,
-                ),
-                flags=re.ASCII | re.VERBOSE,
-            )
+        self._regex_pattern_compiled = re.compile(
+            pattern=ReferencedLinkReplacement.build_regex_pattern(
+                self._attribute_specifications,
+                self._prohibited_content_regex,
+            ),
+            flags=re.ASCII | re.VERBOSE,
+        )
         self._substitute_function = self.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string):
@@ -2416,21 +2313,20 @@ class ReferencedLinkReplacement(
 
     @staticmethod
     def build_regex_pattern(attribute_specifications, prohibited_content_regex):
-        link_text_regex = \
-            build_content_regex(
-                prohibited_content_regex,
-                permitted_content_regex=r'[^\]]',
-                capture_group_name='link_text',
-            )
+        link_text_regex = build_content_regex(
+            prohibited_content_regex,
+            permitted_content_regex=r'[^\]]',
+            capture_group_name='link_text',
+        )
         bracketed_link_text_regex = fr'\[ [\s]* {link_text_regex} [\s]* \]'
-        attribute_specifications_regex = \
+        attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False)
-        label_regex = \
-            build_content_regex(
-                prohibited_content_regex,
-                permitted_content_regex=r'[^\]]',
-                capture_group_name='label',
-            )
+        )
+        label_regex = build_content_regex(
+            prohibited_content_regex,
+            permitted_content_regex=r'[^\]]',
+            capture_group_name='label',
+        )
         bracketed_label_regex = fr'(?: \[ [\s]* {label_regex} [\s]* \] )?'
 
         return ''.join([
@@ -2464,21 +2360,19 @@ class ReferencedLinkReplacement(
             else:
                 title_attribute_specification = ''
 
-            href_title_referenced_attribute_specifications = \
-                ' '.join([
-                    href_attribute_specification,
-                    title_attribute_specification,
-                    none_to_empty_string(referenced_attribute_specifications)
-                ])
+            href_title_referenced_attribute_specifications =  ' '.join([
+                href_attribute_specification,
+                title_attribute_specification,
+                none_to_empty_string(referenced_attribute_specifications)
+            ])
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications = \
-                    ' '.join([
-                        href_title_referenced_attribute_specifications,
-                        attribute_specifications,
-                        none_to_empty_string(matched_attribute_specifications),
-                    ])
+                combined_attribute_specifications =  ' '.join([
+                    href_title_referenced_attribute_specifications,
+                    attribute_specifications,
+                    none_to_empty_string(matched_attribute_specifications),
+                ])
             else:
                 combined_attribute_specifications = href_title_referenced_attribute_specifications
 
@@ -2588,11 +2482,10 @@ class ReplacementMaster:
                 for opened_file_name in self._opened_file_names:
                     if os.path.samefile(opened_file_name, included_file_name):
                         self._opened_file_names.append(included_file_name)
-                        recursive_inclusion_string = \
-                            ' includes '.join(
-                                f'`{opened_file_name}`'
-                                for opened_file_name in self._opened_file_names
-                            )
+                        recursive_inclusion_string =  ' includes '.join(
+                            f'`{opened_file_name}`'
+                            for opened_file_name in self._opened_file_names
+                        )
                         ReplacementMaster.print_error(
                             f'recursive inclusion: {recursive_inclusion_string}',
                             rules_file_name,
@@ -4198,7 +4091,7 @@ class ReplacementMaster:
         for line_number, line in enumerate(replacement_rules.splitlines(), start=1):
             if ReplacementMaster.is_whitespace_only(line):
                 if attribute_name is not None or substitution is not None:
-                    attribute_name, attribute_value, substitution, line_number_range_start = \
+                    attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.stage(
                             class_name,
                             replacement,
@@ -4210,14 +4103,16 @@ class ReplacementMaster:
                             line_number_range_start,
                             line_number,
                         )
+                    )
                 if replacement is not None:
-                    class_name, replacement, attribute_name, attribute_value, substitution, line_number_range_start = \
+                    class_name, replacement, attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.commit(
                             class_name,
                             replacement,
                             rules_file_name,
                             line_number,
                         )
+                    )
                 continue
 
             if ReplacementMaster.is_comment(line):
@@ -4226,7 +4121,7 @@ class ReplacementMaster:
             rules_inclusion_match = ReplacementMaster.compute_rules_inclusion_match(line)
             if rules_inclusion_match is not None:
                 if attribute_name is not None or substitution is not None:
-                    attribute_name, attribute_value, substitution, line_number_range_start = \
+                    attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.stage(
                             class_name,
                             replacement,
@@ -4238,14 +4133,16 @@ class ReplacementMaster:
                             line_number_range_start,
                             line_number,
                         )
+                    )
                 if replacement is not None:
-                    class_name, replacement, attribute_name, attribute_value, substitution, line_number_range_start = \
+                    class_name, replacement, attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.commit(
                             class_name,
                             replacement,
                             rules_file_name,
                             line_number,
                         )
+                    )
                 self.process_rules_inclusion_line(
                     rules_inclusion_match,
                     rules_file_name,
@@ -4254,13 +4151,10 @@ class ReplacementMaster:
                 )
                 continue
 
-            class_declaration_match = \
-                ReplacementMaster.compute_class_declaration_match(line)
+            class_declaration_match = ReplacementMaster.compute_class_declaration_match(line)
             if class_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
-                    attribute_name, attribute_value, \
-                        substitution, \
-                        line_number_range_start = \
+                    attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.stage(
                             class_name,
                             replacement,
@@ -4272,29 +4166,29 @@ class ReplacementMaster:
                             line_number_range_start,
                             line_number,
                         )
+                    )
                 if replacement is not None:
-                    class_name, replacement, \
-                        attribute_name, attribute_value, \
-                        substitution, \
-                        line_number_range_start = \
+                    class_name, replacement, attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.commit(
                             class_name,
                             replacement,
                             rules_file_name,
                             line_number,
                         )
-                class_name, replacement, line_number_range_start = \
+                    )
+                class_name, replacement, line_number_range_start = (
                     self.process_class_declaration_line(
                         class_declaration_match,
                         rules_file_name,
                         line_number,
                     )
+                )
                 continue
 
             attribute_declaration_match = ReplacementMaster.compute_attribute_declaration_match(line)
             if attribute_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
-                    attribute_name, attribute_value, substitution, line_number_range_start = \
+                    attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.stage(
                             class_name,
                             replacement,
@@ -4306,7 +4200,8 @@ class ReplacementMaster:
                             line_number_range_start,
                             line_number,
                         )
-                attribute_name, attribute_value, line_number_range_start = \
+                    )
+                attribute_name, attribute_value, line_number_range_start = (
                     ReplacementMaster.process_attribute_declaration_line(
                         attribute_declaration_match,
                         class_name,
@@ -4315,12 +4210,13 @@ class ReplacementMaster:
                         rules_file_name,
                         line_number,
                     )
+                )
                 continue
 
             substitution_declaration_match = ReplacementMaster.compute_substitution_declaration_match(line)
             if substitution_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
-                    attribute_name, attribute_value, substitution, line_number_range_start = \
+                    attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.stage(
                             class_name,
                             replacement,
@@ -4332,7 +4228,8 @@ class ReplacementMaster:
                             line_number_range_start,
                             line_number,
                         )
-                substitution, line_number_range_start = \
+                    )
+                substitution, line_number_range_start = (
                     ReplacementMaster.process_substitution_declaration_line(
                         replacement,
                         substitution_declaration_match,
@@ -4340,11 +4237,12 @@ class ReplacementMaster:
                         rules_file_name,
                         line_number,
                     )
+                )
                 continue
 
             continuation_match = ReplacementMaster.compute_continuation_match(line)
             if continuation_match is not None:
-                attribute_value, substitution = \
+                attribute_value, substitution = (
                     ReplacementMaster.process_continuation_line(
                         continuation_match,
                         attribute_name,
@@ -4353,6 +4251,7 @@ class ReplacementMaster:
                         rules_file_name,
                         line_number,
                     )
+                )
                 continue
 
             ReplacementMaster.print_error(
@@ -4392,431 +4291,6 @@ class ReplacementMaster:
         return string
 
 
-def compute_longest_common_prefix(strings):
-    shortest_string = min(strings, key=len, default='')
-
-    prefix = shortest_string
-    while len(prefix) > 0:
-        if all(string.startswith(prefix) for string in strings):
-            break
-        prefix = prefix[:-1]
-
-    return prefix
-
-
-def de_indent(string):
-    """
-    De-indent a string.
-
-    Empty lines do not count towards the longest common indentation.
-    Whitespace-only lines do count towards the longest common indentation,
-    except for the last line, which, if whitespace-only,
-    will have its whitespace erased.
-
-    In contrast, `textwrap.dedent` will perform blank erasure
-    of whitespace on all whitespace-only lines,
-    even those lines which are not the last line.
-    """
-    string = re.sub(r'^ [^\S\n]+ \Z', '', string, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
-    indentations = re.findall(r'^ [^\S\n]+ | ^ (?! $ )', string, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
-    longest_common_indentation = compute_longest_common_prefix(indentations)
-    string = re.sub(f'^ {re.escape(longest_common_indentation)}', '', string, flags=re.MULTILINE | re.VERBOSE)
-
-    return string
-
-
-def escape_regex_substitute(substitute):
-    return substitute.replace('\\', r'\\')
-
-
-def escape_attribute_value_html(value):
-    """
-    Escape an attribute value that will be delimited by double quotes.
-
-    For speed, we make the following assumptions:
-    - Entity names are any run of up to 31 letters.
-      At the time of writing (2022-04-18),
-      the longest entity name is `CounterClockwiseContourIntegral`
-      according to <https://html.spec.whatwg.org/entities.json>.
-      Actually checking is slow for very little return.
-    - Decimal code points are any run of up to 7 digits.
-    - Hexadecimal code points are any run of up to 6 digits.
-    """
-    value = \
-        re.sub(
-            '''
-                [&]
-                (?!
-                    (?:
-                        [a-zA-Z]{1,31}
-                            |
-                        [#] (?: [0-9]{1,7} | [xX] [0-9a-fA-F]{1,6} )
-                    )
-                    [;]
-                )
-            ''',
-            '&amp;',
-            value,
-            flags=re.VERBOSE,
-        )
-    value = re.sub('<', '&lt;', value)
-    value = re.sub('>', '&gt;', value)
-    value = re.sub('"', '&quot;', value)
-
-    return value
-
-
-def compute_attribute_specification_matches(attribute_specifications):
-    return re.finditer(
-        r'''
-            [\s]*
-            (?:
-                (?P<name> [^\s=]+ ) =
-                (?:
-                    "(?P<double_quoted_value> [\s\S]*? )"
-                        |
-                    '(?P<single_quoted_value> [\s\S]*? )'
-                        |
-                    (?P<bare_value> [\S]* )
-                )
-                    |
-                [#] (?P<id_> [^\s"]+ )
-                    |
-                [.] (?P<class_> [^\s"]+ )
-                    |
-                [r] (?P<rowspan> [0-9]+ )
-                    |
-                [c] (?P<colspan> [0-9]+ )
-                    |
-                [w] (?P<width> [0-9]+ )
-                    |
-                [h] (?P<height> [0-9]+ )
-                    |
-                [-] (?P<delete_name> [\S]+ )
-                    |
-                (?P<boolean_name> [\S]+ )
-            ) ?
-            [\s]*
-        ''',
-        attribute_specifications,
-        flags=re.ASCII | re.VERBOSE,
-    )
-
-
-ATTRIBUTE_NAME_FROM_ABBREVIATION = {
-    '#': 'id',
-    '.': 'class',
-    'l': 'lang',
-    'r': 'rowspan',
-    'c': 'colspan',
-    'w': 'width',
-    'h': 'height',
-    's': 'style',
-}
-
-
-def extract_attribute_name_and_value(attribute_specification_match):
-    """
-    Extract (at most) name and value.
-
-    Specifically:
-    - («name», «value») for a non-boolean attribute
-    - («name», None) for a boolean attribute
-    - («name»,) for an attribute to be omitted
-    - None for an invalid attribute specification
-    """
-    name = attribute_specification_match.group('name')
-    if name is not None:
-        try:
-            name = ATTRIBUTE_NAME_FROM_ABBREVIATION[name]
-        except KeyError:
-            pass
-
-        double_quoted_value = attribute_specification_match.group('double_quoted_value')
-        if double_quoted_value is not None:
-            return name, double_quoted_value
-
-        single_quoted_value = attribute_specification_match.group('single_quoted_value')
-        if single_quoted_value is not None:
-            return name, single_quoted_value
-
-        bare_value = attribute_specification_match.group('bare_value')
-        if bare_value is not None:
-            return name, bare_value
-
-    id_ = attribute_specification_match.group('id_')
-    if id_ is not None:
-        return 'id', id_
-
-    class_ = attribute_specification_match.group('class_')
-    if class_ is not None:
-        return 'class', class_
-
-    rowspan = attribute_specification_match.group('rowspan')
-    if rowspan is not None:
-        return 'rowspan', rowspan
-
-    colspan = attribute_specification_match.group('colspan')
-    if colspan is not None:
-        return 'colspan', colspan
-
-    width = attribute_specification_match.group('width')
-    if width is not None:
-        return 'width', width
-
-    height = attribute_specification_match.group('height')
-    if height is not None:
-        return 'height', height
-
-    delete_name = attribute_specification_match.group('delete_name')
-    if delete_name is not None:
-        return delete_name,
-
-    boolean_name = attribute_specification_match.group('boolean_name')
-    if boolean_name is not None:
-        return boolean_name, None
-
-    return None
-
-
-def build_attributes_sequence(attribute_specifications, use_protection=False):
-    """
-    Convert CMD attribute specifications to an attribute sequence.
-
-    CMD attribute specifications are of the following forms:
-    ````
-    «name»="«quoted_value»"
-    «name»=«bare_value»
-    #«id»
-    .«class»
-    r«rowspan»
-    c«colspan»
-    w«width»
-    h«height»
-    -«delete_name»
-    «boolean_name»
-    ````
-    In the two forms with an explicit equals sign,
-    the following abbreviations are allowed for `name`:
-    - # for id
-    - . for class
-    - l for lang
-    - r for rowspan
-    - c for colspan
-    - w for width
-    - h for height
-    - s for style
-
-    If an attribute of the same name is specified multiple times,
-    the latest specification shall prevail,
-    except when `class` is specified multiple times,
-    in which case the values will be appended.
-    For example, `id=x #y .a .b name=value .=c class="d"`
-    shall be converted to the attrbute sequence
-    ` id="y" class="a b c d" name="value"`.
-    """
-    attribute_value_from_name = {}
-
-    for attribute_specification_match in compute_attribute_specification_matches(attribute_specifications):
-        name_and_value = extract_attribute_name_and_value(attribute_specification_match)
-
-        if name_and_value is None:  # invalid attribute specification
-            continue
-
-        try:
-            name, value = name_and_value
-            if name == 'class':
-                try:
-                    attribute_value_from_name['class'] += f' {value}'
-                except KeyError:
-                    attribute_value_from_name['class'] = value
-            else:
-                attribute_value_from_name[name] = value
-        except ValueError:  # attribute to be omitted
-            name, = name_and_value
-            attribute_value_from_name.pop(name, None)
-
-    attribute_sequence = ''
-
-    for name, value in attribute_value_from_name.items():
-        if value is None:  # boolean attribute
-            attribute_sequence += f' {name}'
-        else:
-            value = PlaceholderMaster.unprotect(value)
-            value = escape_attribute_value_html(value)
-            attribute_sequence += f' {name}="{value}"'
-
-    if use_protection:
-        attribute_sequence = PlaceholderMaster.protect(attribute_sequence)
-
-    return attribute_sequence
-
-
-BLOCK_TAG_NAMES = [
-    'address',
-    'article',
-    'aside',
-    'blockquote',
-    'dd',
-    'details',
-    'dialog',
-    'div',
-    'dl',
-    'dt',
-    'fieldset',
-    'figcaption',
-    'figure',
-    'footer',
-    'form',
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-    'header',
-    'hgroup',
-    'hr',
-    'li',
-    'main',
-    'nav',
-    'ol',
-    'p',
-    'pre',
-    'section',
-    'table',
-    'tbody',
-    'td',
-    'tfoot',
-    'th',
-    'thead',
-    'ul',
-]
-
-
-def build_block_tag_regex(require_anchoring):
-    block_tag_name_regex = '|'.join(re.escape(tag_name) for tag_name in BLOCK_TAG_NAMES)
-    after_tag_name_regex = fr'[\s{PlaceholderMaster.MARKER}>]'
-    block_tag_regex = f'[<] [/]? (?: {block_tag_name_regex} ) {after_tag_name_regex}'
-
-    if require_anchoring:
-        block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True)
-        return block_anchoring_regex + block_tag_regex
-    else:
-        return block_tag_regex
-
-
-def build_block_anchoring_regex(syntax_type_is_block, capture_anchoring_whitespace=False):
-    if syntax_type_is_block:
-        if capture_anchoring_whitespace:
-            return r'^ (?P<anchoring_whitespace> [^\S\n]* )'
-        else:
-            return r'^ [^\S\n]*'
-
-    return ''
-
-
-def build_maybe_hanging_whitespace_regex():
-    return r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
-
-
-def build_flags_regex(allowed_flags, has_flags):
-    if not has_flags:
-        return ''
-
-    flag_letters = \
-        ''.join(
-            re.escape(flag_letter)
-            for flag_letter in allowed_flags.keys()
-        )
-    return f'(?P<flags> [{flag_letters}]* )'
-
-
-def build_extensible_delimiter_opening_regex(extensible_delimiter_character, extensible_delimiter_min_length):
-    character_regex = re.escape(extensible_delimiter_character)
-    repetition_regex = f'{{{extensible_delimiter_min_length},}}'
-
-    return f'(?P<extensible_delimiter> {character_regex}{repetition_regex} )'
-
-
-def build_attribute_specifications_regex(
-    attribute_specifications,
-    require_newline,
-    capture_attribute_specifications=True,
-    allow_omission=True,
-):
-    if attribute_specifications is not None:
-        if capture_attribute_specifications:
-            braced_sequence_regex = r'\{ (?P<attribute_specifications> [^}]*? ) \}'
-        else:
-            braced_sequence_regex = r'\{ [^}]*? \}'
-
-        if allow_omission:
-            braced_sequence_regex = f'(?: {braced_sequence_regex} )?'
-    else:
-        braced_sequence_regex = ''
-
-    if require_newline:
-        block_newline_regex = r'\n'
-    else:
-        block_newline_regex = ''
-
-    return braced_sequence_regex + block_newline_regex
-
-
-def build_captured_character_class_regex(characters, capture_group_name):
-    if len(characters) == 0:
-        return None
-
-    characters_escaped = ''.join(re.escape(character) for character in sorted(characters))
-    character_class_regex = f'[{characters_escaped}]'
-
-    return f'(?P<{capture_group_name}> {character_class_regex} )'
-
-
-def build_content_regex(
-    prohibited_content_regex=None,
-    permitted_content_regex=r'[\s\S]',
-    permit_empty=True,
-    capture_group_name='content',
-):
-    if prohibited_content_regex is None:
-        permitted_atom_regex = permitted_content_regex
-    else:
-        permitted_atom_regex = f'(?: (?! {prohibited_content_regex} ) {permitted_content_regex} )'
-
-    if permit_empty:
-        repetition = '*'
-    else:
-        repetition = '+'
-
-    return f'(?P<{capture_group_name}> {permitted_atom_regex}{repetition}? )'
-
-
-def build_extensible_delimiter_closing_regex():
-    return '(?P=extensible_delimiter)'
-
-
-def build_uri_regex(be_greedy):
-    if be_greedy:
-        greed = ''
-    else:
-        greed = '?'
-
-    return fr'(?: [<] (?P<angle_bracketed_uri> [^>]*? ) [>] | (?P<bare_uri> [\S]+{greed} ) )'
-
-
-def build_title_regex():
-    return r'''(?: "(?P<double_quoted_title> [^"]*? )" | '(?P<single_quoted_title> [^']*? )' )'''
-
-
-def none_to_empty_string(string):
-    if string is not None:
-        return string
-
-    return ''
-
-
 def extract_rules_and_content(cmd):
     """
     Extract replacement rules and main content from CMD file content.
@@ -4831,19 +4305,18 @@ def extract_rules_and_content(cmd):
             «main_content»
     according to the first occurrence of «delimiter».
     """
-    match = \
-        re.fullmatch(
-            r'''
-                (?:
-                    (?P<replacement_rules> [\s\S]*? )
-                    (?P<delimiter> ^ [%]{3,} )
-                    \n
-                ) ?
-                (?P<main_content> [\s\S]* )
-            ''',
-            cmd,
-            flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-        )
+    match = re.fullmatch(
+        pattern=r'''
+            (?:
+                (?P<replacement_rules> [\s\S]*? )
+                (?P<delimiter> ^ [%]{3,} )
+                \n
+            ) ?
+            (?P<main_content> [\s\S]* )
+        ''',
+        string=cmd,
+        flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+    )
 
     replacement_rules = match.group('replacement_rules')
     main_content = match.group('main_content')

@@ -11,8 +11,9 @@ import re
 import sys
 
 from cmd._version import __version__
-from cmd.constants import COMMAND_LINE_ERROR_EXIT_CODE
+from cmd.constants import COMMAND_LINE_ERROR_EXIT_CODE, GENERIC_ERROR_EXIT_CODE
 from cmd.core import cmd_to_html
+
 
 DESCRIPTION = '''
     Convert Conway-Markdown (CMD) to HTML.
@@ -35,11 +36,9 @@ def extract_cmd_name(cmd_file_name_argument):
     """
     Extract name-without-extension from a CMD file name argument.
 
-    Here, CMD file name argument may be of the form
-    `«cmd_name».cmd`, `«cmd_name».`, or `«cmd_name»`.
+    Here, CMD file name argument may be of the form `«cmd_name».cmd`, `«cmd_name».`, or `«cmd_name»`.
     The path is normalised by resolving `./` and `../`.
     """
-
     cmd_file_name_argument = os.path.normpath(cmd_file_name_argument)
     cmd_name = re.sub(r'[.](cmd)? \Z', '', cmd_file_name_argument, flags=re.VERBOSE)
 
