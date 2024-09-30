@@ -84,9 +84,9 @@ class PlaceholderMaster:
         of «marker» is equivalent to protecting them with a placeholder.
         """
         return re.sub(
-            PlaceholderMaster.MARKER,
-            PlaceholderMaster.protect(PlaceholderMaster.MARKER),
-            string,
+            pattern=PlaceholderMaster.MARKER,
+            repl=PlaceholderMaster.protect(PlaceholderMaster.MARKER),
+            string=string,
         )
 
     @staticmethod
@@ -113,7 +113,7 @@ class PlaceholderMaster:
         Unprotect a string by restoring placeholders to their strings.
         """
         return re.sub(
-            PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED,
-            PlaceholderMaster._unprotect_substitute_function,
-            string,
+            pattern=PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED,
+            repl=PlaceholderMaster._unprotect_substitute_function,
+            string=string,
         )

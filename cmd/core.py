@@ -943,9 +943,9 @@ class FixedDelimitersReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -1145,9 +1145,9 @@ class ExtensibleFenceReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -1304,9 +1304,9 @@ class PartitioningReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -1448,7 +1448,7 @@ class InlineAssortedDelimitersReplacement(
         string_has_changed = True
 
         while string_has_changed:
-            new_string = re.sub(self._regex_pattern_compiled, self._substitute_function, string)
+            new_string = re.sub(pattern=self._regex_pattern_compiled, repl=self._substitute_function, string=string)
             string_has_changed = new_string != string
             string = new_string
 
@@ -1595,9 +1595,9 @@ class HeadingReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -1694,9 +1694,9 @@ class ReferenceDefinitionReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -1804,9 +1804,9 @@ class SpecifiedImageReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -1937,9 +1937,9 @@ class ReferencedImageReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -2075,9 +2075,9 @@ class ExplicitLinkReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -2175,9 +2175,9 @@ class SpecifiedLinkReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -2306,9 +2306,9 @@ class ReferencedLinkReplacement(
 
     def _apply(self, string):
         return re.sub(
-            self._regex_pattern_compiled,
-            self._substitute_function,
-            string,
+            pattern=self._regex_pattern_compiled,
+            repl=self._substitute_function,
+            string=string,
         )
 
     @staticmethod
@@ -2447,7 +2447,7 @@ class ReplacementMaster:
 
     @staticmethod
     def is_whitespace_only(line):
-        return re.fullmatch(r'[\s]*', line, flags=re.ASCII)
+        return re.fullmatch(pattern=r'[\s]*', string=line, flags=re.ASCII)
 
     @staticmethod
     def is_comment(line):
@@ -2456,7 +2456,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_rules_inclusion_match(line):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [<][ ]
                     (?:
                         [/] (?P<included_file_name> [\S][\s\S]*? )
@@ -2465,7 +2465,7 @@ class ReplacementMaster:
                     )
                 [\s]*
             ''',
-            line,
+            string=line,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2507,12 +2507,12 @@ class ReplacementMaster:
     @staticmethod
     def compute_class_declaration_match(line):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 (?P<class_name> [A-Za-z]+ ) [:]
                 [\s]+
                 [#] (?P<id_> [a-z0-9-.]+ )
             ''',
-            line,
+            string=line,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2579,11 +2579,11 @@ class ReplacementMaster:
     @staticmethod
     def compute_attribute_declaration_match(line):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [-][ ] (?P<attribute_name> [a-z_]+ ) [:]
                 (?P<partial_attribute_value> [\s\S]* )
             ''',
-            line,
+            string=line,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2623,8 +2623,8 @@ class ReplacementMaster:
     @staticmethod
     def compute_substitution_declaration_match(line):
         return re.fullmatch(
-            r'[*][ ] (?P<partial_substitution> [\s\S]* )',
-            line,
+            pattern=r'[*][ ] (?P<partial_substitution> [\s\S]* )',
+            string=line,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2654,8 +2654,8 @@ class ReplacementMaster:
     @staticmethod
     def compute_continuation_match(line):
         return re.fullmatch(
-            r'(?P<continuation> [\s]+ [\S][\s\S]* )',
-            line,
+            pattern=r'(?P<continuation> [\s]+ [\S][\s\S]* )',
+            string=line,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2687,7 +2687,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_allowed_flag_matches(attribute_value):
         return re.finditer(
-            r'''
+            pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
                     |
                 (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
@@ -2700,7 +2700,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2740,7 +2740,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_apply_mode_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<apply_mode> SIMULTANEOUS | SEQUENTIAL )
@@ -2749,7 +2749,7 @@ class ReplacementMaster:
                     )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE
         )
 
@@ -2773,7 +2773,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_attribute_specifications_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<none_keyword> NONE )
@@ -2786,7 +2786,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2823,7 +2823,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_closing_delimiter_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<closing_delimiter> [\S][\s\S]*? )
@@ -2832,7 +2832,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2856,7 +2856,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_concluding_replacement_matches(attribute_value):
         return re.finditer(
-            r'''
+            pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
                     |
                 (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
@@ -2868,7 +2868,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2927,7 +2927,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_content_replacement_matches(attribute_value):
         return re.finditer(
-            r'''
+            pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
                     |
                 (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
@@ -2939,7 +2939,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -2998,7 +2998,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_delimiter_conversion_matches(attribute_value):
         return re.finditer(
-            r'''
+            pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
                     |
                 [\s]*
@@ -3012,7 +3012,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3060,7 +3060,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_ending_pattern_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<none_keyword> NONE )
@@ -3071,7 +3071,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3101,7 +3101,7 @@ class ReplacementMaster:
         ending_pattern = ending_pattern_match.group('ending_pattern')
 
         try:
-            ending_pattern_compiled = re.compile(ending_pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
+            ending_pattern_compiled = re.compile(pattern=ending_pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
         except re.error as pattern_exception:
             ReplacementMaster.print_error(
                 f'bad regex pattern `{ending_pattern}`',
@@ -3126,7 +3126,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_epilogue_delimiter_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<none_keyword> NONE )
@@ -3137,7 +3137,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3164,7 +3164,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_extensible_delimiter_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<extensible_delimiter>
@@ -3176,7 +3176,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3210,7 +3210,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_negative_flag_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<none_keyword> NONE )
@@ -3221,7 +3221,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3248,7 +3248,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_opening_delimiter_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<opening_delimiter> [\S][\s\S]*? )
@@ -3257,7 +3257,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3281,7 +3281,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_positive_flag_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<none_keyword> NONE )
@@ -3292,7 +3292,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3319,7 +3319,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_prohibited_content_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<none_keyword> NONE )
@@ -3330,7 +3330,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3359,7 +3359,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_prologue_delimiter_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<none_keyword> NONE )
@@ -3370,7 +3370,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3397,7 +3397,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_queue_position_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<none_keyword> NONE )
@@ -3412,7 +3412,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3483,7 +3483,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_replacement_matches(attribute_value):
         return re.finditer(
-            r'''
+            pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
                     |
                 (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
@@ -3495,7 +3495,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3547,7 +3547,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_starting_pattern_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<starting_pattern> [\S][\s\S]*? )
@@ -3556,7 +3556,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3577,7 +3577,7 @@ class ReplacementMaster:
         starting_pattern = starting_pattern_match.group('starting_pattern')
 
         try:
-            starting_pattern_compiled = re.compile(starting_pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
+            starting_pattern_compiled = re.compile(pattern=starting_pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
         except re.error as pattern_exception:
             ReplacementMaster.print_error(
                 f'bad regex pattern `{starting_pattern}`',
@@ -3602,7 +3602,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_syntax_type_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<syntax_type> BLOCK | INLINE )
@@ -3611,7 +3611,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3635,7 +3635,7 @@ class ReplacementMaster:
     @staticmethod
     def compute_tag_name_match(attribute_value):
         return re.fullmatch(
-            r'''
+            pattern=r'''
                 [\s]*
                 (?:
                     (?P<none_keyword> NONE )
@@ -3646,7 +3646,7 @@ class ReplacementMaster:
                 )
                 [\s]*
             ''',
-            attribute_value,
+            string=attribute_value,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3672,13 +3672,13 @@ class ReplacementMaster:
 
     @staticmethod
     def compute_substitution_match(substitution):
-        substitution_delimiters = re.findall('[-]{2,}[>]', substitution)
+        substitution_delimiters = re.findall(pattern='[-]{2,}[>]', string=substitution)
         if len(substitution_delimiters) == 0:
             return None
 
         longest_substitution_delimiter = max(substitution_delimiters, key=len)
         return re.fullmatch(
-            fr'''
+            pattern=fr'''
                 [\s]*
                     (?:
                         "(?P<double_quoted_pattern> [\s\S]*? )"
@@ -3707,7 +3707,7 @@ class ReplacementMaster:
                     )
                 [\s]*
             ''',
-            substitution,
+            string=substitution,
             flags=re.ASCII | re.VERBOSE,
         )
 
@@ -3810,7 +3810,7 @@ class ReplacementMaster:
                     substitute = substitution_match.group('bare_substitute')
 
         try:
-            pattern_compiled = re.compile(pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
+            pattern_compiled = re.compile(pattern=pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
         except re.error as pattern_exception:
             ReplacementMaster.print_error(
                 f'bad regex pattern `{pattern}`',
@@ -3822,7 +3822,7 @@ class ReplacementMaster:
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         try:
-            re.sub(pattern_compiled, substitute, '')
+            re.sub(pattern=pattern_compiled, repl=substitute, string='')
         except re.error as substitute_exception:
             ReplacementMaster.print_error(
                 f'bad regex substitute `{substitute}` for pattern `{pattern}`',
@@ -4325,20 +4325,20 @@ def extract_rules_and_content(cmd):
 
 
 def extract_basename(name):
-    return re.sub(r'\A .* [/]', '', name, flags=re.VERBOSE)
+    return re.sub(pattern=r'\A .* [/]', repl='', string=name, flags=re.VERBOSE)
 
 
 def make_clean_url(cmd_name):
     return re.sub(
-        r'(?P<last_separator> \A | [/] ) index \Z',
-        r'\g<last_separator>',
-        cmd_name,
+        pattern=r'(?P<last_separator> \A | [/] ) index \Z',
+        repl=r'\g<last_separator>',
+        string=cmd_name,
         flags=re.VERBOSE,
     )
 
 
 def extract_separator_normalised_cmd_name(cmd_file_name):
-    cmd_name = re.sub(r'[.](cmd) \Z', '', cmd_file_name, flags=re.VERBOSE)
+    cmd_name = re.sub(pattern=r'[.](cmd) \Z', repl='', string=cmd_file_name, flags=re.VERBOSE)
     separator_normalised_cmd_name = cmd_name.replace('\\', '/')
 
     return separator_normalised_cmd_name
