@@ -342,67 +342,6 @@ class TestCmd(unittest.TestCase):
             r'[^\S\n]* $'
         )
 
-    def test_compute_longest_common_prefix(self):
-        self.assertEqual(cmd.compute_longest_common_prefix([]), '')
-        self.assertEqual(cmd.compute_longest_common_prefix(['a', 'b', 'c', 'd']), '')
-        self.assertEqual(cmd.compute_longest_common_prefix(['  ', '  ', '   ', '      ']), '  ')
-        self.assertEqual(cmd.compute_longest_common_prefix(['\t  ', '\t  3', '\t   \t \t']), '\t  ')
-
-    def test_de_indent(self):
-        self.assertEqual(
-            cmd.de_indent(
-                '''
-    4 spaces
-
-      4 spaces + 2 spaces
-      \t   4 spaces + 2 spaces, 1 tab, 3 spaces
-     
-     4 spaces + 1 space (this line and above)
-'''
-            ),
-            '''
-4 spaces
-
-  4 spaces + 2 spaces
-  \t   4 spaces + 2 spaces, 1 tab, 3 spaces
- 
- 4 spaces + 1 space (this line and above)
-'''
-        )
-        self.assertEqual(
-            cmd.de_indent(
-                '''
-\t\t \t\t\t\t\t\t And,
-\t\t \t\t\t\t\t\tWhitespace before closing delimiter:
-        '''
-            ),
-            '''
- And,
-Whitespace before closing delimiter:
-'''
-        )
-
-    def test_escape_attribute_value_html(self):
-        self.assertEqual(cmd.escape_attribute_value_html('&<>"'), '&amp;&lt;&gt;&quot;')
-        self.assertEqual(cmd.escape_attribute_value_html('&amp;&lt;&gt;&quot;'), '&amp;&lt;&gt;&quot;')
-        self.assertEqual(
-            cmd.escape_attribute_value_html('https://en.wikipedia.org/w/index.php?title=Wikipedia&action=history'),
-            'https://en.wikipedia.org/w/index.php?title=Wikipedia&amp;action=history'
-        )
-        self.assertEqual(
-            cmd.escape_attribute_value_html('&ThisEntityNameHasTooManyCharacters;'),
-            '&amp;ThisEntityNameHasTooManyCharacters;'
-        )
-        self.assertEqual(
-            cmd.escape_attribute_value_html('&NotAValidNameButShortEnough;'),
-            '&NotAValidNameButShortEnough;'
-        )
-        self.assertEqual(cmd.escape_attribute_value_html('&#1234567;'), '&#1234567;')
-        self.assertEqual(cmd.escape_attribute_value_html('&#12345678;'), '&amp;#12345678;')
-        self.assertEqual(cmd.escape_attribute_value_html('&#x123456;'), '&#x123456;')
-        self.assertEqual(cmd.escape_attribute_value_html('&#XAbCdeF;'), '&#XAbCdeF;')
-        self.assertEqual(cmd.escape_attribute_value_html('&#x1234567;'), '&amp;#x1234567;')
-
     def test_build_flags_regex(self):
         self.assertEqual(cmd.build_flags_regex({}, False), '')
         self.assertEqual(
@@ -420,10 +359,6 @@ Whitespace before closing delimiter:
     def test_build_extensible_delimiter_opening_regex(self):
         self.assertEqual(cmd.build_extensible_delimiter_opening_regex('$', 5), r'(?P<extensible_delimiter> \${5,} )')
 
-    def test_none_to_empty_string(self):
-        self.assertEqual(cmd.none_to_empty_string(''), '')
-        self.assertEqual(cmd.none_to_empty_string(None), '')
-        self.assertEqual(cmd.none_to_empty_string('xyz'), 'xyz')
 
 
 if __name__ == '__main__':
