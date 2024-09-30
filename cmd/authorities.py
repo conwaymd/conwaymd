@@ -12,7 +12,7 @@ import sys
 import traceback
 
 from cmd._version import __version__
-from cmd.constants import GENERIC_ERROR_EXIT_CODE
+from cmd.constants import CMD_REPLACEMENT_SYNTAX_HELP, GENERIC_ERROR_EXIT_CODE
 from cmd.employables import (
     DeIndentationReplacement,
     ExplicitLinkReplacement,
@@ -39,26 +39,6 @@ from cmd.references import ReferenceMaster
 from cmd.utilities import none_to_empty_string
 
 
-CMD_REPLACEMENT_SYNTAX_HELP = '''\
-In CMD replacement rule syntax, a line must be one of the following:
-(1) whitespace-only;
-(2) a comment (beginning with `#`);
-(3) a rules inclusion (`< «included_file_name»`);
-(4) a class declaration (`«ClassName»: #«id»`);
-(5) the start of an attribute declaration (`- «name»: «value»`);
-(6) the start of a substitution declaration (`* «pattern» --> «substitute»`);
-(7) a continuation (beginning with whitespace).
-- Note for (3): if «included_file_name» begins with a slash,
-  it is parsed relative to the working directory;
-  otherwise it is parsed relative to the current file.
-- Note for (6): the number of hyphens in the delimiter `-->`
-  may be arbitrarily increased should «pattern» contain
-  a run of hyphens followed by a closing angle-bracket.
-- Note for (7): continuations are only allowed for attribute declarations
-  and for substitution declarations.
-'''
-
-
 class ReplacementAuthority:
     """
     Object governing the parsing and application of replacement rules.
@@ -66,7 +46,7 @@ class ReplacementAuthority:
     ## `legislate`
 
     Parses CMD replacement rule syntax.
-    See the constant `CMD_REPLACEMENT_SYNTAX_HELP` above.
+    See the constant `CMD_REPLACEMENT_SYNTAX_HELP` in `constants.py`.
 
     Terminology:
     - Class declarations are _committed_.
