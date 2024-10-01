@@ -113,20 +113,6 @@ class ReplacementAuthority:
 
         try:
             with open(included_file_name, 'r', encoding='utf-8') as included_file:
-                for opened_file_name in self._opened_file_names:
-                    if os.path.samefile(opened_file_name, included_file_name):
-                        self._opened_file_names.append(included_file_name)
-                        recursive_inclusion_string = ' includes '.join(
-                            f'`{opened_file_name}`'
-                            for opened_file_name in self._opened_file_names
-                        )
-                        ReplacementAuthority.print_error(
-                            f'recursive inclusion: {recursive_inclusion_string}',
-                            rules_file_name,
-                            line_number,
-                        )
-                        sys.exit(GENERIC_ERROR_EXIT_CODE)
-                self._opened_file_names.append(included_file_name)
                 replacement_rules = included_file.read()
         except FileNotFoundError:
             ReplacementAuthority.print_error(
@@ -135,6 +121,21 @@ class ReplacementAuthority:
                 line_number,
             )
             sys.exit(GENERIC_ERROR_EXIT_CODE)
+
+        for opened_file_name in self._opened_file_names:
+            if os.path.samefile(opened_file_name, included_file_name):
+                self._opened_file_names.append(included_file_name)
+                recursive_inclusion_string = ' includes '.join(
+                    f'`{opened_file_name}`'
+                    for opened_file_name in self._opened_file_names
+                )
+                ReplacementAuthority.print_error(
+                    f'recursive inclusion: {recursive_inclusion_string}',
+                    rules_file_name,
+                    line_number,
+                )
+                sys.exit(GENERIC_ERROR_EXIT_CODE)
+        self._opened_file_names.append(included_file_name)
 
         self.legislate(replacement_rules, rules_file_name=included_file_name, cmd_name=cmd_name)
 
