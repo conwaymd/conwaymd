@@ -36,7 +36,7 @@ class TestCore(unittest.TestCase):
 
     def test_cmd_to_html(self):
         self.assertEqual(
-            cmd_to_html('', cmd_file_name='test_core.py', verbose_mode_enabled=False),
+            cmd_to_html(cmd='', cmd_file_name='test_core.py', verbose_mode_enabled=False),
             '''\
 <!DOCTYPE html>
 <html lang="en">
@@ -53,10 +53,7 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(
             cmd_to_html(
-                ################################################################
-                # START CMD
-                ################################################################
-                r'''# Da Rules
+                cmd=r'''# Da Rules
 
 OrdinaryDictionaryReplacement: #.boilerplate-properties-override
 - queue_position: BEFORE #boilerplate-properties
@@ -231,8 +228,8 @@ Empty items, indented source:
   +++
 ======
 ++++
-'''
-"""
+                '''
+                """
 ## `#tables`
 
 ''''
@@ -322,8 +319,8 @@ Header-after-data (seriously, why would you have this?):
   ; Header
   , Data2
 '''
-"""
-r'''
+                """
+                r'''
 ## `#headings`
 
 ### Level 3
@@ -563,18 +560,11 @@ across block elements__.
 ----
 Yes __spanning
 across lines__.
-'''
-                ################################################################
-                # END CMD
-                ################################################################
-                ,
+                ''',
                 cmd_file_name='test_core.py',
                 verbose_mode_enabled=False,
             ),
-            ################################################################
-            # START HTML
-            ################################################################
-r'''<!DOCTYPE html>
+            r'''<!DOCTYPE html>
 <html lang="en-AU">
 <head>
 <meta charset="utf-8">
@@ -892,8 +882,8 @@ then it <code>&lt;p&gt;will work&lt;/p&gt;</code>.
 </div>
 <h2><code>#cmd-properties</code></h2>
 '''
-f'CMD version is <code>v{__version__}</code>.'
-r'''
+            f'CMD version is <code>v{__version__}</code>.'
+            r'''
 CMD name is <code>test_core.py</code>.
 CMD basename is <code>test_core.py</code>.
 Clean URL is <code>test_core.py</code>.
@@ -997,15 +987,12 @@ across lines</b>.
 </body>
 </html>
 '''
-            ################################################################
-            # END HTML
-            ################################################################
-            ,
+            '',
         )
 
         self.assertEqual(
             cmd_to_html(
-                r'''
+                cmd=r'''
 RegexDictionaryReplacement: #.delete-everything
 - queue_position: AFTER #placeholder-unprotect
 * [\s\S]* -->
