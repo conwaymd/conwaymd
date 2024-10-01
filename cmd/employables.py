@@ -1598,7 +1598,7 @@ class ExplicitLinkReplacement(
 
     def _set_apply_method_variables(self):
         self._has_flags = len(self._flag_name_from_letter) > 0
-        self._regex_pattern_compiled =  re.compile(
+        self._regex_pattern_compiled = re.compile(
             pattern=ExplicitLinkReplacement.build_regex_pattern(
                 self._flag_name_from_letter,
                 self._has_flags,
@@ -1606,7 +1606,7 @@ class ExplicitLinkReplacement(
             ),
             flags=re.ASCII | re.VERBOSE,
         )
-        self._substitute_function =  self.build_substitute_function(
+        self._substitute_function = self.build_substitute_function(
             self._flag_name_from_letter,
             self._has_flags,
             self._attribute_specifications,
@@ -1703,7 +1703,7 @@ class SpecifiedLinkReplacement(
         pass
 
     def _set_apply_method_variables(self):
-        self._regex_pattern_compiled =  re.compile(
+        self._regex_pattern_compiled = re.compile(
             pattern=SpecifiedLinkReplacement.build_regex_pattern(
                 self._attribute_specifications,
                 self._prohibited_content_regex,
@@ -1899,7 +1899,7 @@ class ReferencedLinkReplacement(
             else:
                 title_attribute_specification = ''
 
-            href_title_referenced_attribute_specifications =  ' '.join([
+            href_title_referenced_attribute_specifications = ' '.join([
                 href_attribute_specification,
                 title_attribute_specification,
                 none_to_empty_string(referenced_attribute_specifications)
@@ -1907,7 +1907,7 @@ class ReferencedLinkReplacement(
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
-                combined_attribute_specifications =  ' '.join([
+                combined_attribute_specifications = ' '.join([
                     href_title_referenced_attribute_specifications,
                     attribute_specifications,
                     none_to_empty_string(matched_attribute_specifications),

@@ -116,7 +116,7 @@ class ReplacementAuthority:
                 for opened_file_name in self._opened_file_names:
                     if os.path.samefile(opened_file_name, included_file_name):
                         self._opened_file_names.append(included_file_name)
-                        recursive_inclusion_string =  ' includes '.join(
+                        recursive_inclusion_string = ' includes '.join(
                             f'`{opened_file_name}`'
                             for opened_file_name in self._opened_file_names
                         )
@@ -516,7 +516,8 @@ class ReplacementAuthority:
     ):
         concluding_replacements = []
 
-        for concluding_replacement_match in ReplacementAuthority.compute_concluding_replacement_matches(attribute_value):
+        concluding_replacement_matches = ReplacementAuthority.compute_concluding_replacement_matches(attribute_value)
+        for concluding_replacement_match in concluding_replacement_matches:
             if concluding_replacement_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(
                     f'invalid specification `` for attribute `concluding_replacements`',
