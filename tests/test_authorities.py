@@ -8,7 +8,7 @@ Perform unit testing for `authorities.py`.
 
 import unittest
 
-from cmd.authorities import extract_basename, make_clean_url
+from conwaymd.authorities import extract_basename, make_clean_url
 
 
 class TestAuthorities(unittest.TestCase):

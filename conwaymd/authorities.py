@@ -11,9 +11,9 @@ import re
 import sys
 import traceback
 
-from cmd._version import __version__
-from cmd.constants import CMD_REPLACEMENT_SYNTAX_HELP, GENERIC_ERROR_EXIT_CODE
-from cmd.employables import (
+from conwaymd._version import __version__
+from conwaymd.constants import CMD_REPLACEMENT_SYNTAX_HELP, GENERIC_ERROR_EXIT_CODE
+from conwaymd.employables import (
     DeIndentationReplacement,
     ExplicitLinkReplacement,
     ExtensibleFenceReplacement,
@@ -33,10 +33,10 @@ from cmd.employables import (
     SpecifiedImageReplacement,
     SpecifiedLinkReplacement,
 )
-from cmd.exceptions import MissingAttributeException
-from cmd.idioms import build_block_tag_regex
-from cmd.references import ReferenceMaster
-from cmd.utilities import none_to_empty_string
+from conwaymd.exceptions import MissingAttributeException
+from conwaymd.idioms import build_block_tag_regex
+from conwaymd.references import ReferenceMaster
+from conwaymd.utilities import none_to_empty_string
 
 
 class ReplacementAuthority:

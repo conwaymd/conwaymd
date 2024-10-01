@@ -8,9 +8,9 @@ Perform unit testing for `core.py`.
 
 import unittest
 
-from cmd._version import __version__
-from cmd.core import extract_rules_and_content, extract_separator_normalised_cmd_name
-from cmd.core import cmd_to_html
+from conwaymd._version import __version__
+from conwaymd.core import extract_rules_and_content, extract_separator_normalised_cmd_name
+from conwaymd.core import cmd_to_html
 
 
 class TestCore(unittest.TestCase):
@@ -36,7 +36,7 @@ class TestCore(unittest.TestCase):
 
     def test_cmd_to_html(self):
         self.assertEqual(
-            cmd_to_html('', 'test_cmd.py', verbose_mode_enabled=False),
+            cmd_to_html('', cmd_file_name='test_core.py', verbose_mode_enabled=False),
             '''\
 <!DOCTYPE html>
 <html lang="en">
@@ -568,7 +568,7 @@ across lines__.
                 # END CMD
                 ################################################################
                 ,
-                'test_cmd.py',
+                cmd_file_name='test_core.py',
                 verbose_mode_enabled=False,
             ),
             ################################################################
@@ -894,9 +894,9 @@ then it <code>&lt;p&gt;will work&lt;/p&gt;</code>.
 '''
 f'CMD version is <code>v{__version__}</code>.'
 r'''
-CMD name is <code>test_cmd.py</code>.
-CMD basename is <code>test_cmd.py</code>.
-Clean URL is <code>test_cmd.py</code>.
+CMD name is <code>test_core.py</code>.
+CMD basename is <code>test_core.py</code>.
+Clean URL is <code>test_core.py</code>.
 <h2><code>#backslash-escapes</code></h2>
 \ " # &amp; ' ( ) * &lt; &gt; [ ] _ { | }
 \\3 \\4 \\\5 \\\6
@@ -1016,7 +1016,7 @@ The quick brown fox jumps over the lazy dog.
 Everything is everything, and everything is dumb.
 '''
                 ,
-                'test_cmd.py',
+                cmd_file_name='test_core.py',
             ),
             '',
         )

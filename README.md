@@ -18,7 +18,7 @@ For detailed documentation, see <<https://conway-markdown.github.io/>>.
 ## Installation
 
 ```bash
-$ pip3 install conway-markdown
+$ pip3 install conwaymd
 ```
 
 
@@ -48,7 +48,7 @@ On Windows:
 ## Usage (scripting example)
 
 ```python
-from cmd.core import cmd_to_html
+from conwaymd.core import cmd_to_html
 
 cmd_content = '''
 # Test

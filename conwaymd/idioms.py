@@ -8,8 +8,8 @@ Common idioms.
 
 import re
 
-from cmd.placeholders import PlaceholderMaster
-from cmd.utilities import escape_attribute_value_html
+from conwaymd.placeholders import PlaceholderMaster
+from conwaymd.utilities import escape_attribute_value_html
 
 
 ATTRIBUTE_NAME_FROM_ABBREVIATION = {

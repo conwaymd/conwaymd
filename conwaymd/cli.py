@@ -11,9 +11,9 @@ import os
 import re
 import sys
 
-from cmd._version import __version__
-from cmd.constants import COMMAND_LINE_ERROR_EXIT_CODE, GENERIC_ERROR_EXIT_CODE
-from cmd.core import cmd_to_html
+from conwaymd._version import __version__
+from conwaymd.constants import COMMAND_LINE_ERROR_EXIT_CODE, GENERIC_ERROR_EXIT_CODE
+from conwaymd.core import cmd_to_html
 
 DESCRIPTION = '''
     Convert Conway-Markdown (CMD) to HTML.

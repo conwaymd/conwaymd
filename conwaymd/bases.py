@@ -9,8 +9,8 @@ Base classes for CMD replacement rules.
 import abc
 import copy
 
-from cmd.constants import VERBOSE_MODE_DIVIDER_SYMBOL_COUNT
-from cmd.exceptions import CommittedMutateException, UncommittedApplyException
+from conwaymd.constants import VERBOSE_MODE_DIVIDER_SYMBOL_COUNT
+from conwaymd.exceptions import CommittedMutateException, UncommittedApplyException
 
 
 class Replacement(abc.ABC):

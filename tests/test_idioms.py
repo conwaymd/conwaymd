@@ -8,7 +8,7 @@ Perform unit testing for `idioms.py`.
 
 import unittest
 
-from cmd.idioms import build_attributes_sequence, build_extensible_delimiter_opening_regex, build_flags_regex
+from conwaymd.idioms import build_attributes_sequence, build_extensible_delimiter_opening_regex, build_flags_regex
 
 
 class TestIdioms(unittest.TestCase):

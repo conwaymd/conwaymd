@@ -9,7 +9,7 @@ Perform unit testing for `cli.py`.
 import os
 import unittest
 
-from cmd.cli import extract_cmd_name, is_cmd_file
+from conwaymd.cli import extract_cmd_name, is_cmd_file
 
 
 class TestCli(unittest.TestCase):

@@ -6,7 +6,7 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 References for links and images.
 """
 
-from cmd.exceptions import UnrecognisedLabelException
+from conwaymd.exceptions import UnrecognisedLabelException
 
 
 class Reference:

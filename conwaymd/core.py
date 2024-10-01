@@ -19,8 +19,8 @@ For details on how «replacement_rules» and «main_content» are parsed, see <h
 
 import re
 
-from cmd.authorities import ReplacementAuthority
-from cmd.constants import STANDARD_RULES
+from conwaymd.authorities import ReplacementAuthority
+from conwaymd.constants import STANDARD_RULES
 
 
 def extract_rules_and_content(cmd):

@@ -8,7 +8,7 @@ Perform unit testing for `employables.py`.
 
 import unittest
 
-from cmd.employables import (
+from conwaymd.employables import (
     ExtensibleFenceReplacement,
     FixedDelimitersReplacement,
     HeadingReplacement,

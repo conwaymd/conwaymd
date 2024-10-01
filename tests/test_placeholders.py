@@ -8,7 +8,7 @@ Perform unit testing for `placeholders.py`.
 
 import unittest
 
-from cmd.placeholders import PlaceholderMaster
+from conwaymd.placeholders import PlaceholderMaster
 
 
 class TestPlaceholders(unittest.TestCase):

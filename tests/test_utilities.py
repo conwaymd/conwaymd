@@ -8,7 +8,12 @@ Perform unit testing for `utilities.py`.
 
 import unittest
 
-from cmd.utilities import compute_longest_common_prefix, de_indent, escape_attribute_value_html, none_to_empty_string
+from conwaymd.utilities import (
+    compute_longest_common_prefix,
+    de_indent,
+    escape_attribute_value_html,
+    none_to_empty_string,
+)
 
 
 class TestUtilities(unittest.TestCase):

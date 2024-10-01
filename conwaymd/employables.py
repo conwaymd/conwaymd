@@ -9,7 +9,7 @@ Classes for CMD replacement rules that are actually exposed to the user via CMD 
 import copy
 import re
 
-from cmd.bases import (
+from conwaymd.bases import (
     Replacement,
     ReplacementWithAllowedFlags,
     ReplacementWithAttributeSpecifications,
@@ -20,8 +20,8 @@ from cmd.bases import (
     ReplacementWithSyntaxType,
     ReplacementWithTagName,
 )
-from cmd.exceptions import CommittedMutateException, MissingAttributeException, UnrecognisedLabelException
-from cmd.idioms import (
+from conwaymd.exceptions import CommittedMutateException, MissingAttributeException, UnrecognisedLabelException
+from conwaymd.idioms import (
     build_attribute_specifications_regex,
     build_attributes_sequence,
     build_block_anchoring_regex,
@@ -34,8 +34,8 @@ from cmd.idioms import (
     build_title_regex,
     build_uri_regex,
 )
-from cmd.placeholders import PlaceholderMaster
-from cmd.utilities import de_indent, none_to_empty_string
+from conwaymd.placeholders import PlaceholderMaster
+from conwaymd.utilities import de_indent, none_to_empty_string
 
 
 class ReplacementSequence(Replacement):
