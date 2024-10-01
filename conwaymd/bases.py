@@ -178,9 +178,7 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
 
     def add_substitution(self, pattern, substitute):
         if self._is_committed:
-            raise CommittedMutateException(
-                'error: cannot call `add_substitution(...)` after `commit()`'
-            )
+            raise CommittedMutateException('error: cannot call `add_substitution(...)` after `commit()`')
         self._substitute_from_pattern[pattern] = substitute
 
 
