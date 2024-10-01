@@ -59,7 +59,7 @@ cmd_content = '''
 [__dragons__]: https://example.com/
 '''
 
-html_content = cmd_to_html(cmd_content, cmd_file_name='index.cmd')
+html_content = cmd_to_html(cmd_content, cmd_file_name='scripting-test.py')
 
 print(html_content)
 ```
