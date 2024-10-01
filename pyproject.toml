@@ -6,7 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "conwaymd"
 requires-python = ">=3.11"
 authors = [{name="Conway", email="pypi.sheep257@passmail.net"}]
-description = "Conway-Markdown (CMD)"
+description = "Conway-Markdown (conwaymd, CMD)"
 readme = "README.md"
 keywords = ["conway-markdown", "html5"]
 classifiers = [
