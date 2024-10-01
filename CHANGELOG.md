@@ -5,6 +5,7 @@
 
 - Refactored single-file script into multiple files
 - Introduced command line option `-a, --all` to confirm conversion of all files in working directory
+- Fixed breakage when `cmd_to_html` is called with `cmd_file_name=None`
 
 
 ## [v4.6.0] Digits in IDs (2024-03-03)
