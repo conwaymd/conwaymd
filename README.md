@@ -16,9 +16,15 @@ For detailed documentation, see <<https://conwaymd.github.io/>>.
 
 ## Installation
 
+Conway-Markdown is published to PyPI as [`conwaymd`]:
+
 ```bash
 $ pip3 install conwaymd
 ```
+
+On Windows, use `pip` instead of `pip3`.
+
+[`conwaymd`]: https://pypi.org/project/conwaymd/
 
 
 ## Usage (command line)
