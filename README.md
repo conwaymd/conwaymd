@@ -41,7 +41,7 @@ options:
 ```
 
 On Windows:
-- Use the alias `cmdpy` instead of `cmd` to avoid summoning Command Prompt.
+- Use the aliases `cmd-` or `conwaymd` instead of `cmd` to avoid summoning Command Prompt.
 - **Beware not to run any `.cmd` files by accident; they might break your computer. God save!**
 
 

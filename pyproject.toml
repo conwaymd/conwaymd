@@ -25,4 +25,5 @@ changelog = "https://github.com/conway-markdown/conway-markdown/blob/master/CHAN
 
 [project.scripts]
 cmd = "conwaymd.cli:main"
-cmdpy = "conwaymd.cli:main"
+cmd- = "conwaymd.cli:main"
+conwaymd = "conwaymd.cli:main"
