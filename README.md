@@ -46,6 +46,8 @@ On Windows:
 
 ## Usage (scripting example)
 
+Code:
+
 ```python
 from conwaymd.core import cmd_to_html
 
@@ -62,6 +64,8 @@ html_content = cmd_to_html(cmd_content, cmd_file_name='scripting-test.py')
 
 print(html_content)
 ```
+
+Output:
 
 ```html
 <!DOCTYPE html>
