@@ -35,9 +35,9 @@ class PlaceholderMaster:
     def __new__(cls):
         raise TypeError('PlaceholderMaster cannot be instantiated')
 
+    MARKER = '\uF8FF'
     _RUN_CHARACTER_MIN = '\uE000'
     _RUN_CHARACTER_MAX = '\uE100'
-    MARKER = '\uF8FF'
     _REPLACEMENT_CHARACTER = '\uFFFD'
 
     _RUN_CODE_POINT_MIN = ord(_RUN_CHARACTER_MIN)

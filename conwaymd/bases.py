@@ -234,6 +234,7 @@ class ReplacementWithAllowedFlags(Replacement, abc.ABC):
     def flag_name_from_letter(self, value):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `flag_name_from_letter` after `commit()`')
+
         self._flag_name_from_letter = copy.copy(value)
 
     @staticmethod

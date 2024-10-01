@@ -109,6 +109,7 @@ class ReplacementAuthority:
             included_file_name = os.path.join(os.path.dirname(rules_file_name), included_file_name_relative)
         else:
             included_file_name = rules_inclusion_match.group('included_file_name')
+
         included_file_name = os.path.normpath(included_file_name)
 
         try:
@@ -134,8 +135,8 @@ class ReplacementAuthority:
                     line_number,
                 )
                 sys.exit(GENERIC_ERROR_EXIT_CODE)
-        self._opened_file_names.append(included_file_name)
 
+        self._opened_file_names.append(included_file_name)
         self.legislate(replacement_rules, rules_file_name=included_file_name, cmd_name=cmd_name)
 
     @staticmethod
@@ -1076,6 +1077,7 @@ class ReplacementAuthority:
                     line_number,
                 )
                 sys.exit(GENERIC_ERROR_EXIT_CODE)
+
             replacement.queue_position_type = 'ROOT'
             replacement.queue_reference_replacement = None
             return
@@ -1708,8 +1710,7 @@ class ReplacementAuthority:
             self._replacement_queue.insert(insertion_index, replacement)
 
         return None, None, None, None, None, None
-        # class_name, replacement, attribute_name, attribute_value, substitution,
-        # line_number_range_start
+        # class_name, replacement, attribute_name, attribute_value, substitution, line_number_range_start
 
     def legislate(self, replacement_rules, rules_file_name, cmd_name):
         if replacement_rules is None:

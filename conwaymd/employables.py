@@ -49,7 +49,6 @@ class ReplacementSequence(Replacement):
     - replacements: (def) NONE | #«id» [...]
     ````
     """
-
     def __init__(self, id_, verbose_mode_enabled):
         super().__init__(id_, verbose_mode_enabled)
         self._replacements = []
@@ -126,7 +125,6 @@ class PlaceholderProtectionReplacement(Replacement):
     - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
     ````
     """
-
     def __init__(self, id_, verbose_mode_enabled):
         super().__init__(id_, verbose_mode_enabled)
 
@@ -227,7 +225,6 @@ class OrdinaryDictionaryReplacement(
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
     """
-
     def __init__(self, id_, verbose_mode_enabled):
         super().__init__(id_, verbose_mode_enabled)
         self._apply_substitutions_simultaneously = True
@@ -450,6 +447,7 @@ class FixedDelimitersReplacement(
     def closing_delimiter(self, value):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `closing_delimiter` after `commit()`')
+
         self._closing_delimiter = value
 
     def _validate_mandatory_attributes(self):
@@ -519,13 +517,7 @@ class FixedDelimitersReplacement(
             closing_delimiter_regex
         ])
 
-    def build_substitute_function(
-        self,
-        flag_name_from_letter,
-        has_flags,
-        attribute_specifications,
-        tag_name,
-    ):
+    def build_substitute_function(self, flag_name_from_letter, has_flags, attribute_specifications, tag_name):
         def substitute_function(match):
             enabled_flag_names = (
                 ReplacementWithAllowedFlags.get_enabled_flag_names(match, flag_name_from_letter, has_flags)
@@ -534,7 +526,9 @@ class FixedDelimitersReplacement(
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
                 combined_attribute_specifications = (
-                    attribute_specifications + ' ' + none_to_empty_string(matched_attribute_specifications)
+                    attribute_specifications
+                    + ' '
+                    + none_to_empty_string(matched_attribute_specifications)
                 )
                 attributes_sequence = build_attributes_sequence(combined_attribute_specifications, use_protection=True)
             else:
@@ -742,9 +736,7 @@ class ExtensibleFenceReplacement(
                     + ' '
                     + none_to_empty_string(matched_attribute_specifications)
                 )
-                attributes_sequence = (
-                    build_attributes_sequence(combined_attribute_specifications, use_protection=True)
-                )
+                attributes_sequence = build_attributes_sequence(combined_attribute_specifications, use_protection=True)
             else:
                 attributes_sequence = ''
 
@@ -854,7 +846,9 @@ class PartitioningReplacement(
     @staticmethod
     def build_regex_pattern(starting_pattern, attribute_specifications, ending_pattern):
         anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True)
+
         starting_regex = f'(?: {starting_pattern} )'
+
         attribute_specifications_regex = (
             build_attribute_specifications_regex(attribute_specifications, require_newline=False, allow_omission=False)
         )
@@ -862,7 +856,9 @@ class PartitioningReplacement(
             attribute_specifications_or_whitespace_regex = r'[\s]+?'
         else:
             attribute_specifications_or_whitespace_regex = fr'(?: {attribute_specifications_regex} | [\s]+? )'
+
         content_regex = build_content_regex()
+
         attribute_specifications_no_capture_regex = build_attribute_specifications_regex(
             attribute_specifications,
             require_newline=False,
@@ -875,6 +871,7 @@ class PartitioningReplacement(
             attribute_specifications_no_capture_or_whitespace_regex = (
                 fr'(?: {attribute_specifications_no_capture_regex} | [\s]+ )'
             )
+
         if ending_pattern is None:
             ending_lookahead_regex = r'(?= \Z )'
         else:
@@ -1010,9 +1007,7 @@ class InlineAssortedDelimitersReplacement(
                     + ' '
                     + none_to_empty_string(matched_attribute_specifications)
                 )
-                attributes_sequence = (
-                    build_attributes_sequence(combined_attribute_specifications, use_protection=True)
-                )
+                attributes_sequence = build_attributes_sequence(combined_attribute_specifications, use_protection=True)
             else:
                 attributes_sequence = ''
 
@@ -1037,6 +1032,7 @@ class InlineAssortedDelimitersReplacement(
         either_characters = set()
         double_characters = set()
         all_characters = set()
+
         for character in tag_name_from_delimiter_length_from_character:
             tag_name_from_delimiter_length = tag_name_from_delimiter_length_from_character[character]
             delimiter_lengths = tag_name_from_delimiter_length.keys()
@@ -1071,6 +1067,7 @@ class InlineAssortedDelimitersReplacement(
                 repetition_regex = '(?(double) (?P=double) )'
             else:
                 repetition_regex = ''
+
         opening_delimiter_regex = f'(?P<delimiter> {delimiter_character_regex} {repetition_regex} )'
 
         after_opening_delimiter_regex = r'(?! [\s] | [<][/] )'
@@ -1083,6 +1080,7 @@ class InlineAssortedDelimitersReplacement(
             prohibited_content_regex = '(?P=delimiter_character)'
         else:
             prohibited_content_regex = f'(?P=delimiter_character) | {prohibited_content_regex}'
+
         content_regex = build_content_regex(prohibited_content_regex, permit_empty=False)
 
         before_closing_delimiter_regex = r'(?<! [\s] | [|] )'
