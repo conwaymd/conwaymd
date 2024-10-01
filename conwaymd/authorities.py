@@ -124,10 +124,9 @@ class ReplacementAuthority:
 
         for opened_file_name in self._opened_file_names:
             if os.path.samefile(opened_file_name, included_file_name):
-                self._opened_file_names.append(included_file_name)
                 recursive_inclusion_string = ' includes '.join(
                     f'`{opened_file_name}`'
-                    for opened_file_name in self._opened_file_names
+                    for opened_file_name in [*self._opened_file_names, included_file_name]
                 )
                 ReplacementAuthority.print_error(
                     f'recursive inclusion: {recursive_inclusion_string}',
