@@ -97,7 +97,7 @@ def generate_html_file(cmd_file_name_argument, verbose_mode_enabled, uses_comman
     try:
         with open(html_file_name, 'w', encoding='utf-8') as html_file:
             html_file.write(html)
-            print(f'success: wrote to `{html_file_name}`')
+        print(f'success: wrote to `{html_file_name}`')
     except IOError:
         print(f'error: cannot write to `{html_file_name}`', file=sys.stderr)
         sys.exit(GENERIC_ERROR_EXIT_CODE)
