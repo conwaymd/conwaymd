@@ -3,9 +3,13 @@
 
 ## [Unreleased]
 
+
+## [v5.0.0] Packaged as `conwaymd` (2024-10-01)
+
 - Refactored single-file script into multiple files
 - Introduced command line option `-a, --all` to confirm conversion of all files in working directory
 - Fixed breakage when `cmd_to_html` is called with `cmd_file_name=None`
+- Packaged as `conwaymd` and published to PyPI
 
 
 ## [v4.6.0] Digits in IDs (2024-03-03)
@@ -201,7 +205,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conwaymd/conwaymd/compare/v4.6.0...HEAD
+  https://github.com/conwaymd/conwaymd/compare/v5.0.0...HEAD
+[v5.0.0]:
+  https://github.com/conwaymd/conwaymd/compare/v4.6.0...v5.0.0
 [v4.6.0]:
   https://github.com/conwaymd/conwaymd/compare/v4.5.2...v4.6.0
 [v4.5.2]:
