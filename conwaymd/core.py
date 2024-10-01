@@ -21,6 +21,7 @@ import re
 
 from conwaymd.authorities import ReplacementAuthority
 from conwaymd.constants import STANDARD_RULES
+from conwaymd.utilities import none_to_empty_string
 
 
 def extract_rules_and_content(cmd):
@@ -57,7 +58,7 @@ def extract_rules_and_content(cmd):
 
 
 def extract_separator_normalised_cmd_name(cmd_file_name):
-    cmd_name = re.sub(pattern=r'[.](cmd) \Z', repl='', string=cmd_file_name, flags=re.VERBOSE)
+    cmd_name = re.sub(pattern=r'[.](cmd) \Z', repl='', string=none_to_empty_string(cmd_file_name), flags=re.VERBOSE)
     separator_normalised_cmd_name = cmd_name.replace('\\', '/')
 
     return separator_normalised_cmd_name
