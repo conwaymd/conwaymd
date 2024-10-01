@@ -8,7 +8,7 @@ Conway-Markdown is:
 - Implemented in [Python 3.{whatever Debian stable is at}][python3].
 - Licensed under "MIT No Attribution" (MIT-0), see [LICENSE].
 
-For detailed documentation, see <<https://conway-markdown.github.io/>>.
+For detailed documentation, see <<https://conwaymd.github.io/>>.
 
 [python3]: https://packages.debian.org/stable/python3
 [LICENSE]: LICENSE
@@ -95,12 +95,12 @@ Here be <a href="https://example.com/"><b>dragons</b></a>.
 - [Define your own syntax] as you go
 
 [Specify element attributes]:
-  https://conway-markdown.github.io/#cmd-attribute-specifications
+  https://conwaymd.github.io/#cmd-attribute-specifications
 [Write arbitrary text outside code]:
-  https://conway-markdown.github.io/#literals
+  https://conwaymd.github.io/#literals
 [Use `<b>`, `<i>`, and `<cite>` elements]:
-  https://conway-markdown.github.io/#inline-semantics
+  https://conwaymd.github.io/#inline-semantics
 [Use `<div>` elements]:
-  https://conway-markdown.github.io/#divisions
+  https://conwaymd.github.io/#divisions
 [Define your own syntax]:
-  https://conway-markdown.github.io/#replacement-rule-syntax
+  https://conwaymd.github.io/#replacement-rule-syntax

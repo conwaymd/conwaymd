@@ -19,9 +19,9 @@ classifiers = [
 dynamic = ["version"]
 
 [project.urls]
-repository = "https://github.com/conway-markdown/conway-markdown"
-issues = "https://github.com/conway-markdown/conway-markdown/issues"
-changelog = "https://github.com/conway-markdown/conway-markdown/blob/master/CHANGELOG.md"
+repository = "https://github.com/conwaymd/conwaymd"
+issues = "https://github.com/conwaymd/conwaymd/issues"
+changelog = "https://github.com/conwaymd/conwaymd/blob/master/CHANGELOG.md"
 
 [project.scripts]
 cmd = "conwaymd.cli:main"
