@@ -16,7 +16,7 @@ For detailed documentation, see <<https://conwaymd.github.io/>>.
 
 ## Installation
 
-Conway-Markdown is published to PyPI as [`conwaymd`]:
+Conway-Markdown is [published to PyPI as `conwaymd`][pypi]:
 
 ```bash
 $ pip3 install conwaymd
@@ -24,7 +24,7 @@ $ pip3 install conwaymd
 
 On Windows, use `pip` instead of `pip3`.
 
-[`conwaymd`]: https://pypi.org/project/conwaymd/
+[pypi]: https://pypi.org/project/conwaymd/
 
 
 ## Usage (command line)
