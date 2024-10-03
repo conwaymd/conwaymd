@@ -19,6 +19,7 @@ classifiers = [
 dynamic = ["version"]
 
 [project.urls]
+homepage = "https://conwaymd.github.io/"
 repository = "https://github.com/conwaymd/conwaymd"
 issues = "https://github.com/conwaymd/conwaymd/issues"
 changelog = "https://github.com/conwaymd/conwaymd/blob/master/CHANGELOG.md"
