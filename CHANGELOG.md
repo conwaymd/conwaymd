@@ -4,6 +4,11 @@
 ## [Unreleased]
 
 
+## [v5.0.1] Trusted publishing (2024-10-04)
+
+- Implemented PyPI trusted publishing (no code changes otherwise)
+
+
 ## [v5.0.0] Packaged as `conwaymd` (2024-10-01)
 
 - Refactored single-file script into multiple files
@@ -205,7 +210,9 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 
 
 [Unreleased]:
-  https://github.com/conwaymd/conwaymd/compare/v5.0.0...HEAD
+  https://github.com/conwaymd/conwaymd/compare/v5.0.1...HEAD
+[v5.0.1]:
+  https://github.com/conwaymd/conwaymd/compare/v5.0.0...v5.0.1
 [v5.0.0]:
   https://github.com/conwaymd/conwaymd/compare/v4.6.0...v5.0.0
 [v4.6.0]:
