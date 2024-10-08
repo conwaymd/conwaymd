@@ -22,7 +22,9 @@ Conway-Markdown is [published to PyPI as `conwaymd`][pypi]:
 $ pip3 install conwaymd
 ```
 
-On Windows, use `pip` instead of `pip3`.
+- If simply using as a command line tool, then use `pipx` instead of `pip3`
+  to avoid having to set up a virtual environment.
+- If using Windows, then use `pip` instead of `pip3`.
 
 [pypi]: https://pypi.org/project/conwaymd/
 
