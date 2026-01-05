@@ -72,17 +72,17 @@ def cmd_to_html(cmd: str, cmd_file_name: str, verbose_mode_enabled: bool = False
     replacement_rules, main_content = extract_rules_and_content(cmd)
     separator_normalised_cmd_name = extract_separator_normalised_cmd_name(cmd_file_name)
 
-    replacement_master = ReplacementAuthority(cmd_file_name, verbose_mode_enabled)
-    replacement_master.legislate(
+    replacement_authority = ReplacementAuthority(cmd_file_name, verbose_mode_enabled)
+    replacement_authority.legislate(
         STANDARD_RULES,
         rules_file_name='STANDARD_RULES',
         cmd_name=separator_normalised_cmd_name,
     )
-    replacement_master.legislate(
+    replacement_authority.legislate(
         replacement_rules,
         rules_file_name=cmd_file_name,
         cmd_name=separator_normalised_cmd_name,
     )
-    html = replacement_master.execute(main_content)
+    html = replacement_authority.execute(main_content)
 
     return html
