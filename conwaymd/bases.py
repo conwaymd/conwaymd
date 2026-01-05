@@ -8,6 +8,8 @@ Base classes for CMD replacement rules.
 
 import abc
 import copy
+import re
+from typing import Optional
 
 from conwaymd.constants import VERBOSE_MODE_DIVIDER_SYMBOL_COUNT
 from conwaymd.exceptions import CommittedMutateException, UncommittedApplyException
@@ -26,7 +28,15 @@ class Replacement(abc.ABC):
     - negative_flag: (def) NONE | «FLAG_NAME»
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _is_committed: bool
+    _id: str
+    _queue_position_type: Optional[str]
+    _queue_reference_replacement: Optional['Replacement']
+    _positive_flag_name: Optional[str]
+    _negative_flag_name: Optional[str]
+    _verbose_mode_enabled: bool
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         self._is_committed = False
         self._id = id_
         self._queue_position_type = None
@@ -41,48 +51,48 @@ class Replacement(abc.ABC):
         raise NotImplementedError
 
     @property
-    def id_(self):
+    def id_(self) -> str:
         return self._id
 
     @property
-    def queue_position_type(self):
+    def queue_position_type(self) -> Optional[str]:
         return self._queue_position_type
 
     @queue_position_type.setter
-    def queue_position_type(self, value):
+    def queue_position_type(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `queue_position_type` after `commit()`')
 
         self._queue_position_type = value
 
     @property
-    def queue_reference_replacement(self):
+    def queue_reference_replacement(self) -> Optional['Replacement']:
         return self._queue_reference_replacement
 
     @queue_reference_replacement.setter
-    def queue_reference_replacement(self, value):
+    def queue_reference_replacement(self, value: 'Replacement'):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `queue_reference_replacement` after `commit()`')
 
         self._queue_reference_replacement = value
 
     @property
-    def positive_flag_name(self):
+    def positive_flag_name(self) -> Optional[str]:
         return self._positive_flag_name
 
     @positive_flag_name.setter
-    def positive_flag_name(self, value):
+    def positive_flag_name(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `positive_flag_name` after `commit()`')
 
         self._positive_flag_name = value
 
     @property
-    def negative_flag_name(self):
+    def negative_flag_name(self) -> Optional[str]:
         return self._negative_flag_name
 
     @negative_flag_name.setter
-    def negative_flag_name(self, value):
+    def negative_flag_name(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `negative_flag_name` after `commit()`')
 
@@ -93,7 +103,7 @@ class Replacement(abc.ABC):
         self._set_apply_method_variables()
         self._is_committed = True
 
-    def apply(self, string, enabled_flag_names=None):
+    def apply(self, string: str, enabled_flag_names: Optional[set[str]] = None) -> str:
         if not self._is_committed:
             raise UncommittedApplyException('error: cannot call `apply(string)` before `commit()`')
 
@@ -150,7 +160,7 @@ class Replacement(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _apply(self, string):
+    def _apply(self, string: str):
         """
         Apply the defined replacement to a string.
         """
@@ -172,11 +182,13 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
     [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _substitute_from_pattern: dict[str, str]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._substitute_from_pattern = {}
 
-    def add_substitution(self, pattern, substitute):
+    def add_substitution(self, pattern: str, substitute: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot call `add_substitution(...)` after `commit()`')
         self._substitute_from_pattern[pattern] = substitute
@@ -193,16 +205,18 @@ class ReplacementWithSyntaxType(Replacement, abc.ABC):
     - syntax_type: BLOCK | INLINE (mandatory)
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _syntax_type_is_block: Optional[bool]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._syntax_type_is_block = None
 
     @property
-    def syntax_type_is_block(self):
+    def syntax_type_is_block(self) -> Optional[bool]:
         return self._syntax_type_is_block
 
     @syntax_type_is_block.setter
-    def syntax_type_is_block(self, value):
+    def syntax_type_is_block(self, value: bool):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `syntax_type_is_block` after `commit()`')
 
@@ -220,26 +234,28 @@ class ReplacementWithAllowedFlags(Replacement, abc.ABC):
     - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
     ````
     """
+    _flag_name_from_letter: dict[str, str]
+    _has_flags: bool
 
-    def __init__(self, id_, verbose_mode_enabled):
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._flag_name_from_letter = {}
         self._has_flags = False
 
     @property
-    def flag_name_from_letter(self):
+    def flag_name_from_letter(self) -> dict[str, str]:
         return self._flag_name_from_letter
 
     @flag_name_from_letter.setter
-    def flag_name_from_letter(self, value):
+    def flag_name_from_letter(self, value: dict[str, str]):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `flag_name_from_letter` after `commit()`')
 
         self._flag_name_from_letter = copy.copy(value)
 
     @staticmethod
-    def get_enabled_flag_names(match, flag_name_from_letter, has_flags):
-        enabled_flag_names = set()
+    def get_enabled_flag_names(match: re.Match, flag_name_from_letter: dict[str, str], has_flags: bool) -> set[str]:
+        enabled_flag_names: set[str] = set()
         if has_flags:
             flags = match.group('flags')
             for flag_letter, flag_name in flag_name_from_letter.items():
@@ -260,16 +276,18 @@ class ReplacementWithAttributeSpecifications(Replacement, abc.ABC):
     - attribute_specifications: (def) NONE | EMPTY | «string»
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _attribute_specifications: Optional[str]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._attribute_specifications = None
 
     @property
-    def attribute_specifications(self):
+    def attribute_specifications(self) -> Optional[str]:
         return self._attribute_specifications
 
     @attribute_specifications.setter
-    def attribute_specifications(self, value):
+    def attribute_specifications(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `attribute_specifications` after `commit()`')
 
@@ -287,16 +305,18 @@ class ReplacementWithProhibitedContent(Replacement, abc.ABC):
     - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _prohibited_content_regex: Optional[str]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._prohibited_content_regex = None
 
     @property
-    def prohibited_content_regex(self):
+    def prohibited_content_regex(self) -> Optional[str]:
         return self._prohibited_content_regex
 
     @prohibited_content_regex.setter
-    def prohibited_content_regex(self, value):
+    def prohibited_content_regex(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `prohibited_content_regex` after `commit()`')
 
@@ -314,16 +334,18 @@ class ReplacementWithContentReplacements(Replacement, abc.ABC):
     - content_replacements: (def) NONE | #«id» [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _content_replacements: list['Replacement']
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._content_replacements = []
 
     @property
-    def content_replacements(self):
+    def content_replacements(self) -> list['Replacement']:
         return self._content_replacements
 
     @content_replacements.setter
-    def content_replacements(self, value):
+    def content_replacements(self, value: list['Replacement']):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `content_replacements` after `commit()`')
 
@@ -341,16 +363,18 @@ class ReplacementWithTagName(Replacement, abc.ABC):
     - tag_name: (def) NONE | «name»
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _tag_name: Optional[str]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._tag_name = None
 
     @property
-    def tag_name(self):
+    def tag_name(self) -> Optional[str]:
         return self._tag_name
 
     @tag_name.setter
-    def tag_name(self, value):
+    def tag_name(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `tag_name` after `commit()`')
 
@@ -368,12 +392,14 @@ class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _concluding_replacements: list['Replacement']
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._concluding_replacements = []
 
     @property
-    def concluding_replacements(self):
+    def concluding_replacements(self) -> list['Replacement']:
         return self._concluding_replacements
 
     @concluding_replacements.setter
