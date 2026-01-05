@@ -3,6 +3,10 @@
 
 ## [Unreleased]
 
+- Added type hinting
+- Fixed `Replacement.attribute_names` should be property, not method
+- Reformatted with less zealous line breaking
+
 
 ## [v5.0.1] Trusted publishing (2024-10-04)
 
