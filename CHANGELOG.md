@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v5.1.0] Type hinting (2026-01-05)
+
 - Added type hinting
 - Fixed `Replacement.attribute_names` should be property, not method
 - Reformatted with less zealous line breaking
@@ -213,7 +216,8 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 - Initial release.
 
 
-[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v5.0.1...HEAD
+[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v5.1.0...HEAD
+[v5.1.0]: https://github.com/conwaymd/conwaymd/compare/v5.0.1...v5.1.0
 [v5.0.1]: https://github.com/conwaymd/conwaymd/compare/v5.0.0...v5.0.1
 [v5.0.0]: https://github.com/conwaymd/conwaymd/compare/v4.6.0...v5.0.0
 [v4.6.0]: https://github.com/conwaymd/conwaymd/compare/v4.5.2...v4.6.0
