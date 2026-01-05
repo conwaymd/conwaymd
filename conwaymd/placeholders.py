@@ -49,7 +49,7 @@ class PlaceholderMaster:
     )
 
     @staticmethod
-    def _unprotect_substitute_function(placeholder_match):
+    def _unprotect_substitute_function(placeholder_match: re.Match) -> str:
         run_characters = placeholder_match.group('run_characters')
         string_bytes = bytes(
             ord(character) - PlaceholderMaster._RUN_CODE_POINT_MIN
@@ -75,7 +75,7 @@ class PlaceholderMaster:
         return string
 
     @staticmethod
-    def replace_marker_occurrences(string):
+    def replace_marker_occurrences(string: str) -> str:
         """
         Replace occurrences of «marker» with a placeholder.
 
@@ -91,7 +91,7 @@ class PlaceholderMaster:
         )
 
     @staticmethod
-    def protect(string):
+    def protect(string: str) -> str:
         """
         Protect a string by converting it to a placeholder.
         """
@@ -109,7 +109,7 @@ class PlaceholderMaster:
         return placeholder
 
     @staticmethod
-    def unprotect(string):
+    def unprotect(string: str) -> str:
         """
         Unprotect a string by restoring placeholders to their strings.
         """
