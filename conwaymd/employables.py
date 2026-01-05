@@ -529,7 +529,7 @@ class FixedDelimitersReplacement(
         ])
 
     def build_substitute_function(self, flag_name_from_letter: dict[str, str], has_flags: bool,
-                                  attribute_specifications: Optional[str], tag_name: Optional[str]
+                                  attribute_specifications: Optional[str], tag_name: Optional[str],
                                   ) -> Callable[[re.Match], str]:
         def substitute_function(match: re.Match) -> str:
             enabled_flag_names = ReplacementWithAllowedFlags.get_enabled_flag_names(match, flag_name_from_letter,
@@ -710,7 +710,7 @@ class ExtensibleFenceReplacement(
     def build_regex_pattern(syntax_type_is_block: bool, flag_name_from_letter: dict[str, str], has_flags: bool,
                             prologue_delimiter: str,
                             extensible_delimiter_character: str, extensible_delimiter_min_length: int,
-                            attribute_specifications: str, prohibited_content_regex: Optional[str],
+                            attribute_specifications: Optional[str], prohibited_content_regex: Optional[str],
                             epilogue_delimiter: str,
                             ) -> str:
         block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block)
@@ -864,8 +864,8 @@ class PartitioningReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(starting_pattern: str, attribute_specifications: Optional[str], ending_pattern: str
-                            ) -> str:
+    def build_regex_pattern(starting_pattern: str, attribute_specifications: Optional[str],
+                            ending_pattern: Optional[str]) -> str:
         anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True)
 
         starting_regex = f'(?: {starting_pattern} )'
@@ -912,7 +912,7 @@ class PartitioningReplacement(
             ending_lookahead_regex,
         ])
 
-    def build_substitute_function(self, attribute_specifications: Optional[str], tag_name: Optional[str]
+    def build_substitute_function(self, attribute_specifications: Optional[str], tag_name: Optional[str],
                                   ) -> Callable[[re.Match], str]:
         def substitute_function(match: re.Match) -> str:
             if attribute_specifications is not None:
@@ -1020,7 +1020,7 @@ class InlineAssortedDelimitersReplacement(
         return string
 
     def build_substitute_function(self, tag_name_from_delimiter_length_from_character: dict[str, dict[int, str]],
-                                  attribute_specifications: Optional[str]
+                                  attribute_specifications: Optional[str],
                                   ) -> Callable[[re.Match], str]:
         def substitute_function(match: re.Match) -> str:
             character = match.group('delimiter_character')

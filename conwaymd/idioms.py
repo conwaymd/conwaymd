@@ -7,6 +7,7 @@ Common idioms.
 """
 
 import re
+from typing import Iterable, Optional, Union
 
 from conwaymd.placeholders import PlaceholderMaster
 from conwaymd.utilities import escape_attribute_value_html
@@ -64,7 +65,7 @@ BLOCK_TAG_NAMES = [
 ]
 
 
-def compute_attribute_specification_matches(attribute_specifications):
+def compute_attribute_specification_matches(attribute_specifications: str) -> Iterable[re.Match]:
     return re.finditer(
         pattern=r'''
             [\s]*
@@ -101,7 +102,8 @@ def compute_attribute_specification_matches(attribute_specifications):
     )
 
 
-def extract_attribute_name_and_value(attribute_specification_match):
+def extract_attribute_name_and_value(attribute_specification_match: re.Match,
+                                     ) -> Union[tuple[str, Optional[str]], tuple[str], None]:
     """
     Extract (at most) name and value.
 
@@ -165,7 +167,7 @@ def extract_attribute_name_and_value(attribute_specification_match):
     return None
 
 
-def build_attributes_sequence(attribute_specifications, use_protection=False):
+def build_attributes_sequence(attribute_specifications: Optional[str], use_protection: bool = False) -> str:
     """
     Convert CMD attribute specifications to an attribute sequence.
 
@@ -197,7 +199,7 @@ def build_attributes_sequence(attribute_specifications, use_protection=False):
     For example, `id=x #y .a .b name=value .=c class="d"` shall be converted to the attribute sequence
     ` id="y" class="a b c d" name="value"`.
     """
-    attribute_value_from_name = {}
+    attribute_value_from_name: dict[str, str] = {}
 
     for attribute_specification_match in compute_attribute_specification_matches(attribute_specifications):
         name_and_value = extract_attribute_name_and_value(attribute_specification_match)
@@ -234,7 +236,7 @@ def build_attributes_sequence(attribute_specifications, use_protection=False):
     return attribute_sequence
 
 
-def build_block_tag_regex(require_anchoring):
+def build_block_tag_regex(require_anchoring: bool) -> str:
     block_tag_name_regex = '|'.join(re.escape(tag_name) for tag_name in BLOCK_TAG_NAMES)
     after_tag_name_regex = fr'[\s{PlaceholderMaster.MARKER}>]'
     block_tag_regex = f'[<] [/]? (?: {block_tag_name_regex} ) {after_tag_name_regex}'
@@ -246,7 +248,7 @@ def build_block_tag_regex(require_anchoring):
         return block_tag_regex
 
 
-def build_block_anchoring_regex(syntax_type_is_block, capture_anchoring_whitespace=False):
+def build_block_anchoring_regex(syntax_type_is_block: bool, capture_anchoring_whitespace: bool = False) -> str:
     if syntax_type_is_block:
         if capture_anchoring_whitespace:
             return r'^ (?P<anchoring_whitespace> [^\S\n]* )'
@@ -256,34 +258,32 @@ def build_block_anchoring_regex(syntax_type_is_block, capture_anchoring_whitespa
     return ''
 
 
-def build_maybe_hanging_whitespace_regex():
+def build_maybe_hanging_whitespace_regex() -> str:
     return r'[^\S\n]* (?: \n (?P=anchoring_whitespace) [^\S\n]+ )?'
 
 
-def build_flags_regex(allowed_flags, has_flags):
+def build_flags_regex(flag_name_from_letter: dict[str, str], has_flags: bool) -> str:
     if not has_flags:
         return ''
 
     flag_letters = ''.join(
         re.escape(flag_letter)
-        for flag_letter in allowed_flags.keys()
+        for flag_letter in flag_name_from_letter.keys()
     )
     return f'(?P<flags> [{flag_letters}]* )'
 
 
-def build_extensible_delimiter_opening_regex(extensible_delimiter_character, extensible_delimiter_min_length):
+def build_extensible_delimiter_opening_regex(extensible_delimiter_character: str,
+                                             extensible_delimiter_min_length: int) -> str:
     character_regex = re.escape(extensible_delimiter_character)
     repetition_regex = f'{{{extensible_delimiter_min_length},}}'
 
     return f'(?P<extensible_delimiter> {character_regex}{repetition_regex} )'
 
 
-def build_attribute_specifications_regex(
-    attribute_specifications,
-    require_newline,
-    capture_attribute_specifications=True,
-    allow_omission=True,
-):
+def build_attribute_specifications_regex(attribute_specifications: Optional[str], require_newline: bool,
+                                         capture_attribute_specifications: bool = True, allow_omission: bool = True,
+                                         ) -> str:
     if attribute_specifications is not None:
         if capture_attribute_specifications:
             braced_sequence_regex = r'\{ (?P<attribute_specifications> [^}]*? ) \}'
@@ -303,7 +303,7 @@ def build_attribute_specifications_regex(
     return braced_sequence_regex + block_newline_regex
 
 
-def build_captured_character_class_regex(characters, capture_group_name):
+def build_captured_character_class_regex(characters: set[str], capture_group_name: str) -> Optional[str]:
     if len(characters) == 0:
         return None
 
@@ -313,12 +313,8 @@ def build_captured_character_class_regex(characters, capture_group_name):
     return f'(?P<{capture_group_name}> {character_class_regex} )'
 
 
-def build_content_regex(
-    prohibited_content_regex=None,
-    permitted_content_regex=r'[\s\S]',
-    permit_empty=True,
-    capture_group_name='content',
-):
+def build_content_regex(prohibited_content_regex: Optional[str] = None, permitted_content_regex: str = r'[\s\S]',
+                        permit_empty: bool = True, capture_group_name: str = 'content') -> str:
     if prohibited_content_regex is None:
         permitted_atom_regex = permitted_content_regex
     else:
@@ -332,11 +328,11 @@ def build_content_regex(
     return f'(?P<{capture_group_name}> {permitted_atom_regex}{repetition}? )'
 
 
-def build_extensible_delimiter_closing_regex():
+def build_extensible_delimiter_closing_regex() -> str:
     return '(?P=extensible_delimiter)'
 
 
-def build_uri_regex(be_greedy):
+def build_uri_regex(be_greedy: bool) -> str:
     if be_greedy:
         greed = ''
     else:
@@ -345,5 +341,5 @@ def build_uri_regex(be_greedy):
     return fr'(?: [<] (?P<angle_bracketed_uri> [^>]*? ) [>] | (?P<bare_uri> [\S]+{greed} ) )'
 
 
-def build_title_regex():
+def build_title_regex() -> str:
     return r'''(?: "(?P<double_quoted_title> [^"]*? )" | '(?P<single_quoted_title> [^']*? )' )'''
