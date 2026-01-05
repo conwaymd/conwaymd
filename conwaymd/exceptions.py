@@ -12,11 +12,13 @@ class CommittedMutateException(Exception):
 
 
 class MissingAttributeException(Exception):
-    def __init__(self, missing_attribute):
+    _missing_attribute: str
+
+    def __init__(self, missing_attribute: str):
         self._missing_attribute = missing_attribute
 
     @property
-    def missing_attribute(self):
+    def missing_attribute(self) -> str:
         return self._missing_attribute
 
 
