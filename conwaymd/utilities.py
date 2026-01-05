@@ -7,9 +7,10 @@ Common utility functions.
 """
 
 import re
+from typing import Optional
 
 
-def compute_longest_common_prefix(strings):
+def compute_longest_common_prefix(strings: list[str]) -> str:
     shortest_string = min(strings, key=len, default='')
 
     prefix = shortest_string
@@ -22,7 +23,7 @@ def compute_longest_common_prefix(strings):
     return prefix
 
 
-def de_indent(string):
+def de_indent(string: str) -> str:
     """
     De-indent a string.
 
@@ -57,7 +58,7 @@ def de_indent(string):
     return string
 
 
-def escape_attribute_value_html(value):
+def escape_attribute_value_html(value: str) -> str:
     """
     Escape an attribute value that will be delimited by double quotes.
 
@@ -91,7 +92,7 @@ def escape_attribute_value_html(value):
     return value
 
 
-def none_to_empty_string(string):
+def none_to_empty_string(string: Optional[str]) -> str:
     if string is None:
         return ''
 

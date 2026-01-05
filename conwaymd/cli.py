@@ -30,11 +30,11 @@ VERBOSE_MODE_HELP = '''
 '''
 
 
-def is_cmd_file(file_name):
+def is_cmd_file(file_name: str) -> bool:
     return file_name.endswith('.cmd')
 
 
-def extract_cmd_name(cmd_file_name_argument):
+def extract_cmd_name(cmd_file_name_argument: str) -> str:
     """
     Extract name-without-extension from a CMD file name argument.
 
@@ -47,7 +47,7 @@ def extract_cmd_name(cmd_file_name_argument):
     return cmd_name
 
 
-def parse_command_line_arguments():
+def parse_command_line_arguments() -> argparse.Namespace:
     argument_parser = argparse.ArgumentParser(description=DESCRIPTION)
     argument_parser.add_argument(
         '-v', '--version',
@@ -77,7 +77,7 @@ def parse_command_line_arguments():
     return argument_parser.parse_args()
 
 
-def generate_html_file(cmd_file_name_argument, verbose_mode_enabled, uses_command_line_argument):
+def generate_html_file(cmd_file_name_argument: str, verbose_mode_enabled: bool, uses_command_line_argument: bool):
     cmd_name = extract_cmd_name(cmd_file_name_argument)
     cmd_file_name = f'{cmd_name}.cmd'
     try:

@@ -6,6 +6,8 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 References for links and images.
 """
 
+from typing import NamedTuple, Optional
+
 from conwaymd.exceptions import UnrecognisedLabelException
 
 
@@ -19,21 +21,25 @@ class Reference:
     - «title»
     where «uri» is `href` for links and `src` for images.
     """
-    def __init__(self, attribute_specifications, uri, title):
+    _attribute_specifications: Optional[str]
+    _uri: str
+    _title: str
+
+    def __init__(self, attribute_specifications: Optional[str], uri: str, title: str):
         self._attribute_specifications = attribute_specifications
         self._uri = uri
         self._title = title
 
     @property
-    def attribute_specifications(self):
+    def attribute_specifications(self) -> Optional[str]:
         return self._attribute_specifications
 
     @property
-    def uri(self):
+    def uri(self) -> str:
         return self._uri
 
     @property
-    def title(self):
+    def title(self) -> str:
         return self._title
 
 
@@ -41,14 +47,16 @@ class ReferenceMaster:
     """
     Object storing references to be used by links and images.
     """
+    _reference_from_label: dict[str, 'Reference']
+
     def __init__(self):
         self._reference_from_label = {}
 
-    def store_definition(self, label, attribute_specifications, uri, title):
+    def store_definition(self, label: str, attribute_specifications: Optional[str], uri: str, title: str):
         label = ReferenceMaster.normalise_label(label)
         self._reference_from_label[label] = Reference(attribute_specifications, uri, title)
 
-    def load_definition(self, label):
+    def load_definition(self, label: str) -> 'ReferenceDefinition':
         label = ReferenceMaster.normalise_label(label)
 
         try:
@@ -60,8 +68,14 @@ class ReferenceMaster:
         uri = reference.uri
         title = reference.title
 
-        return attribute_specifications, uri, title
+        return ReferenceDefinition(attribute_specifications, uri, title)
 
     @staticmethod
-    def normalise_label(label):
+    def normalise_label(label: str) -> str:
         return label.lower()
+
+
+class ReferenceDefinition(NamedTuple):
+    attribute_specifications: Optional[str]
+    uri: str
+    title: str
