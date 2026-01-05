@@ -24,7 +24,7 @@ from conwaymd.constants import STANDARD_RULES
 from conwaymd.utilities import none_to_empty_string
 
 
-def extract_rules_and_content(cmd):
+def extract_rules_and_content(cmd: str) -> tuple[str, str]:
     """
     Extract replacement rules and main content from CMD file content.
 
@@ -57,14 +57,14 @@ def extract_rules_and_content(cmd):
     return replacement_rules, main_content
 
 
-def extract_separator_normalised_cmd_name(cmd_file_name):
+def extract_separator_normalised_cmd_name(cmd_file_name: str) -> str:
     cmd_name = re.sub(pattern=r'[.](cmd) \Z', repl='', string=none_to_empty_string(cmd_file_name), flags=re.VERBOSE)
     separator_normalised_cmd_name = cmd_name.replace('\\', '/')
 
     return separator_normalised_cmd_name
 
 
-def cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled=False):
+def cmd_to_html(cmd: str, cmd_file_name: str, verbose_mode_enabled: bool = False) -> str:
     """
     Convert CMD to HTML.
     """
