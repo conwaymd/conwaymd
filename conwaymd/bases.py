@@ -47,7 +47,7 @@ class Replacement(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def attribute_names(self):
+    def attribute_names(self) -> tuple[str, ...]:
         raise NotImplementedError
 
     @property
@@ -160,7 +160,7 @@ class Replacement(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _apply(self, string: str):
+    def _apply(self, string: str) -> str:
         """
         Apply the defined replacement to a string.
         """

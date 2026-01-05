@@ -232,7 +232,7 @@ class ReplacementAuthority:
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         attribute_name = attribute_declaration_match.group('attribute_name')
-        if attribute_name not in replacement.attribute_names():
+        if attribute_name not in replacement.attribute_names:
             ReplacementAuthority.print_error(f'unrecognised attribute `{attribute_name}` for `{class_name}`',
                                              rules_file_name, line_number)
             sys.exit(GENERIC_ERROR_EXIT_CODE)
@@ -280,7 +280,7 @@ class ReplacementAuthority:
     @staticmethod
     def process_continuation_line(continuation_match: re.Match, attribute_name: Optional[str],
                                   attribute_value: Optional[str], substitution: Optional[str],
-                                  rules_file_name: str, line_number: int
+                                  rules_file_name: str, line_number: int,
                                   ) -> 'PostContinuationState':
         continuation = continuation_match.group('continuation')
 

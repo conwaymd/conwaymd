@@ -8,6 +8,7 @@ Classes for CMD replacement rules that are actually exposed to the user via CMD 
 
 import copy
 import re
+from typing import Callable, Optional
 
 from conwaymd.bases import (
     Replacement,
@@ -35,6 +36,7 @@ from conwaymd.idioms import (
     build_uri_regex,
 )
 from conwaymd.placeholders import PlaceholderMaster
+from conwaymd.references import ReferenceMaster
 from conwaymd.utilities import de_indent, none_to_empty_string
 
 
@@ -49,22 +51,25 @@ class ReplacementSequence(Replacement):
     - replacements: (def) NONE | #«id» [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _replacements: list['Replacement']
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._replacements = []
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'replacements',
         )
 
     @property
-    def replacements(self):
+    def replacements(self) -> list['Replacement']:
         return self._replacements
 
     @replacements.setter
-    def replacements(self, value):
+    def replacements(self, value: list['Replacement']):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `replacements` after `commit()`')
 
@@ -76,7 +81,7 @@ class ReplacementSequence(Replacement):
     def _set_apply_method_variables(self):
         pass
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         for replacement in self._replacements:
             string = replacement.apply(string)
 
@@ -97,10 +102,11 @@ class PlaceholderMarkerReplacement(Replacement):
     - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
         )
@@ -111,7 +117,7 @@ class PlaceholderMarkerReplacement(Replacement):
     def _set_apply_method_variables(self):
         pass
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return PlaceholderMaster.replace_marker_occurrences(string)
 
 
@@ -125,10 +131,11 @@ class PlaceholderProtectionReplacement(Replacement):
     - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
         )
@@ -139,7 +146,7 @@ class PlaceholderProtectionReplacement(Replacement):
     def _set_apply_method_variables(self):
         pass
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return PlaceholderMaster.protect(string)
 
 
@@ -152,10 +159,11 @@ class PlaceholderUnprotectionReplacement(Replacement):
     PlaceholderUnprotectionReplacement: #«id»
     - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
         )
@@ -166,7 +174,7 @@ class PlaceholderUnprotectionReplacement(Replacement):
     def _set_apply_method_variables(self):
         pass
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return PlaceholderMaster.unprotect(string)
 
 
@@ -182,10 +190,11 @@ class DeIndentationReplacement(Replacement):
     - negative_flag: (def) NONE | «FLAG_NAME»
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'positive_flag',
@@ -198,7 +207,7 @@ class DeIndentationReplacement(Replacement):
     def _set_apply_method_variables(self):
         pass
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return de_indent(string)
 
 
@@ -225,13 +234,18 @@ class OrdinaryDictionaryReplacement(
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _apply_substitutions_simultaneously: bool
+    _simultaneous_regex_pattern_compiled: Optional[re.Pattern]
+    _simultaneous_substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._apply_substitutions_simultaneously = True
         self._simultaneous_regex_pattern_compiled = None
         self._simultaneous_substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'positive_flag',
@@ -241,11 +255,11 @@ class OrdinaryDictionaryReplacement(
         )
 
     @property
-    def apply_substitutions_simultaneously(self):
+    def apply_substitutions_simultaneously(self) -> bool:
         return self._apply_substitutions_simultaneously
 
     @apply_substitutions_simultaneously.setter
-    def apply_substitutions_simultaneously(self, value):
+    def apply_substitutions_simultaneously(self, value: bool):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `apply_mode` after `commit()`')
 
@@ -258,7 +272,7 @@ class OrdinaryDictionaryReplacement(
         if self._apply_substitutions_simultaneously:
             self.set_simultaneous_apply_method_variables()
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         if self._apply_substitutions_simultaneously:
             return self.simultaneous_apply(string)
         else:
@@ -273,14 +287,15 @@ class OrdinaryDictionaryReplacement(
         )
 
     @staticmethod
-    def build_simultaneous_regex_pattern(substitute_from_pattern):
+    def build_simultaneous_regex_pattern(substitute_from_pattern: dict[str, str]) -> str:
         return '|'.join(
             re.escape(pattern)
             for pattern in substitute_from_pattern
         )
 
-    def build_simultaneous_substitute_function(self, substitute_from_pattern):
-        def substitute_function(match):
+    def build_simultaneous_substitute_function(self, substitute_from_pattern: dict[str, str],
+                                               ) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             pattern = match.group()
             substitute = substitute_from_pattern[pattern]
 
@@ -291,7 +306,7 @@ class OrdinaryDictionaryReplacement(
 
         return substitute_function
 
-    def simultaneous_apply(self, string):
+    def simultaneous_apply(self, string: str) -> str:
         if len(self._substitute_from_pattern) > 0:
             string = re.sub(
                 pattern=self._simultaneous_regex_pattern_compiled,
@@ -301,7 +316,7 @@ class OrdinaryDictionaryReplacement(
 
         return string
 
-    def sequential_apply(self, string):
+    def sequential_apply(self, string: str) -> str:
         for pattern, substitute in self._substitute_from_pattern.items():
             string = string.replace(pattern, substitute)
 
@@ -337,11 +352,14 @@ class RegexDictionaryReplacement(
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _substitute_function_from_pattern: dict[str, Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._substitute_function_from_pattern = {}
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'positive_flag',
@@ -357,7 +375,7 @@ class RegexDictionaryReplacement(
             substitute_function = self.build_substitute_function(substitute)
             self._substitute_function_from_pattern[pattern] = substitute_function
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         for pattern, substitute_function in self._substitute_function_from_pattern.items():
             string = re.sub(
                 pattern=pattern,
@@ -368,8 +386,8 @@ class RegexDictionaryReplacement(
 
         return string
 
-    def build_substitute_function(self, substitute):
-        def substitute_function(match):
+    def build_substitute_function(self, substitute: str) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             substitute_result = match.expand(substitute)
 
             for replacement in self._concluding_replacements:
@@ -407,14 +425,20 @@ class FixedDelimitersReplacement(
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _opening_delimiter: Optional[str]
+    _closing_delimiter: Optional[str]
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._opening_delimiter = None
         self._closing_delimiter = None
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'syntax_type',
@@ -429,22 +453,22 @@ class FixedDelimitersReplacement(
         )
 
     @property
-    def opening_delimiter(self):
+    def opening_delimiter(self) -> Optional[str]:
         return self._opening_delimiter
 
     @opening_delimiter.setter
-    def opening_delimiter(self, value):
+    def opening_delimiter(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `opening_delimiter` after `commit()`')
 
         self._opening_delimiter = value
 
     @property
-    def closing_delimiter(self):
+    def closing_delimiter(self) -> Optional[str]:
         return self._closing_delimiter
 
     @closing_delimiter.setter
-    def closing_delimiter(self, value):
+    def closing_delimiter(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `closing_delimiter` after `commit()`')
 
@@ -463,25 +487,18 @@ class FixedDelimitersReplacement(
     def _set_apply_method_variables(self):
         self._has_flags = len(self._flag_name_from_letter) > 0
         self._regex_pattern_compiled = re.compile(
-            pattern=FixedDelimitersReplacement.build_regex_pattern(
-                self._syntax_type_is_block,
-                self._flag_name_from_letter,
-                self._has_flags,
-                self._opening_delimiter,
-                self._attribute_specifications,
-                self._prohibited_content_regex,
-                self._closing_delimiter,
-            ),
+            pattern=FixedDelimitersReplacement.build_regex_pattern(self._syntax_type_is_block,
+                                                                   self._flag_name_from_letter, self._has_flags,
+                                                                   self._opening_delimiter,
+                                                                   self._attribute_specifications,
+                                                                   self._prohibited_content_regex,
+                                                                   self._closing_delimiter),
             flags=re.ASCII | re.MULTILINE | re.VERBOSE,
         )
-        self._substitute_function = self.build_substitute_function(
-            self._flag_name_from_letter,
-            self._has_flags,
-            self._attribute_specifications,
-            self._tag_name,
-        )
+        self._substitute_function = self.build_substitute_function(self._flag_name_from_letter, self._has_flags,
+                                                                   self._attribute_specifications, self._tag_name)
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -489,21 +506,15 @@ class FixedDelimitersReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(
-        syntax_type_is_block,
-        flag_name_from_letter,
-        has_flags,
-        opening_delimiter,
-        attribute_specifications,
-        prohibited_content_regex,
-        closing_delimiter,
-    ):
+    def build_regex_pattern(syntax_type_is_block: bool, flag_name_from_letter: dict[str, str], has_flags: bool,
+                            opening_delimiter: str, attribute_specifications: Optional[str],
+                            prohibited_content_regex: Optional[str], closing_delimiter: str,
+                            ) -> str:
         block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block)
         flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
         opening_delimiter_regex = re.escape(opening_delimiter)
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=syntax_type_is_block)
-        )
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=syntax_type_is_block)
         content_regex = build_content_regex(prohibited_content_regex)
         closing_delimiter_regex = re.escape(closing_delimiter)
 
@@ -517,11 +528,12 @@ class FixedDelimitersReplacement(
             closing_delimiter_regex
         ])
 
-    def build_substitute_function(self, flag_name_from_letter, has_flags, attribute_specifications, tag_name):
-        def substitute_function(match):
-            enabled_flag_names = (
-                ReplacementWithAllowedFlags.get_enabled_flag_names(match, flag_name_from_letter, has_flags)
-            )
+    def build_substitute_function(self, flag_name_from_letter: dict[str, str], has_flags: bool,
+                                  attribute_specifications: Optional[str], tag_name: Optional[str]
+                                  ) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
+            enabled_flag_names = ReplacementWithAllowedFlags.get_enabled_flag_names(match, flag_name_from_letter,
+                                                                                    has_flags)
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
@@ -581,7 +593,14 @@ class ExtensibleFenceReplacement(
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _prologue_delimiter: str
+    _extensible_delimiter_character: Optional[str]
+    _extensible_delimiter_min_length: Optional[int]
+    _epilogue_delimiter: str
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._prologue_delimiter = ''
         self._extensible_delimiter_character = None
@@ -590,7 +609,8 @@ class ExtensibleFenceReplacement(
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'syntax_type',
@@ -606,44 +626,44 @@ class ExtensibleFenceReplacement(
         )
 
     @property
-    def prologue_delimiter(self):
+    def prologue_delimiter(self) -> str:
         return self._prologue_delimiter
 
     @prologue_delimiter.setter
-    def prologue_delimiter(self, value):
+    def prologue_delimiter(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `prologue_delimiter` after `commit()`')
 
         self._prologue_delimiter = value
 
     @property
-    def extensible_delimiter_character(self):
+    def extensible_delimiter_character(self) -> Optional[str]:
         return self._extensible_delimiter_character
 
     @extensible_delimiter_character.setter
-    def extensible_delimiter_character(self, value):
+    def extensible_delimiter_character(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `extensible_delimiter_character` after `commit()`')
 
         self._extensible_delimiter_character = value
 
     @property
-    def extensible_delimiter_min_length(self):
+    def extensible_delimiter_min_length(self) -> Optional[int]:
         return self._extensible_delimiter_min_length
 
     @extensible_delimiter_min_length.setter
-    def extensible_delimiter_min_length(self, value):
+    def extensible_delimiter_min_length(self, value: int):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `extensible_delimiter_min_length` after `commit()`')
 
         self._extensible_delimiter_min_length = value
 
     @property
-    def epilogue_delimiter(self):
+    def epilogue_delimiter(self) -> str:
         return self._epilogue_delimiter
 
     @epilogue_delimiter.setter
-    def epilogue_delimiter(self, value):
+    def epilogue_delimiter(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `epilogue_delimiter` after `commit()`')
 
@@ -679,7 +699,7 @@ class ExtensibleFenceReplacement(
             self._tag_name,
         )
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -687,26 +707,19 @@ class ExtensibleFenceReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(
-        syntax_type_is_block,
-        flag_name_from_letter,
-        has_flags,
-        prologue_delimiter,
-        extensible_delimiter_character,
-        extensible_delimiter_min_length,
-        attribute_specifications,
-        prohibited_content_regex,
-        epilogue_delimiter,
-    ):
+    def build_regex_pattern(syntax_type_is_block: bool, flag_name_from_letter: dict[str, str], has_flags: bool,
+                            prologue_delimiter: str,
+                            extensible_delimiter_character: str, extensible_delimiter_min_length: int,
+                            attribute_specifications: str, prohibited_content_regex: Optional[str],
+                            epilogue_delimiter: str,
+                            ) -> str:
         block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block)
         flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
         prologue_delimiter_regex = re.escape(prologue_delimiter)
-        extensible_delimiter_opening_regex = (
-            build_extensible_delimiter_opening_regex(extensible_delimiter_character, extensible_delimiter_min_length)
-        )
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=syntax_type_is_block)
-        )
+        extensible_delimiter_opening_regex = build_extensible_delimiter_opening_regex(extensible_delimiter_character,
+                                                                                      extensible_delimiter_min_length)
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=syntax_type_is_block)
         content_regex = build_content_regex(prohibited_content_regex)
         extensible_delimiter_closing_regex = build_extensible_delimiter_closing_regex()
         epilogue_delimiter_regex = re.escape(epilogue_delimiter)
@@ -723,11 +736,12 @@ class ExtensibleFenceReplacement(
             epilogue_delimiter_regex,
         ])
 
-    def build_substitute_function(self, flag_name_from_letter, has_flags, attribute_specifications, tag_name):
-        def substitute_function(match):
-            enabled_flag_names = (
-                ReplacementWithAllowedFlags.get_enabled_flag_names(match, flag_name_from_letter, has_flags)
-            )
+    def build_substitute_function(self, flag_name_from_letter: dict[str, str], has_flags: bool,
+                                  attribute_specifications: Optional[str], tag_name: Optional[str],
+                                  ) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
+            enabled_flag_names = ReplacementWithAllowedFlags.get_enabled_flag_names(match,
+                                                                                    flag_name_from_letter, has_flags)
 
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
@@ -781,14 +795,20 @@ class PartitioningReplacement(
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _starting_pattern: Optional[str]
+    _ending_pattern: Optional[str]
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._starting_pattern = None
         self._ending_pattern = None
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'starting_pattern',
@@ -800,22 +820,22 @@ class PartitioningReplacement(
         )
 
     @property
-    def starting_pattern(self):
+    def starting_pattern(self) -> Optional[str]:
         return self._starting_pattern
 
     @starting_pattern.setter
-    def starting_pattern(self, value):
+    def starting_pattern(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `starting_pattern` after `commit()`')
 
         self._starting_pattern = value
 
     @property
-    def ending_pattern(self):
+    def ending_pattern(self) -> Optional[str]:
         return self._ending_pattern
 
     @ending_pattern.setter
-    def ending_pattern(self, value):
+    def ending_pattern(self, value: str):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `ending_pattern` after `commit()`')
 
@@ -836,7 +856,7 @@ class PartitioningReplacement(
         )
         self._substitute_function = self.build_substitute_function(self._attribute_specifications, self._tag_name)
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -844,14 +864,15 @@ class PartitioningReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(starting_pattern, attribute_specifications, ending_pattern):
+    def build_regex_pattern(starting_pattern: str, attribute_specifications: Optional[str], ending_pattern: str
+                            ) -> str:
         anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True)
 
         starting_regex = f'(?: {starting_pattern} )'
 
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=False, allow_omission=False)
-        )
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=False,
+                                                                              allow_omission=False)
         if attribute_specifications_regex == '':
             attribute_specifications_or_whitespace_regex = r'[\s]+?'
         else:
@@ -859,11 +880,10 @@ class PartitioningReplacement(
 
         content_regex = build_content_regex()
 
-        attribute_specifications_no_capture_regex = build_attribute_specifications_regex(
-            attribute_specifications,
-            require_newline=False,
-            capture_attribute_specifications=False,
-            allow_omission=False,
+        attribute_specifications_no_capture_regex = (
+            build_attribute_specifications_regex(attribute_specifications,
+                                                 require_newline=False, capture_attribute_specifications=False,
+                                                 allow_omission=False)
         )
         if attribute_specifications_no_capture_regex == '':
             attribute_specifications_no_capture_or_whitespace_regex = r'[\s]+'
@@ -892,8 +912,9 @@ class PartitioningReplacement(
             ending_lookahead_regex,
         ])
 
-    def build_substitute_function(self, attribute_specifications, tag_name):
-        def substitute_function(match):
+    def build_substitute_function(self, attribute_specifications: Optional[str], tag_name: Optional[str]
+                                  ) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             if attribute_specifications is not None:
                 matched_attribute_specifications = match.group('attribute_specifications')
                 combined_attribute_specifications = (
@@ -940,13 +961,18 @@ class InlineAssortedDelimitersReplacement(
     - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _tag_name_from_delimiter_length_from_character: dict[str, dict[int, str]]
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._tag_name_from_delimiter_length_from_character = {}
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'delimiter_conversion',
@@ -955,11 +981,11 @@ class InlineAssortedDelimitersReplacement(
         )
 
     @property
-    def tag_name_from_delimiter_length_from_character(self):
+    def tag_name_from_delimiter_length_from_character(self) -> dict[str, dict[int, str]]:
         return self._tag_name_from_delimiter_length_from_character
 
     @tag_name_from_delimiter_length_from_character.setter
-    def tag_name_from_delimiter_length_from_character(self, value):
+    def tag_name_from_delimiter_length_from_character(self, value: dict[str, dict[int, str]]):
         if self._is_committed:
             raise CommittedMutateException('error: cannot call `add_delimiter_conversion(...)` after `commit()`')
 
@@ -983,7 +1009,7 @@ class InlineAssortedDelimitersReplacement(
             self._attribute_specifications,
         )
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         string_has_changed = True
 
         while string_has_changed:
@@ -993,8 +1019,10 @@ class InlineAssortedDelimitersReplacement(
 
         return string
 
-    def build_substitute_function(self, tag_name_from_delimiter_length_from_character, attribute_specifications):
-        def substitute_function(match):
+    def build_substitute_function(self, tag_name_from_delimiter_length_from_character: dict[str, dict[int, str]],
+                                  attribute_specifications: Optional[str]
+                                  ) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             character = match.group('delimiter_character')
             delimiter = match.group('delimiter')
             length = len(delimiter)
@@ -1021,11 +1049,9 @@ class InlineAssortedDelimitersReplacement(
         return substitute_function
 
     @staticmethod
-    def build_regex_pattern(
-        tag_name_from_delimiter_length_from_character,
-        attribute_specifications,
-        prohibited_content_regex,
-    ):
+    def build_regex_pattern(tag_name_from_delimiter_length_from_character: dict[str, dict[int, str]],
+                            attribute_specifications: Optional[str], prohibited_content_regex: Optional[str],
+                            ) -> str:
         optional_pipe_regex = '[|]?'
 
         single_characters = set()
@@ -1112,12 +1138,16 @@ class HeadingReplacement(
     - attribute_specifications: (def) NONE | EMPTY | «string»
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'attribute_specifications',
@@ -1133,7 +1163,7 @@ class HeadingReplacement(
         )
         self._substitute_function = HeadingReplacement.build_substitute_function(self._attribute_specifications)
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -1141,14 +1171,12 @@ class HeadingReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(attribute_specifications):
-        block_anchoring_regex = (
-            build_block_anchoring_regex(syntax_type_is_block=True, capture_anchoring_whitespace=True)
-        )
+    def build_regex_pattern(attribute_specifications: Optional[str]) -> str:
+        block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True,
+                                                            capture_anchoring_whitespace=True)
         opening_hashes_regex = '(?P<opening_hashes> [#]{1,6} )'
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=False)
-        )
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=False)
         content_starter_regex = r'(?: [^\S\n]+ (?P<content_starter> [^\n]*? ) )? [^\S\n]*'
         content_continuation_regex = (
             r'(?P<content_continuation> (?: \n (?P=anchoring_whitespace) [^\S\n]+ [^\n]* )* )'
@@ -1167,8 +1195,8 @@ class HeadingReplacement(
         ])
 
     @staticmethod
-    def build_substitute_function(attribute_specifications):
-        def substitute_function(match):
+    def build_substitute_function(attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             opening_hashes = match.group('opening_hashes')
             heading_level = len(opening_hashes)
             tag_name = f'h{heading_level}'
@@ -1209,13 +1237,18 @@ class ReferenceDefinitionReplacement(
     - attribute_specifications: (def) NONE | EMPTY | «string»
     ````
     """
-    def __init__(self, id_, reference_master, verbose_mode_enabled):
+    _reference_master: 'ReferenceMaster'
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, reference_master: 'ReferenceMaster', verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._reference_master = reference_master
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'attribute_specifications',
@@ -1231,7 +1264,7 @@ class ReferenceDefinitionReplacement(
         )
         self._substitute_function = self.build_substitute_function(self._attribute_specifications)
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -1239,14 +1272,12 @@ class ReferenceDefinitionReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(attribute_specifications):
-        block_anchoring_regex = (
-            build_block_anchoring_regex(syntax_type_is_block=True, capture_anchoring_whitespace=True)
-        )
+    def build_regex_pattern(attribute_specifications: Optional[str]) -> str:
+        block_anchoring_regex = build_block_anchoring_regex(syntax_type_is_block=True,
+                                                            capture_anchoring_whitespace=True)
         label_regex = r'\[ [\s]* (?P<label> [^\]]*? ) [\s]* \]'
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=False)
-        )
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=False)
         colon_regex = '[:]'
         maybe_hanging_whitespace_regex = build_maybe_hanging_whitespace_regex()
         uri_regex = build_uri_regex(be_greedy=True)
@@ -1255,20 +1286,18 @@ class ReferenceDefinitionReplacement(
         whitespace_then_title_regex = f'(?: {maybe_hanging_whitespace_regex}{title_regex} )?'
         trailing_horizontal_whitespace_regex = r'[^\S\n]* $'
 
-        return ''.join(
-            [
-                block_anchoring_regex,
-                label_regex,
-                attribute_specifications_regex,
-                colon_regex,
-                whitespace_then_uri_regex,
-                whitespace_then_title_regex,
-                trailing_horizontal_whitespace_regex,
-            ]
-        )
+        return ''.join([
+            block_anchoring_regex,
+            label_regex,
+            attribute_specifications_regex,
+            colon_regex,
+            whitespace_then_uri_regex,
+            whitespace_then_title_regex,
+            trailing_horizontal_whitespace_regex,
+        ])
 
-    def build_substitute_function(self, attribute_specifications):
-        def substitute_function(match):
+    def build_substitute_function(self, attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             label = match.group('label')
 
             if attribute_specifications is not None:
@@ -1316,12 +1345,16 @@ class SpecifiedImageReplacement(
     - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'attribute_specifications',
@@ -1341,7 +1374,7 @@ class SpecifiedImageReplacement(
         )
         self._substitute_function = SpecifiedImageReplacement.build_substitute_function(self._attribute_specifications)
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -1349,17 +1382,13 @@ class SpecifiedImageReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(attribute_specifications, prohibited_content_regex):
+    def build_regex_pattern(attribute_specifications: Optional[str], prohibited_content_regex: Optional[str]) -> str:
         exclamation_mark_regex = '[!]'
-        alt_text_regex = build_content_regex(
-            prohibited_content_regex,
-            permitted_content_regex=r'[^\]]',
-            capture_group_name='alt_text',
-        )
+        alt_text_regex = build_content_regex(prohibited_content_regex,
+                                             permitted_content_regex=r'[^\]]', capture_group_name='alt_text')
         bracketed_alt_text_regex = fr'\[ [\s]* {alt_text_regex} [\s]* \]'
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=False)
-        )
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=False)
         opening_parenthesis_regex = r'\('
         uri_regex = build_uri_regex(be_greedy=False)
         whitespace_then_uri_regex = fr'(?: [\s]* {uri_regex} )?'
@@ -1380,8 +1409,8 @@ class SpecifiedImageReplacement(
         ])
 
     @staticmethod
-    def build_substitute_function(attribute_specifications):
-        def substitute_function(match):
+    def build_substitute_function(attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             alt = match.group('alt_text')
             alt_protected = PlaceholderMaster.protect(alt)
             alt_attribute_specification = f'alt={alt_protected}'
@@ -1448,13 +1477,18 @@ class ReferencedImageReplacement(
     - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
     ````
     """
-    def __init__(self, id_, reference_master, verbose_mode_enabled):
+    _reference_master: 'ReferenceMaster'
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, reference_master: 'ReferenceMaster', verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._reference_master = reference_master
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'attribute_specifications',
@@ -1474,7 +1508,7 @@ class ReferencedImageReplacement(
         )
         self._substitute_function = self.build_substitute_function(self._attribute_specifications)
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -1482,22 +1516,15 @@ class ReferencedImageReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(attribute_specifications, prohibited_content_regex):
+    def build_regex_pattern(attribute_specifications: Optional[str], prohibited_content_regex: Optional[str]) -> str:
         exclamation_mark_regex = '[!]'
-        alt_text_regex = build_content_regex(
-            prohibited_content_regex,
-            permitted_content_regex=r'[^\]]',
-            capture_group_name='alt_text',
-        )
+        alt_text_regex = build_content_regex(prohibited_content_regex,
+                                             permitted_content_regex=r'[^\]]', capture_group_name='alt_text')
         bracketed_alt_text_regex = fr'\[ [\s]* {alt_text_regex} [\s]* \]'
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=False)
-        )
-        label_regex = build_content_regex(
-            prohibited_content_regex,
-            permitted_content_regex=r'[^\]]',
-            capture_group_name='label',
-        )
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=False)
+        label_regex = build_content_regex(prohibited_content_regex,
+                                          permitted_content_regex=r'[^\]]', capture_group_name='label')
         bracketed_label_regex = fr'(?: \[ [\s]* {label_regex} [\s]* \] )?'
 
         return ''.join([
@@ -1507,8 +1534,8 @@ class ReferencedImageReplacement(
             bracketed_label_regex,
         ])
 
-    def build_substitute_function(self, attribute_specifications):
-        def substitute_function(match):
+    def build_substitute_function(self, attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             alt = match.group('alt_text')
             alt_protected = PlaceholderMaster.protect(alt)
             alt_attribute_specification = f'alt={alt_protected}'
@@ -1577,12 +1604,16 @@ class ExplicitLinkReplacement(
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'allowed_flags',
@@ -1610,7 +1641,7 @@ class ExplicitLinkReplacement(
             self._attribute_specifications,
         )
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -1618,12 +1649,12 @@ class ExplicitLinkReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(flag_name_from_letter, has_flags, attribute_specifications):
+    def build_regex_pattern(flag_name_from_letter: dict[str, str], has_flags: bool,
+                            attribute_specifications: Optional[str]) -> str:
         flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
         opening_angle_bracket_regex = '[<]'
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=False)
-        )
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=False)
         uri_regex = r'(?P<uri> [a-zA-Z.+-]+ [:] [^\s>]*? )'
         closing_angle_bracket_regex = '[>]'
 
@@ -1635,11 +1666,11 @@ class ExplicitLinkReplacement(
             closing_angle_bracket_regex,
         ])
 
-    def build_substitute_function(self, flag_name_from_letter, has_flags, attribute_specifications):
-        def substitute_function(match):
-            enabled_flag_names = (
-                ReplacementWithAllowedFlags.get_enabled_flag_names(match, flag_name_from_letter, has_flags)
-            )
+    def build_substitute_function(self, flag_name_from_letter: dict[str, str], has_flags: bool,
+                                  attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
+            enabled_flag_names = ReplacementWithAllowedFlags.get_enabled_flag_names(match,
+                                                                                    flag_name_from_letter, has_flags)
 
             href = match.group('uri')
             href_protected = PlaceholderMaster.protect(href)
@@ -1685,12 +1716,16 @@ class SpecifiedLinkReplacement(
     - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
     ````
     """
-    def __init__(self, id_, verbose_mode_enabled):
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'attribute_specifications',
@@ -1710,7 +1745,7 @@ class SpecifiedLinkReplacement(
         )
         self._substitute_function = SpecifiedLinkReplacement.build_substitute_function(self._attribute_specifications)
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -1718,16 +1753,12 @@ class SpecifiedLinkReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(attribute_specifications, prohibited_content_regex):
-        link_text_regex = build_content_regex(
-            prohibited_content_regex,
-            permitted_content_regex=r'[^\]]',
-            capture_group_name='link_text',
-        )
+    def build_regex_pattern(attribute_specifications: Optional[str], prohibited_content_regex: Optional[str]) -> str:
+        link_text_regex = build_content_regex(prohibited_content_regex,
+                                              permitted_content_regex=r'[^\]]', capture_group_name='link_text')
         bracketed_link_text_regex = fr'\[ [\s]* {link_text_regex} [\s]* \]'
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=False)
-        )
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=False)
         opening_parenthesis_regex = r'\('
         uri_regex = build_uri_regex(be_greedy=False)
         whitespace_then_uri_regex = fr'(?: [\s]* {uri_regex} )?'
@@ -1747,8 +1778,8 @@ class SpecifiedLinkReplacement(
         ])
 
     @staticmethod
-    def build_substitute_function(attribute_specifications):
-        def substitute_function(match):
+    def build_substitute_function(attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             content = match.group('link_text')
 
             angle_bracketed_uri = match.group('angle_bracketed_uri')
@@ -1815,13 +1846,18 @@ class ReferencedLinkReplacement(
     - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
     ````
     """
-    def __init__(self, id_, reference_master, verbose_mode_enabled):
+    _reference_master: 'ReferenceMaster'
+    _regex_pattern_compiled: Optional[re.Pattern]
+    _substitute_function: Optional[Callable[[re.Match], str]]
+
+    def __init__(self, id_: str, reference_master, verbose_mode_enabled):
         super().__init__(id_, verbose_mode_enabled)
         self._reference_master = reference_master
         self._regex_pattern_compiled = None
         self._substitute_function = None
 
-    def attribute_names(self):
+    @property
+    def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
             'attribute_specifications',
@@ -1841,7 +1877,7 @@ class ReferencedLinkReplacement(
         )
         self._substitute_function = self.build_substitute_function(self._attribute_specifications)
 
-    def _apply(self, string):
+    def _apply(self, string: str) -> str:
         return re.sub(
             pattern=self._regex_pattern_compiled,
             repl=self._substitute_function,
@@ -1849,21 +1885,14 @@ class ReferencedLinkReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(attribute_specifications, prohibited_content_regex):
-        link_text_regex = build_content_regex(
-            prohibited_content_regex,
-            permitted_content_regex=r'[^\]]',
-            capture_group_name='link_text',
-        )
+    def build_regex_pattern(attribute_specifications: Optional[str], prohibited_content_regex: Optional[str]) -> str:
+        link_text_regex = build_content_regex(prohibited_content_regex,
+                                              permitted_content_regex=r'[^\]]', capture_group_name='link_text')
         bracketed_link_text_regex = fr'\[ [\s]* {link_text_regex} [\s]* \]'
-        attribute_specifications_regex = (
-            build_attribute_specifications_regex(attribute_specifications, require_newline=False)
-        )
-        label_regex = build_content_regex(
-            prohibited_content_regex,
-            permitted_content_regex=r'[^\]]',
-            capture_group_name='label',
-        )
+        attribute_specifications_regex = build_attribute_specifications_regex(attribute_specifications,
+                                                                              require_newline=False)
+        label_regex = build_content_regex(prohibited_content_regex,
+                                          permitted_content_regex=r'[^\]]', capture_group_name='label')
         bracketed_label_regex = fr'(?: \[ [\s]* {label_regex} [\s]* \] )?'
 
         return ''.join([
@@ -1872,8 +1901,8 @@ class ReferencedLinkReplacement(
             bracketed_label_regex,
         ])
 
-    def build_substitute_function(self, attribute_specifications):
-        def substitute_function(match):
+    def build_substitute_function(self, attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
+        def substitute_function(match: re.Match) -> str:
             content = match.group('link_text')
 
             label = match.group('label')
