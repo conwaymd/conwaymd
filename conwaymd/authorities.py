@@ -10,8 +10,10 @@ import os
 import re
 import sys
 import traceback
+from typing import Iterable, NamedTuple, Optional
 
 from conwaymd._version import __version__
+from conwaymd.bases import Replacement, ReplacementWithSubstitutions
 from conwaymd.constants import CMD_REPLACEMENT_SYNTAX_HELP, GENERIC_ERROR_EXIT_CODE
 from conwaymd.employables import (
     DeIndentationReplacement,
@@ -56,7 +58,14 @@ class ReplacementAuthority:
 
     Applies the legislated replacements.
     """
-    def __init__(self, cmd_file_name, verbose_mode_enabled):
+    _opened_file_names: list[str]
+    _replacement_from_id: dict[str, 'Replacement']
+    _root_replacement_id: Optional[str]
+    _replacement_queue: list['Replacement']
+    _reference_master: 'ReferenceMaster'
+    _verbose_mode_enabled: bool
+
+    def __init__(self, cmd_file_name: str, verbose_mode_enabled: bool):
         self._opened_file_names = [cmd_file_name]
         self._replacement_from_id = {}
         self._root_replacement_id = None
@@ -65,7 +74,7 @@ class ReplacementAuthority:
         self._verbose_mode_enabled = verbose_mode_enabled
 
     @staticmethod
-    def print_error(message, rules_file_name, start_line_number, end_line_number=None):
+    def print_error(message: str, rules_file_name: str, start_line_number: int, end_line_number: Optional[int] = None):
         source_file = f'`{rules_file_name}`'
 
         if end_line_number is None or start_line_number == end_line_number - 1:
@@ -76,19 +85,19 @@ class ReplacementAuthority:
         print(f'error: {source_file}, {line_number_range}: {message}', file=sys.stderr)
 
     @staticmethod
-    def print_traceback(exception):
+    def print_traceback(exception: Exception):
         traceback.print_exception(type(exception), exception, exception.__traceback__)
 
     @staticmethod
-    def is_whitespace_only(line):
-        return re.fullmatch(pattern=r'[\s]*', string=line, flags=re.ASCII)
+    def is_whitespace_only(line: str) -> bool:
+        return bool(re.fullmatch(pattern=r'[\s]*', string=line, flags=re.ASCII))
 
     @staticmethod
-    def is_comment(line):
+    def is_comment(line: str) -> bool:
         return line.startswith('#')
 
     @staticmethod
-    def compute_rules_inclusion_match(line):
+    def compute_rules_inclusion_match(line: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [<][ ]
@@ -103,7 +112,8 @@ class ReplacementAuthority:
             flags=re.ASCII | re.VERBOSE,
         )
 
-    def process_rules_inclusion_line(self, rules_inclusion_match, rules_file_name, cmd_name, line_number):
+    def process_rules_inclusion_line(self, rules_inclusion_match: re.Match, rules_file_name: str, cmd_name: str,
+                                     line_number: int):
         included_file_name_relative = rules_inclusion_match.group('included_file_name_relative')
         if included_file_name_relative is not None:
             included_file_name = os.path.join(os.path.dirname(rules_file_name), included_file_name_relative)
@@ -140,7 +150,7 @@ class ReplacementAuthority:
         self.legislate(replacement_rules, rules_file_name=included_file_name, cmd_name=cmd_name)
 
     @staticmethod
-    def compute_class_declaration_match(line):
+    def compute_class_declaration_match(line: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 (?P<class_name> [A-Za-z]+ ) [:]
@@ -151,7 +161,8 @@ class ReplacementAuthority:
             flags=re.ASCII | re.VERBOSE,
         )
 
-    def process_class_declaration_line(self, class_declaration_match, rules_file_name, line_number):
+    def process_class_declaration_line(self, class_declaration_match: re.Match, rules_file_name: str, line_number: int
+                                       ) -> 'PostClassDeclarationState':
         class_name = class_declaration_match.group('class_name')
         id_ = class_declaration_match.group('id_')
 
@@ -209,10 +220,10 @@ class ReplacementAuthority:
 
         line_number_range_start = line_number
 
-        return class_name, replacement, line_number_range_start
+        return PostClassDeclarationState(class_name, replacement, line_number_range_start)
 
     @staticmethod
-    def compute_attribute_declaration_match(line):
+    def compute_attribute_declaration_match(line: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [-][ ] (?P<attribute_name> [a-z_]+ ) [:]
@@ -224,13 +235,13 @@ class ReplacementAuthority:
 
     @staticmethod
     def process_attribute_declaration_line(
-        attribute_declaration_match,
-        class_name,
-        replacement,
-        attribute_value,
-        rules_file_name,
-        line_number,
-    ):
+        attribute_declaration_match: re.Match,
+        class_name: str,
+        replacement: 'Replacement',
+        attribute_value: Optional[str],
+        rules_file_name: str,
+        line_number: int,
+    ) -> 'PostAttributeDeclarationState':
         if replacement is None:
             ReplacementAuthority.print_error(
                 f'attribute declaration without an active class declaration',
@@ -253,10 +264,10 @@ class ReplacementAuthority:
 
         line_number_range_start = line_number
 
-        return attribute_name, attribute_value, line_number_range_start
+        return PostAttributeDeclarationState(attribute_name, attribute_value, line_number_range_start)
 
     @staticmethod
-    def compute_substitution_declaration_match(line):
+    def compute_substitution_declaration_match(line: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'[*][ ] (?P<partial_substitution> [\s\S]* )',
             string=line,
@@ -265,12 +276,12 @@ class ReplacementAuthority:
 
     @staticmethod
     def process_substitution_declaration_line(
-        replacement,
-        substitution_declaration_match,
-        substitution,
-        rules_file_name,
-        line_number,
-    ):
+        replacement: Optional['Replacement'],
+        substitution_declaration_match: re.Match,
+        substitution: Optional[str],
+        rules_file_name: str,
+        line_number: int,
+    ) -> 'PostSubstitutionDeclarationState':
         if replacement is None:
             ReplacementAuthority.print_error(
                 f'substitution declaration without an active class declaration',
@@ -284,10 +295,10 @@ class ReplacementAuthority:
 
         line_number_range_start = line_number
 
-        return substitution, line_number_range_start
+        return PostSubstitutionDeclarationState(substitution, line_number_range_start)
 
     @staticmethod
-    def compute_continuation_match(line):
+    def compute_continuation_match(line: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'(?P<continuation> [\s]+ [\S][\s\S]* )',
             string=line,
@@ -296,12 +307,12 @@ class ReplacementAuthority:
 
     @staticmethod
     def process_continuation_line(
-        continuation_match,
-        attribute_name,
-        attribute_value,
-        substitution,
-        rules_file_name,
-        line_number,
+        continuation_match: re.Match,
+        attribute_name: Optional[str],
+        attribute_value: Optional[str],
+        substitution: Optional[str],
+        rules_file_name: str,
+        line_number: int,
     ):
         continuation = continuation_match.group('continuation')
 
@@ -320,7 +331,7 @@ class ReplacementAuthority:
         return attribute_value, substitution
 
     @staticmethod
-    def compute_allowed_flag_matches(attribute_value):
+    def compute_allowed_flag_matches(attribute_value: str) -> Iterable[re.Match]:
         return re.finditer(
             pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
@@ -340,8 +351,9 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_allowed_flags(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        flag_name_from_letter = {}
+    def stage_allowed_flags(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                            line_number_range_start: int, line_number: int):
+        flag_name_from_letter: dict[str, str] = {}
 
         for allowed_flag_match in ReplacementAuthority.compute_allowed_flag_matches(attribute_value):
             if allowed_flag_match.group('whitespace_only') is not None:
@@ -373,7 +385,7 @@ class ReplacementAuthority:
         replacement.flag_name_from_letter = flag_name_from_letter
 
     @staticmethod
-    def compute_apply_mode_match(attribute_value):
+    def compute_apply_mode_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -389,7 +401,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_apply_mode(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_apply_mode(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                         line_number_range_start: int, line_number: int):
         apply_mode_match = ReplacementAuthority.compute_apply_mode_match(attribute_value)
 
         invalid_value = apply_mode_match.group('invalid_value')
@@ -406,7 +419,7 @@ class ReplacementAuthority:
         replacement.apply_substitutions_simultaneously = apply_mode == 'SIMULTANEOUS'
 
     @staticmethod
-    def compute_attribute_specifications_match(attribute_value):
+    def compute_attribute_specifications_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -427,11 +440,11 @@ class ReplacementAuthority:
 
     @staticmethod
     def stage_attribute_specifications(
-        replacement,
-        attribute_value,
-        rules_file_name,
-        line_number_range_start,
-        line_number,
+        replacement: 'Replacement',
+        attribute_value: str,
+        rules_file_name: str,
+        line_number_range_start: int,
+        line_number: int,
     ):
         attribute_specifications_match = ReplacementAuthority.compute_attribute_specifications_match(attribute_value)
 
@@ -456,7 +469,7 @@ class ReplacementAuthority:
         replacement.attribute_specifications = attribute_specifications
 
     @staticmethod
-    def compute_closing_delimiter_match(attribute_value):
+    def compute_closing_delimiter_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -472,7 +485,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_closing_delimiter(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_closing_delimiter(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                                line_number_range_start: int, line_number: int):
         closing_delimiter_match = ReplacementAuthority.compute_closing_delimiter_match(attribute_value)
 
         invalid_value = closing_delimiter_match.group('invalid_value')
@@ -489,7 +503,7 @@ class ReplacementAuthority:
         replacement.closing_delimiter = closing_delimiter
 
     @staticmethod
-    def compute_concluding_replacement_matches(attribute_value):
+    def compute_concluding_replacement_matches(attribute_value: str) -> Iterable[re.Match]:
         return re.finditer(
             pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
@@ -509,13 +523,13 @@ class ReplacementAuthority:
 
     def stage_concluding_replacements(
         self,
-        replacement,
-        attribute_value,
-        rules_file_name,
-        line_number_range_start,
-        line_number,
+        replacement: 'Replacement',
+        attribute_value: str,
+        rules_file_name: str,
+        line_number_range_start: int,
+        line_number: int,
     ):
-        concluding_replacements = []
+        concluding_replacements: list['Replacement'] = []
 
         concluding_replacement_matches = ReplacementAuthority.compute_concluding_replacement_matches(attribute_value)
         for concluding_replacement_match in concluding_replacement_matches:
@@ -561,7 +575,7 @@ class ReplacementAuthority:
         replacement.concluding_replacements = concluding_replacements
 
     @staticmethod
-    def compute_content_replacement_matches(attribute_value):
+    def compute_content_replacement_matches(attribute_value: str) -> Iterable[re.Match]:
         return re.finditer(
             pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
@@ -581,13 +595,13 @@ class ReplacementAuthority:
 
     def stage_content_replacements(
         self,
-        replacement,
-        attribute_value,
-        rules_file_name,
-        line_number_range_start,
-        line_number,
+        replacement: 'Replacement',
+        attribute_value: str,
+        rules_file_name: str,
+        line_number_range_start: int,
+        line_number: int,
     ):
-        content_replacements = []
+        content_replacements: list['Replacement'] = []
 
         for content_replacement_match in ReplacementAuthority.compute_content_replacement_matches(attribute_value):
             if content_replacement_match.group('whitespace_only') is not None:
@@ -632,7 +646,7 @@ class ReplacementAuthority:
         replacement.content_replacements = content_replacements
 
     @staticmethod
-    def compute_delimiter_conversion_matches(attribute_value):
+    def compute_delimiter_conversion_matches(attribute_value: str) -> Iterable[re.Match]:
         return re.finditer(
             pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
@@ -654,13 +668,13 @@ class ReplacementAuthority:
 
     @staticmethod
     def stage_delimiter_conversion(
-        replacement,
-        attribute_value,
-        rules_file_name,
-        line_number_range_start,
-        line_number,
+        replacement: 'Replacement',
+        attribute_value: str,
+        rules_file_name: str,
+        line_number_range_start: int,
+        line_number: int,
     ):
-        tag_name_from_delimiter_length_from_character = {}
+        tag_name_from_delimiter_length_from_character: dict[str, dict[int, str]] = {}
 
         for delimiter_conversion_match in ReplacementAuthority.compute_delimiter_conversion_matches(attribute_value):
             if delimiter_conversion_match.group('whitespace_only') is not None:
@@ -687,14 +701,14 @@ class ReplacementAuthority:
             tag_name = delimiter_conversion_match.group('tag_name')
 
             if character not in tag_name_from_delimiter_length_from_character:
-                tag_name_from_delimiter_length_from_character[character] = {}
+                tag_name_from_delimiter_length_from_character[character]: dict[int, str] = {}
 
             tag_name_from_delimiter_length_from_character[character][length] = tag_name
 
         replacement.tag_name_from_delimiter_length_from_character = tag_name_from_delimiter_length_from_character
 
     @staticmethod
-    def compute_ending_pattern_match(attribute_value):
+    def compute_ending_pattern_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -713,11 +727,11 @@ class ReplacementAuthority:
 
     @staticmethod
     def stage_ending_pattern(
-        replacement,
-        attribute_value,
-        rules_file_name,
-        line_number_range_start,
-        line_number,
+        replacement: 'Replacement',
+        attribute_value: str,
+        rules_file_name: str,
+        line_number_range_start: int,
+        line_number: int,
     ):
         ending_pattern_match = ReplacementAuthority.compute_ending_pattern_match(attribute_value)
 
@@ -760,7 +774,7 @@ class ReplacementAuthority:
         replacement.ending_pattern = ending_pattern
 
     @staticmethod
-    def compute_epilogue_delimiter_match(attribute_value):
+    def compute_epilogue_delimiter_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -778,7 +792,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_epilogue_delimiter(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_epilogue_delimiter(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                                 line_number_range_start: int, line_number: int):
         epilogue_delimiter_match = ReplacementAuthority.compute_epilogue_delimiter_match(attribute_value)
 
         invalid_value = epilogue_delimiter_match.group('invalid_value')
@@ -798,7 +813,7 @@ class ReplacementAuthority:
         replacement.epilogue_delimiter = epilogue_delimiter
 
     @staticmethod
-    def compute_extensible_delimiter_match(attribute_value):
+    def compute_extensible_delimiter_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -818,11 +833,11 @@ class ReplacementAuthority:
 
     @staticmethod
     def stage_extensible_delimiter(
-        replacement,
-        attribute_value,
-        rules_file_name,
-        line_number_range_start,
-        line_number,
+        replacement: 'Replacement',
+        attribute_value: str,
+        rules_file_name: str,
+        line_number_range_start: int,
+        line_number: int,
     ):
         extensible_delimiter_match = ReplacementAuthority.compute_extensible_delimiter_match(attribute_value)
 
@@ -844,7 +859,7 @@ class ReplacementAuthority:
         replacement.extensible_delimiter_min_length = extensible_delimiter_min_length
 
     @staticmethod
-    def compute_negative_flag_match(attribute_value):
+    def compute_negative_flag_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -862,7 +877,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_negative_flag(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_negative_flag(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                            line_number_range_start: int, line_number: int):
         negative_flag_match = ReplacementAuthority.compute_negative_flag_match(attribute_value)
 
         invalid_value = negative_flag_match.group('invalid_value')
@@ -882,7 +898,7 @@ class ReplacementAuthority:
         replacement.negative_flag_name = negative_flag_name
 
     @staticmethod
-    def compute_opening_delimiter_match(attribute_value):
+    def compute_opening_delimiter_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -898,7 +914,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_opening_delimiter(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_opening_delimiter(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                                line_number_range_start: int, line_number: int):
         opening_delimiter_match = ReplacementAuthority.compute_opening_delimiter_match(attribute_value)
 
         invalid_value = opening_delimiter_match.group('invalid_value')
@@ -915,7 +932,7 @@ class ReplacementAuthority:
         replacement.opening_delimiter = opening_delimiter
 
     @staticmethod
-    def compute_positive_flag_match(attribute_value):
+    def compute_positive_flag_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -933,7 +950,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_positive_flag(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_positive_flag(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                            line_number_range_start: int, line_number: int):
         positive_flag_match = ReplacementAuthority.compute_positive_flag_match(attribute_value)
 
         invalid_value = positive_flag_match.group('invalid_value')
@@ -953,7 +971,7 @@ class ReplacementAuthority:
         replacement.positive_flag_name = positive_flag_name
 
     @staticmethod
-    def compute_prohibited_content_match(attribute_value):
+    def compute_prohibited_content_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -971,7 +989,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_prohibited_content(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_prohibited_content(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                                 line_number_range_start: int, line_number: int):
         prohibited_content_match = ReplacementAuthority.compute_prohibited_content_match(attribute_value)
 
         invalid_value = prohibited_content_match.group('invalid_value')
@@ -993,7 +1012,7 @@ class ReplacementAuthority:
         replacement.prohibited_content_regex = prohibited_content_regex
 
     @staticmethod
-    def compute_prologue_delimiter_match(attribute_value):
+    def compute_prologue_delimiter_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -1011,7 +1030,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_prologue_delimiter(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_prologue_delimiter(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                                 line_number_range_start: int, line_number: int):
         prologue_delimiter_match = ReplacementAuthority.compute_prologue_delimiter_match(attribute_value)
 
         invalid_value = prologue_delimiter_match.group('invalid_value')
@@ -1031,7 +1051,7 @@ class ReplacementAuthority:
         replacement.prologue_delimiter = prologue_delimiter
 
     @staticmethod
-    def compute_queue_position_match(attribute_value):
+    def compute_queue_position_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -1052,7 +1072,8 @@ class ReplacementAuthority:
             flags=re.ASCII | re.VERBOSE,
         )
 
-    def stage_queue_position(self, replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_queue_position(self, replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                             line_number_range_start: int, line_number: int):
         queue_position_match = ReplacementAuthority.compute_queue_position_match(attribute_value)
 
         invalid_value = queue_position_match.group('invalid_value')
@@ -1118,7 +1139,7 @@ class ReplacementAuthority:
         replacement.queue_reference_replacement = queue_reference_replacement
 
     @staticmethod
-    def compute_replacement_matches(attribute_value):
+    def compute_replacement_matches(attribute_value: str) -> Iterable[re.Match]:
         return re.finditer(
             pattern=r'''
                 (?P<whitespace_only> \A [\s]* \Z )
@@ -1136,8 +1157,9 @@ class ReplacementAuthority:
             flags=re.ASCII | re.VERBOSE,
         )
 
-    def stage_replacements(self, replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
-        matched_replacements = []
+    def stage_replacements(self, replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                           line_number_range_start: int, line_number: int):
+        matched_replacements: list['Replacement'] = []
 
         for replacement_match in ReplacementAuthority.compute_replacement_matches(attribute_value):
             if replacement_match.group('whitespace_only') is not None:
@@ -1182,7 +1204,7 @@ class ReplacementAuthority:
         replacement.replacements = matched_replacements
 
     @staticmethod
-    def compute_starting_pattern_match(attribute_value):
+    def compute_starting_pattern_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -1198,7 +1220,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_starting_pattern(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_starting_pattern(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                               line_number_range_start: int, line_number: int):
         starting_pattern_match = ReplacementAuthority.compute_starting_pattern_match(attribute_value)
 
         invalid_value = starting_pattern_match.group('invalid_value')
@@ -1237,7 +1260,7 @@ class ReplacementAuthority:
         replacement.starting_pattern = starting_pattern
 
     @staticmethod
-    def compute_syntax_type_match(attribute_value):
+    def compute_syntax_type_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -1253,7 +1276,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_syntax_type(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_syntax_type(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                          line_number_range_start: int, line_number: int):
         syntax_type_match = ReplacementAuthority.compute_syntax_type_match(attribute_value)
 
         invalid_value = syntax_type_match.group('invalid_value')
@@ -1270,7 +1294,7 @@ class ReplacementAuthority:
         replacement.syntax_type_is_block = syntax_type == 'BLOCK'
 
     @staticmethod
-    def compute_tag_name_match(attribute_value):
+    def compute_tag_name_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
                 [\s]*
@@ -1288,7 +1312,8 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_tag_name(replacement, attribute_value, rules_file_name, line_number_range_start, line_number):
+    def stage_tag_name(replacement: 'Replacement', attribute_value: str, rules_file_name: str,
+                       line_number_range_start: int, line_number: int):
         tag_name_match = ReplacementAuthority.compute_tag_name_match(attribute_value)
 
         invalid_value = tag_name_match.group('invalid_value')
@@ -1308,8 +1333,8 @@ class ReplacementAuthority:
         replacement.tag_name = tag_name
 
     @staticmethod
-    def compute_substitution_match(substitution):
-        substitution_delimiters = re.findall(pattern='[-]{2,}[>]', string=substitution)
+    def compute_substitution_match(substitution: str) -> Optional[re.Match]:
+        substitution_delimiters: list[str] = re.findall(pattern='[-]{2,}[>]', string=substitution)
         if len(substitution_delimiters) == 0:
             return None
 
@@ -1350,12 +1375,12 @@ class ReplacementAuthority:
 
     @staticmethod
     def stage_ordinary_substitution(
-        replacement,
-        substitution,
-        rules_file_name,
-        cmd_name,
-        line_number_range_start,
-        line_number,
+        replacement: 'ReplacementWithSubstitutions',
+        substitution: str,
+        rules_file_name: str,
+        cmd_name: str,
+        line_number_range_start: int,
+        line_number: int,
     ):
         substitution_match = ReplacementAuthority.compute_substitution_match(substitution)
         if substitution_match is None:
@@ -1400,12 +1425,12 @@ class ReplacementAuthority:
 
     @staticmethod
     def stage_regex_substitution(
-        replacement,
-        substitution,
-        rules_file_name,
-        cmd_name,
-        line_number_range_start,
-        line_number,
+        replacement: 'ReplacementWithSubstitutions',
+        substitution: str,
+        rules_file_name: str,
+        cmd_name: str,
+        line_number_range_start: int,
+        line_number: int,
     ):
         substitution_match = ReplacementAuthority.compute_substitution_match(substitution)
         if substitution_match is None:
@@ -1474,18 +1499,19 @@ class ReplacementAuthority:
 
     def stage(
         self,
-        class_name,
-        replacement,
-        attribute_name,
-        attribute_value,
-        substitution,
-        rules_file_name,
-        cmd_name,
-        line_number_range_start,
-        line_number,
+        class_name: str,
+        replacement: 'Replacement',
+        attribute_name: str,
+        attribute_value: str,
+        substitution: str,
+        rules_file_name: str,
+        cmd_name: str,
+        line_number_range_start: int,
+        line_number: int,
     ):
         if substitution is not None:  # staging a substitution
             if class_name == 'OrdinaryDictionaryReplacement':
+                assert isinstance(replacement, ReplacementWithSubstitutions)
                 ReplacementAuthority.stage_ordinary_substitution(
                     replacement,
                     substitution,
@@ -1495,6 +1521,7 @@ class ReplacementAuthority:
                     line_number,
                 )
             elif class_name == 'RegexDictionaryReplacement':
+                assert isinstance(replacement, ReplacementWithSubstitutions)
                 ReplacementAuthority.stage_regex_substitution(
                     replacement,
                     substitution,
@@ -1674,10 +1701,10 @@ class ReplacementAuthority:
                     line_number,
                 )
 
-        return None, None, None, None
-        # attribute_name, attribute_value, substitution, line_number_range_start
+        return PostStageState(attribute_name=None, attribute_value=None, substitution=None,
+                              line_number_range_start=None)
 
-    def commit(self, class_name, replacement, rules_file_name, line_number):
+    def commit(self, class_name: str, replacement: 'Replacement', rules_file_name: str, line_number: int):
         try:
             replacement.commit()
         except MissingAttributeException as exception:
@@ -1709,20 +1736,20 @@ class ReplacementAuthority:
                 insertion_index = None
             self._replacement_queue.insert(insertion_index, replacement)
 
-        return None, None, None, None, None, None
-        # class_name, replacement, attribute_name, attribute_value, substitution, line_number_range_start
+        return PostCommitState(class_name=None, replacement=None, attribute_name=None, attribute_value=None,
+                               substitution=None, line_number_range_start=None)
 
-    def legislate(self, replacement_rules, rules_file_name, cmd_name):
+    def legislate(self, replacement_rules: str, rules_file_name: str, cmd_name: str):
         if replacement_rules is None:
             return
 
-        class_name = None
-        replacement = None
-        attribute_name = None
-        attribute_value = None
-        substitution = None
-        line_number_range_start = None
-        line_number = 0
+        class_name: Optional[str] = None
+        replacement: Optional['Replacement'] = None
+        attribute_name: Optional[str] = None
+        attribute_value: Optional[str] = None
+        substitution: Optional[str] = None
+        line_number_range_start: Optional[int] = None
+        line_number: int = 0
 
         for line_number, line in enumerate(replacement_rules.splitlines(), start=1):
             if ReplacementAuthority.is_whitespace_only(line):
@@ -1913,7 +1940,7 @@ class ReplacementAuthority:
         if replacement is not None:
             self.commit(class_name, replacement, rules_file_name, line_number + 1)
 
-    def execute(self, string):
+    def execute(self, string: str) -> str:
         if self._verbose_mode_enabled:
             replacement_queue_ids = [
                 f'#{replacement.id_}'
@@ -1924,18 +1951,51 @@ class ReplacementAuthority:
         for replacement in self._replacement_queue:
             string = replacement.apply(string)
 
-        return string
+        return string  # HTMl
 
 
-def escape_regex_substitute(substitute):
+class PostClassDeclarationState(NamedTuple):
+    class_name: str
+    replacement: 'Replacement'
+    line_number_range_start: int
+
+
+class PostAttributeDeclarationState(NamedTuple):
+    attribute_name: str
+    attribute_value: str
+    line_number_range_start: int
+
+
+class PostSubstitutionDeclarationState(NamedTuple):
+    substitution: str
+    line_number_range_start: int
+
+
+class PostStageState(NamedTuple):
+    attribute_name: Optional[str]
+    attribute_value: Optional[str]
+    substitution: Optional[str]
+    line_number_range_start: Optional[int]
+
+
+class PostCommitState(NamedTuple):
+    class_name: Optional[str]
+    replacement: Optional['Replacement']
+    attribute_name: Optional[str]
+    attribute_value: Optional[str]
+    substitution: Optional[str]
+    line_number_range_start: Optional[int]
+
+
+def escape_regex_substitute(substitute: str) -> str:
     return substitute.replace('\\', r'\\')
 
 
-def extract_basename(name):
+def extract_basename(name: str) -> str:
     return re.sub(pattern=r'\A .* [/]', repl='', string=name, flags=re.VERBOSE)
 
 
-def make_clean_url(cmd_name):
+def make_clean_url(cmd_name: str) -> str:
     return re.sub(
         pattern=r'(?P<last_separator> \A | [/] ) index \Z',
         repl=r'\g<last_separator>',
