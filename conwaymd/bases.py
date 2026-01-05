@@ -403,7 +403,7 @@ class ReplacementWithConcludingReplacements(Replacement, abc.ABC):
         return self._concluding_replacements
 
     @concluding_replacements.setter
-    def concluding_replacements(self, value):
+    def concluding_replacements(self, value: list['Replacement']):
         if self._is_committed:
             raise CommittedMutateException('error: cannot set `concluding_replacements` after `commit()`')
 
