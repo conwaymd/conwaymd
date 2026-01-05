@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Converted GitHub actions `packages_dir` to kebab case
+
 
 ## [v5.1.0] Type hinting (2026-01-05)
 
