@@ -280,7 +280,8 @@ class ReplacementAuthority:
     @staticmethod
     def process_continuation_line(continuation_match: re.Match, attribute_name: Optional[str],
                                   attribute_value: Optional[str], substitution: Optional[str],
-                                  rules_file_name: str, line_number: int):
+                                  rules_file_name: str, line_number: int
+                                  ) -> 'PostContinuationState':
         continuation = continuation_match.group('continuation')
 
         if attribute_name is not None:
@@ -292,7 +293,7 @@ class ReplacementAuthority:
                                              rules_file_name, line_number)
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
-        return attribute_value, substitution
+        return PostContinuationState(attribute_value, substitution)
 
     @staticmethod
     def compute_allowed_flag_matches(attribute_value: str) -> Iterable[re.Match]:
@@ -1272,7 +1273,7 @@ class ReplacementAuthority:
 
     def stage(self, class_name: str, replacement: 'Replacement',
               attribute_name: str, attribute_value: str, substitution: str,
-              rules_file_name: str, cmd_name: str, line_number_range_start: int, line_number: int):
+              rules_file_name: str, cmd_name: str, line_number_range_start: int, line_number: int) -> 'PostStageState':
         if substitution is not None:  # staging a substitution
             if class_name == 'OrdinaryDictionaryReplacement':
                 assert isinstance(replacement, ReplacementWithSubstitutions)
@@ -1355,7 +1356,8 @@ class ReplacementAuthority:
         return PostStageState(attribute_name=None, attribute_value=None, substitution=None,
                               line_number_range_start=None)
 
-    def commit(self, class_name: str, replacement: 'Replacement', rules_file_name: str, line_number: int):
+    def commit(self, class_name: str, replacement: 'Replacement',
+               rules_file_name: str, line_number: int) -> 'PostCommitState':
         try:
             replacement.commit()
         except MissingAttributeException as exception:
@@ -1525,6 +1527,11 @@ class PostAttributeDeclarationState(NamedTuple):
 class PostSubstitutionDeclarationState(NamedTuple):
     substitution: str
     line_number_range_start: int
+
+
+class PostContinuationState(NamedTuple):
+    attribute_value: str
+    substitution: str
 
 
 class PostStageState(NamedTuple):
