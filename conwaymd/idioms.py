@@ -9,6 +9,7 @@ Common idioms.
 import re
 from typing import Iterable, Optional, Union
 
+from conwaymd.bases import Replacement
 from conwaymd.placeholders import PlaceholderMaster
 from conwaymd.utilities import escape_attribute_value_html
 
@@ -167,7 +168,9 @@ def extract_attribute_name_and_value(attribute_specification_match: re.Match,
     return None
 
 
-def build_attributes_sequence(attribute_specifications: Optional[str], use_protection: bool = False) -> str:
+def build_attributes_sequence(attribute_specifications: Optional[str], use_protection: bool = False,
+                              href_replacements: Optional[list['Replacement']] = None,
+                              enabled_flag_names: Optional[set[str]] = None) -> str:
     """
     Convert CMD attribute specifications to an attribute sequence.
 
@@ -215,7 +218,12 @@ def build_attributes_sequence(attribute_specifications: Optional[str], use_prote
                 except KeyError:
                     attribute_value_from_name['class'] = value
             else:
+                if name == 'href' and href_replacements is not None:
+                    for href_replacement in href_replacements:
+                        value = href_replacement.apply(value, enabled_flag_names)
+
                 attribute_value_from_name[name] = value
+
         except ValueError:  # attribute to be omitted
             name, = name_and_value
             attribute_value_from_name.pop(name, None)

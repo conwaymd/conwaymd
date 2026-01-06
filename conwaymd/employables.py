@@ -16,6 +16,7 @@ from conwaymd.bases import (
     ReplacementWithAttributeSpecifications,
     ReplacementWithConcludingReplacements,
     ReplacementWithContentReplacements,
+    ReplacementWithHrefReplacements,
     ReplacementWithProhibitedContent,
     ReplacementWithSubstitutions,
     ReplacementWithSyntaxType,
@@ -1587,6 +1588,7 @@ class ReferencedImageReplacement(
 class ExplicitLinkReplacement(
     ReplacementWithAllowedFlags,
     ReplacementWithAttributeSpecifications,
+    ReplacementWithHrefReplacements,
     ReplacementWithContentReplacements,
     ReplacementWithConcludingReplacements,
     Replacement,
@@ -1600,6 +1602,7 @@ class ExplicitLinkReplacement(
     - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
     - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
     - attribute_specifications: (def) NONE | EMPTY | «string»
+    - href_replacements: (def) NONE | #«id» [...]
     - content_replacements: (def) NONE | #«id» [...]
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
@@ -1618,6 +1621,7 @@ class ExplicitLinkReplacement(
             'queue_position',
             'allowed_flags',
             'attribute_specifications',
+            'href_replacements',
             'content_replacements',
             'concluding_replacements',
         )
@@ -1685,7 +1689,10 @@ class ExplicitLinkReplacement(
             else:
                 combined_attribute_specifications = href_attribute_specification
 
-            attributes_sequence = build_attributes_sequence(combined_attribute_specifications, use_protection=True)
+            attributes_sequence = build_attributes_sequence(combined_attribute_specifications,
+                                                            use_protection=True,
+                                                            href_replacements=self._href_replacements,
+                                                            enabled_flag_names=enabled_flag_names)
 
             content = href
             for replacement in self._content_replacements:
