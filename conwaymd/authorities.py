@@ -1302,8 +1302,8 @@ class ReplacementAuthority:
                                                                     rules_file_name,
                                                                     line_number_range_start, line_number)
             elif attribute_name == 'closing_delimiter':
-                self.stage_closing_delimiter(replacement, attribute_value,
-                                             rules_file_name, line_number_range_start, line_number)
+                ReplacementAuthority.stage_closing_delimiter(replacement, attribute_value,
+                                                             rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'concluding_replacements':
                 self.stage_concluding_replacements(replacement, attribute_value,
                                                    rules_file_name, line_number_range_start, line_number)
