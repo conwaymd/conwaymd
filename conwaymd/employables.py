@@ -1860,6 +1860,7 @@ class SpecifiedLinkReplacement(
 
 
 class ReferencedLinkReplacement(
+    ReplacementWithAllowedFlags,
     ReplacementWithAttributeSpecifications,
     ReplacementWithProhibitedContent,
     Replacement,
@@ -1871,6 +1872,7 @@ class ReferencedLinkReplacement(
     ````
     ReferencedLinkReplacement: #«id»
     - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
+    - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
     - attribute_specifications: (def) NONE | EMPTY | «string»
     - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
     ````
@@ -1889,6 +1891,7 @@ class ReferencedLinkReplacement(
     def attribute_names(self) -> tuple[str, ...]:
         return (
             'queue_position',
+            'allowed_flags',
             'attribute_specifications',
             'prohibited_content',
         )
@@ -1897,14 +1900,21 @@ class ReferencedLinkReplacement(
         pass
 
     def _set_apply_method_variables(self):
+        self._has_flags = len(self._flag_name_from_letter) > 0
         self._regex_pattern_compiled = re.compile(
             pattern=ReferencedLinkReplacement.build_regex_pattern(
+                self._flag_name_from_letter,
+                self._has_flags,
                 self._attribute_specifications,
                 self._prohibited_content_regex,
             ),
             flags=re.ASCII | re.VERBOSE,
         )
-        self._substitute_function = self.build_substitute_function(self._attribute_specifications)
+        self._substitute_function = self.build_substitute_function(
+            self._flag_name_from_letter,
+            self._has_flags,
+            self._attribute_specifications,
+        )
 
     def _apply(self, string: str) -> str:
         return re.sub(
@@ -1914,7 +1924,9 @@ class ReferencedLinkReplacement(
         )
 
     @staticmethod
-    def build_regex_pattern(attribute_specifications: Optional[str], prohibited_content_regex: Optional[str]) -> str:
+    def build_regex_pattern(flag_name_from_letter: dict[str, str], has_flags: bool,
+                            attribute_specifications: Optional[str], prohibited_content_regex: Optional[str]) -> str:
+        flags_regex = build_flags_regex(flag_name_from_letter, has_flags)
         link_text_regex = build_content_regex(prohibited_content_regex,
                                               permitted_content_regex=r'[^\]]', capture_group_name='link_text')
         bracketed_link_text_regex = fr'\[ [\s]* {link_text_regex} [\s]* \]'
@@ -1925,13 +1937,18 @@ class ReferencedLinkReplacement(
         bracketed_label_regex = fr'(?: \[ [\s]* {label_regex} [\s]* \] )?'
 
         return ''.join([
+            flags_regex,
             bracketed_link_text_regex,
             attribute_specifications_regex,
             bracketed_label_regex,
         ])
 
-    def build_substitute_function(self, attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
+    def build_substitute_function(self, flag_name_from_letter: dict[str, str], has_flags: bool,
+                                  attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
         def substitute_function(match: re.Match) -> str:
+            enabled_flag_names = ReplacementWithAllowedFlags.get_enabled_flag_names(match,
+                                                                                    flag_name_from_letter, has_flags)
+
             content = match.group('link_text')
 
             label = match.group('label')

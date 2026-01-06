@@ -3,7 +3,7 @@
 
 ## [Unreleased]
 
-- Added attribute `allowed_flags` to `SpecifiedLinkReplacement`
+- Added attribute `allowed_flags` to `SpecifiedLinkReplacement`, `ReferencedLinkReplacement`
 - Added attribute `href_replacements` to `ExplicitLinkReplacement`, `SpecifiedLinkReplacement`
 - Converted GitHub actions `packages_dir` to kebab case
 
