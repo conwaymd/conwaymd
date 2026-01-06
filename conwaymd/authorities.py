@@ -417,6 +417,61 @@ class ReplacementAuthority:
         replacement.attribute_specifications = attribute_specifications
 
     @staticmethod
+    def compute_href_replacement_matches(attribute_value: str) -> Iterable[re.Match]:
+        return re.finditer(
+            pattern=r'''
+                (?P<whitespace_only> \A [\s]* \Z )
+                    |
+                (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+                    |
+                (?:
+                    [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
+                        |
+                    (?P<invalid_syntax> [\S]+ )
+                )
+                [\s]*
+            ''',
+            string=attribute_value,
+            flags=re.ASCII | re.VERBOSE,
+        )
+
+    def stage_href_replacements(self, replacement: 'Replacement', attribute_value: str,
+                                rules_file_name: str, line_number_range_start: int, line_number: int):
+        href_replacements: list['Replacement'] = []
+
+        for href_replacement_match in ReplacementAuthority.compute_href_replacement_matches(attribute_value):
+            if href_replacement_match.group('whitespace_only') is not None:
+                ReplacementAuthority.print_error(f'invalid specification `` for attribute `href_replacements`',
+                                                 rules_file_name, line_number_range_start, line_number)
+                sys.exit(GENERIC_ERROR_EXIT_CODE)
+
+            invalid_syntax = href_replacement_match.group('invalid_syntax')
+            if invalid_syntax is not None:
+                ReplacementAuthority.print_error(
+                    f'invalid specification `{invalid_syntax}` for attribute `href_replacements`',
+                    rules_file_name, line_number_range_start, line_number,
+                )
+                sys.exit(GENERIC_ERROR_EXIT_CODE)
+
+            if href_replacement_match.group('none_keyword') is not None:
+                return
+
+            href_replacement_id = href_replacement_match.group('id_')
+            if href_replacement_id == replacement.id_:
+                href_replacement = replacement
+            else:
+                try:
+                    href_replacement = self._replacement_from_id[href_replacement_id]
+                except KeyError:
+                    ReplacementAuthority.print_error(f'undefined replacement `#{href_replacement_id}`',
+                                                     rules_file_name, line_number_range_start, line_number)
+                    sys.exit(GENERIC_ERROR_EXIT_CODE)
+
+            href_replacements.append(href_replacement)
+
+        replacement.href_replacements = href_replacements
+
+    @staticmethod
     def compute_closing_delimiter_match(attribute_value: str) -> Optional[re.Match]:
         return re.fullmatch(
             pattern=r'''
@@ -1301,6 +1356,9 @@ class ReplacementAuthority:
                 ReplacementAuthority.stage_attribute_specifications(replacement, attribute_value,
                                                                     rules_file_name,
                                                                     line_number_range_start, line_number)
+            elif attribute_name == 'href_replacements':
+                self.stage_href_replacements(replacement, attribute_value,
+                                             rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'closing_delimiter':
                 ReplacementAuthority.stage_closing_delimiter(replacement, attribute_value,
                                                              rules_file_name, line_number_range_start, line_number)
