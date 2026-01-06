@@ -3,6 +3,12 @@
 
 ## [Unreleased]
 
+- **Breaking change:** Changed `OrdinaryDictionaryReplacement`
+  and `RegexDictionaryReplacement` substitution keywords
+  `CMD_VERSION`, `CMD_NAME`, `CMD_BASENAME`, `CLEAN_URL`
+  to instead be *interpolated* within substitutes as
+  `{CMD_VERSION}`, `{CMD_NAME}`, `{CMD_BASENAME}`, `{CLEAN_URL}`
+- Allowed such interpolation within patterns also
 - Converted GitHub actions `packages_dir` to kebab case
 
 

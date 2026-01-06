@@ -177,8 +177,7 @@ class ReplacementWithSubstitutions(Replacement, abc.ABC):
     ReplacementWithSubstitutions: #«id»
     * "«pattern»" | '«pattern»' | «pattern»
         -->
-      CMD_VERSION | CMD_NAME | CMD_BASENAME | CLEAN_URL |
-              "«substitute»" | '«substitute»' | «substitute»
+      "«substitute»" | '«substitute»' | «substitute»
     [...]
     ````
     """

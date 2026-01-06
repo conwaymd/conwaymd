@@ -96,6 +96,14 @@ OrdinaryDictionaryReplacement: #.test-apply-mode-simultaneous
 * !3 --> !4
 * !4 --> !5
 
+OrdinaryDictionaryReplacement: #.test-ordinary-pattern-interpolation
+- queue_position: AFTER #placeholder-unprotect
+* ::(ordinary-before){CMD_VERSION}:: --> ::(ordinary-after)::
+
+RegexDictionaryReplacement: #.test-regex-pattern-interpolation
+- queue_position: AFTER #placeholder-unprotect
+* ::\(regex-before\){CMD_VERSION}:: --> ::(regex-after)::
+
 %%%
 
 # `test_cmd_to_html`
@@ -107,6 +115,9 @@ Simultaneous `OrdinaryDictionaryReplacement` result: !1, !2, !3, !4
 ``{title="`?` <`` <`!`> ``>"}
   Attribute specification prevail test.
 ``
+
+Ordinary pattern interpolation: ::(ordinary-before)%cmd-version::
+Regex pattern interpolation: ::(regex-before)%cmd-version::
 
 ## `#placeholder-markers`
 
@@ -587,6 +598,8 @@ Simultaneous <code>OrdinaryDictionaryReplacement</code> result: !2, !3, !4, !5
 <code title="&quot;">Attribute specification double-quote escape test.</code>
 <pre title="`?` &lt;`!`&gt;"><code>Attribute specification prevail test.
 </code></pre>
+Ordinary pattern interpolation: ::(ordinary-after)::
+Regex pattern interpolation: ::(regex-after)::
 <h2><code>#placeholder-markers</code></h2>
 If implemented properly, the following shall confound not:
 <code>'\uF8FF\uE069\uE420\uE000\uF8FE\uE064\uF8FF'</code>: 

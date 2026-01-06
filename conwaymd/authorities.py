@@ -1154,14 +1154,6 @@ class ReplacementAuthority:
                     {re.escape(longest_substitution_delimiter)}
                     [\s]*
                     (?:
-                        (?P<cmd_version_keyword> CMD_VERSION )
-                            |
-                        (?P<cmd_name_keyword> CMD_NAME )
-                            |
-                        (?P<cmd_basename_keyword> CMD_BASENAME )
-                            |
-                        (?P<clean_url_keyword> CLEAN_URL )
-                            |
                         "(?P<double_quoted_substitute> [\s\S]*? )"
                             |
                         '(?P<single_quoted_substitute> [\s\S]*? )'
@@ -1176,7 +1168,7 @@ class ReplacementAuthority:
 
     @staticmethod
     def stage_ordinary_substitution(replacement: 'ReplacementWithSubstitutions', substitution: str,
-                                    rules_file_name: str, cmd_name: str,
+                                    rules_file_name: str, interpolation_value_from_key: dict[str, str],
                                     line_number_range_start: int, line_number: int):
         substitution_match = ReplacementAuthority.compute_substitution_match(substitution)
         if substitution_match is None:
@@ -1194,30 +1186,26 @@ class ReplacementAuthority:
             else:
                 pattern = substitution_match.group('bare_pattern')
 
-        if substitution_match.group('cmd_version_keyword') is not None:
-            substitute = __version__
-        elif substitution_match.group('cmd_name_keyword') is not None:
-            substitute = cmd_name
-        elif substitution_match.group('cmd_basename_keyword') is not None:
-            substitute = extract_basename(cmd_name)
-        elif substitution_match.group('clean_url_keyword') is not None:
-            substitute = make_clean_url(cmd_name)
+        double_quoted_substitute = substitution_match.group('double_quoted_substitute')
+        if double_quoted_substitute is not None:
+            substitute = double_quoted_substitute
         else:
-            double_quoted_substitute = substitution_match.group('double_quoted_substitute')
-            if double_quoted_substitute is not None:
-                substitute = double_quoted_substitute
+            single_quoted_substitute = substitution_match.group('single_quoted_substitute')
+            if single_quoted_substitute is not None:
+                substitute = single_quoted_substitute
             else:
-                single_quoted_substitute = substitution_match.group('single_quoted_substitute')
-                if single_quoted_substitute is not None:
-                    substitute = single_quoted_substitute
-                else:
-                    substitute = substitution_match.group('bare_substitute')
+                substitute = substitution_match.group('bare_substitute')
+
+        for interpolation_key, interpolation_value in interpolation_value_from_key.items():
+            pattern = pattern.replace(interpolation_key, interpolation_value)
+            substitute = substitute.replace(interpolation_key, interpolation_value)
 
         replacement.add_substitution(pattern, substitute)
 
     @staticmethod
     def stage_regex_substitution(replacement: 'ReplacementWithSubstitutions', substitution: str,
-                                 rules_file_name: str, cmd_name: str, line_number_range_start: int, line_number: int):
+                                 rules_file_name: str, interpolation_value_from_key: dict[str, str],
+                                 line_number_range_start: int, line_number: int):
         substitution_match = ReplacementAuthority.compute_substitution_match(substitution)
         if substitution_match is None:
             ReplacementAuthority.print_error(f'missing delimiter `-->` in substitution `{substitution}`',
@@ -1234,24 +1222,19 @@ class ReplacementAuthority:
             else:
                 pattern = substitution_match.group('bare_pattern')
 
-        if substitution_match.group('cmd_version_keyword') is not None:
-            substitute = escape_regex_substitute(__version__)
-        elif substitution_match.group('cmd_name_keyword') is not None:
-            substitute = escape_regex_substitute(cmd_name)
-        elif substitution_match.group('cmd_basename_keyword') is not None:
-            substitute = escape_regex_substitute(extract_basename(cmd_name))
-        elif substitution_match.group('clean_url_keyword') is not None:
-            substitute = escape_regex_substitute(make_clean_url(cmd_name))
+        double_quoted_substitute = substitution_match.group('double_quoted_substitute')
+        if double_quoted_substitute is not None:
+            substitute = double_quoted_substitute
         else:
-            double_quoted_substitute = substitution_match.group('double_quoted_substitute')
-            if double_quoted_substitute is not None:
-                substitute = double_quoted_substitute
+            single_quoted_substitute = substitution_match.group('single_quoted_substitute')
+            if single_quoted_substitute is not None:
+                substitute = single_quoted_substitute
             else:
-                single_quoted_substitute = substitution_match.group('single_quoted_substitute')
-                if single_quoted_substitute is not None:
-                    substitute = single_quoted_substitute
-                else:
-                    substitute = substitution_match.group('bare_substitute')
+                substitute = substitution_match.group('bare_substitute')
+
+        for interpolation_key, interpolation_value in interpolation_value_from_key.items():
+            pattern = pattern.replace(interpolation_key, re.escape(interpolation_value))
+            substitute = substitute.replace(interpolation_key, interpolation_value)
 
         try:
             pattern_compiled = re.compile(pattern=pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
@@ -1275,15 +1258,22 @@ class ReplacementAuthority:
               attribute_name: str, attribute_value: str, substitution: str,
               rules_file_name: str, cmd_name: str, line_number_range_start: int, line_number: int) -> 'PostStageState':
         if substitution is not None:  # staging a substitution
+            interpolation_value_from_key = {
+                '{CMD_VERSION}': __version__,
+                '{CMD_NAME}': cmd_name,
+                '{CMD_BASENAME}': extract_basename(cmd_name),
+                '{CLEAN_URL}': make_clean_url(cmd_name),
+            }
+
             if class_name == 'OrdinaryDictionaryReplacement':
                 assert isinstance(replacement, ReplacementWithSubstitutions)
                 ReplacementAuthority.stage_ordinary_substitution(replacement, substitution,
-                                                                 rules_file_name, cmd_name,
+                                                                 rules_file_name, interpolation_value_from_key,
                                                                  line_number_range_start, line_number)
             elif class_name == 'RegexDictionaryReplacement':
                 assert isinstance(replacement, ReplacementWithSubstitutions)
                 ReplacementAuthority.stage_regex_substitution(replacement, substitution,
-                                                              rules_file_name, cmd_name,
+                                                              rules_file_name, interpolation_value_from_key,
                                                               line_number_range_start, line_number)
             else:
                 ReplacementAuthority.print_error(f'class `{class_name}` does not allow substitutions',

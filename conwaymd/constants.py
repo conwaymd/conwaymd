@@ -310,10 +310,10 @@ OrdinaryDictionaryReplacement: #boilerplate-properties
 
 OrdinaryDictionaryReplacement: #cmd-properties
 - queue_position: AFTER #boilerplate-properties
-* %cmd-version --> CMD_VERSION
-* %cmd-name --> CMD_NAME
-* %cmd-basename --> CMD_BASENAME
-* %clean-url --> CLEAN_URL
+* %cmd-version --> {CMD_VERSION}
+* %cmd-name --> {CMD_NAME}
+* %cmd-basename --> {CMD_BASENAME}
+* %clean-url --> {CLEAN_URL}
 - concluding_replacements:
     #placeholder-protect
 

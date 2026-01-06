@@ -228,8 +228,7 @@ class OrdinaryDictionaryReplacement(
     - apply_mode: (def) SIMULTANEOUS | SEQUENTIAL
     * "«pattern»" | '«pattern»' | «pattern»
         -->
-      CMD_VERSION | CMD_NAME | CMD_BASENAME | CLEAN_URL |
-              "«substitute»" | '«substitute»' | «substitute»
+      "«substitute»" | '«substitute»' | «substitute»
     [...]
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
@@ -346,8 +345,7 @@ class RegexDictionaryReplacement(
     - negative_flag: (def) NONE | «FLAG_NAME»
     * "«pattern»" | '«pattern»' | «pattern»
         -->
-      CMD_VERSION | CMD_NAME | CMD_BASENAME | CLEAN_URL |
-              "«substitute»" | '«substitute»' | «substitute»
+      "«substitute»" | '«substitute»' | «substitute»
     [...]
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
