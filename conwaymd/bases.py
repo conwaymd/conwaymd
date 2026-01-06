@@ -294,6 +294,35 @@ class ReplacementWithAttributeSpecifications(Replacement, abc.ABC):
         self._attribute_specifications = value
 
 
+class ReplacementWithHrefReplacements(Replacement, abc.ABC):
+    """
+    Base class for a replacement rule with `href_replacements`.
+
+    Not to be used when authoring CMD documents.
+    (Hypothetical) CMD replacement rule syntax:
+    ````
+    ReplacementWithHrefReplacements: #«id»
+    - href_replacements: (def) NONE | #«id» [...]
+    ````
+    """
+    _href_replacements: list['Replacement']
+
+    def __init__(self, id_: str, verbose_mode_enabled: bool):
+        super().__init__(id_, verbose_mode_enabled)
+        self._href_replacements = []
+
+    @property
+    def href_replacements(self) -> list['Replacement']:
+        return self._href_replacements
+
+    @href_replacements.setter
+    def href_replacements(self, value: list['Replacement']):
+        if self._is_committed:
+            raise CommittedMutateException('error: cannot set `href_replacements` after `commit()`')
+
+        self._href_replacements = copy.copy(value)
+
+
 class ReplacementWithProhibitedContent(Replacement, abc.ABC):
     """
     Base class for a replacement rule with `prohibited_content`.
