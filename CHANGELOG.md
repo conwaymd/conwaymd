@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v6.0.0] Pattern/substitute interpolation (2026-01-07)
+
 - **Breaking change:** Changed `OrdinaryDictionaryReplacement`
   and `RegexDictionaryReplacement` substitution keywords
   `CMD_VERSION`, `CMD_NAME`, `CMD_BASENAME`, `CLEAN_URL`
@@ -224,7 +227,8 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 - Initial release.
 
 
-[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v5.1.0...HEAD
+[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v6.0.0...HEAD
+[v6.0.0]: https://github.com/conwaymd/conwaymd/compare/v5.1.0...v6.0.0
 [v5.1.0]: https://github.com/conwaymd/conwaymd/compare/v5.0.1...v5.1.0
 [v5.0.1]: https://github.com/conwaymd/conwaymd/compare/v5.0.0...v5.0.1
 [v5.0.0]: https://github.com/conwaymd/conwaymd/compare/v4.6.0...v5.0.0
