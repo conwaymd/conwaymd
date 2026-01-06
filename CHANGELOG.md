@@ -3,6 +3,7 @@
 
 ## [Unreleased]
 
+- Added attribute `href_replacements` to `ExplicitLinkReplacement`
 - Converted GitHub actions `packages_dir` to kebab case
 
 

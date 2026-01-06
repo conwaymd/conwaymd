@@ -16,6 +16,7 @@ from conwaymd.bases import (
     ReplacementWithAttributeSpecifications,
     ReplacementWithConcludingReplacements,
     ReplacementWithContentReplacements,
+    ReplacementWithHrefReplacements,
     ReplacementWithProhibitedContent,
     ReplacementWithSubstitutions,
     ReplacementWithSyntaxType,
@@ -1587,6 +1588,7 @@ class ReferencedImageReplacement(
 class ExplicitLinkReplacement(
     ReplacementWithAllowedFlags,
     ReplacementWithAttributeSpecifications,
+    ReplacementWithHrefReplacements,
     ReplacementWithContentReplacements,
     ReplacementWithConcludingReplacements,
     Replacement,
@@ -1600,6 +1602,7 @@ class ExplicitLinkReplacement(
     - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
     - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
     - attribute_specifications: (def) NONE | EMPTY | «string»
+    - href_replacements: (def) NONE | #«id» [...]
     - content_replacements: (def) NONE | #«id» [...]
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
@@ -1618,6 +1621,7 @@ class ExplicitLinkReplacement(
             'queue_position',
             'allowed_flags',
             'attribute_specifications',
+            'href_replacements',
             'content_replacements',
             'concluding_replacements',
         )
@@ -1672,7 +1676,10 @@ class ExplicitLinkReplacement(
             enabled_flag_names = ReplacementWithAllowedFlags.get_enabled_flag_names(match,
                                                                                     flag_name_from_letter, has_flags)
 
-            href = match.group('uri')
+            content = href = match.group('uri')
+            for replacement in self._href_replacements:
+                href = replacement.apply(href, enabled_flag_names)
+
             href_protected = PlaceholderMaster.protect(href)
             href_attribute_specification = f'href={href_protected}'
 
@@ -1687,7 +1694,6 @@ class ExplicitLinkReplacement(
 
             attributes_sequence = build_attributes_sequence(combined_attribute_specifications, use_protection=True)
 
-            content = href
             for replacement in self._content_replacements:
                 content = replacement.apply(content, enabled_flag_names)
 
