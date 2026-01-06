@@ -1708,7 +1708,6 @@ class ExplicitLinkReplacement(
 
 class SpecifiedLinkReplacement(
     ReplacementWithAttributeSpecifications,
-    ReplacementWithHrefReplacements,
     ReplacementWithProhibitedContent,
     Replacement,
 ):
@@ -1720,7 +1719,6 @@ class SpecifiedLinkReplacement(
     SpecifiedLinkReplacement: #«id»
     - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
     - attribute_specifications: (def) NONE | EMPTY | «string»
-    - href_replacements: (def) NONE | #«id» [...]
     - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
     ````
     """
@@ -1737,7 +1735,6 @@ class SpecifiedLinkReplacement(
         return (
             'queue_position',
             'attribute_specifications',
-            'href_replacements',
             'prohibited_content',
         )
 
@@ -1752,7 +1749,7 @@ class SpecifiedLinkReplacement(
             ),
             flags=re.ASCII | re.VERBOSE,
         )
-        self._substitute_function = self.build_substitute_function(self._attribute_specifications)
+        self._substitute_function = SpecifiedLinkReplacement.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string: str) -> str:
         return re.sub(
@@ -1786,7 +1783,8 @@ class SpecifiedLinkReplacement(
             closing_parenthesis_regex,
         ])
 
-    def build_substitute_function(self, attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
+    @staticmethod
+    def build_substitute_function(attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
         def substitute_function(match: re.Match) -> str:
             content = match.group('link_text')
 
@@ -1797,9 +1795,6 @@ class SpecifiedLinkReplacement(
                 href = match.group('bare_uri')
 
             if href is not None:
-                for replacement in self._href_replacements:
-                    href = replacement.apply(href)
-
                 href_protected = PlaceholderMaster.protect(href)
                 href_attribute_specification = f'href={href_protected}'
             else:
