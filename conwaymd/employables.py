@@ -1710,6 +1710,7 @@ class ExplicitLinkReplacement(
 class SpecifiedLinkReplacement(
     ReplacementWithAllowedFlags,
     ReplacementWithAttributeSpecifications,
+    ReplacementWithHrefReplacements,
     ReplacementWithProhibitedContent,
     Replacement,
 ):
@@ -1722,6 +1723,7 @@ class SpecifiedLinkReplacement(
     - queue_position: (def) NONE | ROOT | BEFORE #«id» | AFTER #«id»
     - allowed_flags: (def) NONE | «letter»=«FLAG_NAME» [...]
     - attribute_specifications: (def) NONE | EMPTY | «string»
+    - href_replacements: (def) NONE | #«id» [...]
     - prohibited_content: (def) NONE | BLOCKS | ANCHORED_BLOCKS
     ````
     """
@@ -1739,6 +1741,7 @@ class SpecifiedLinkReplacement(
             'queue_position',
             'allowed_flags',
             'attribute_specifications',
+            'href_replacements',
             'prohibited_content',
         )
 
@@ -1756,7 +1759,7 @@ class SpecifiedLinkReplacement(
             ),
             flags=re.ASCII | re.VERBOSE,
         )
-        self._substitute_function = SpecifiedLinkReplacement.build_substitute_function(
+        self._substitute_function = self.build_substitute_function(
             self._flag_name_from_letter,
             self._has_flags,
             self._attribute_specifications,
@@ -1797,8 +1800,7 @@ class SpecifiedLinkReplacement(
             closing_parenthesis_regex,
         ])
 
-    @staticmethod
-    def build_substitute_function(flag_name_from_letter: dict[str, str], has_flags: bool,
+    def build_substitute_function(self, flag_name_from_letter: dict[str, str], has_flags: bool,
                                   attribute_specifications: Optional[str]) -> Callable[[re.Match], str]:
         def substitute_function(match: re.Match) -> str:
             enabled_flag_names = ReplacementWithAllowedFlags.get_enabled_flag_names(match,
@@ -1845,7 +1847,10 @@ class SpecifiedLinkReplacement(
             else:
                 combined_attribute_specifications = href_title_attribute_specifications
 
-            attributes_sequence = build_attributes_sequence(combined_attribute_specifications, use_protection=True)
+            attributes_sequence = build_attributes_sequence(combined_attribute_specifications,
+                                                            use_protection=True,
+                                                            href_replacements=self._href_replacements,
+                                                            enabled_flag_names=enabled_flag_names)
 
             substitute = f'<a{attributes_sequence}>{content}</a>'
 
