@@ -113,8 +113,7 @@ class PlaceholderMaster:
         """
         Unprotect a string by restoring placeholders to their strings.
         """
-        return re.sub(
-            pattern=PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED,
+        return PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED.sub(
             repl=PlaceholderMaster._unprotect_substitute_function,
             string=string,
         )

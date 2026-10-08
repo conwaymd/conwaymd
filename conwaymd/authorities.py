@@ -1245,7 +1245,7 @@ class ReplacementAuthority:
             sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         try:
-            re.sub(pattern=pattern_compiled, repl=substitute, string='')
+            pattern_compiled.sub(repl=substitute, string='')
         except re.error as substitute_exception:
             ReplacementAuthority.print_error(f'bad regex substitute `{substitute}` for pattern `{pattern}`',
                                              rules_file_name, line_number_range_start, line_number)
