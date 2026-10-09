@@ -364,30 +364,29 @@ class ReplacementAuthority:
         apply_mode = apply_mode_match.group('apply_mode')
         replacement.apply_substitutions_simultaneously = apply_mode == 'SIMULTANEOUS'
 
-    @staticmethod
-    def compute_attribute_specifications_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<empty_keyword> EMPTY )
-                        |
-                    (?P<attribute_specifications> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    ATTRIBUTE_SPECIFICATIONS_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<empty_keyword> EMPTY )
+                    |
+                (?P<attribute_specifications> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_attribute_specifications(replacement: 'ReplacementWithAttributeSpecifications', attribute_value: str,
                                        rules_file_name: str, line_number_range_start: int, line_number: int):
-        attribute_specifications_match = ReplacementAuthority.compute_attribute_specifications_match(attribute_value)
+        attribute_specifications_match = (
+            ReplacementAuthority.ATTRIBUTE_SPECIFICATIONS_PATTERN.fullmatch(attribute_value)
+        )
 
         invalid_value = attribute_specifications_match.group('invalid_value')
         if invalid_value is not None:
