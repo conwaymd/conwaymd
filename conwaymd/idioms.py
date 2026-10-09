@@ -7,7 +7,7 @@ Common idioms.
 """
 
 import re
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional
 
 from conwaymd.placeholders import PlaceholderMaster
 from conwaymd.utilities import escape_attribute_value_html
@@ -103,7 +103,7 @@ def compute_attribute_specification_matches(attribute_specifications: str) -> It
 
 
 def extract_attribute_name_and_value(attribute_specification_match: re.Match,
-                                     ) -> Union[tuple[str, Optional[str]], tuple[str], None]:
+                                     ) -> tuple[str, Optional[str]] | tuple[str] | None:
     """
     Extract (at most) name and value.
 
