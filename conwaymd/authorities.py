@@ -856,31 +856,28 @@ class ReplacementAuthority:
         prologue_delimiter = prologue_delimiter_match.group('prologue_delimiter')
         replacement.prologue_delimiter = prologue_delimiter
 
-    @staticmethod
-    def compute_queue_position_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<root_keyword> ROOT )
-                        |
-                    (?P<queue_position_type> BEFORE | AFTER )
-                    [ ]
-                    [#] (?P<queue_reference_id> [a-z-.]+ )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    QUEUE_POSITION_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<root_keyword> ROOT )
+                    |
+                (?P<queue_position_type> BEFORE | AFTER )
+                [ ]
+                [#] (?P<queue_reference_id> [a-z-.]+ )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def stage_queue_position(self, replacement: 'Replacement', attribute_value: str,
                              rules_file_name: str, line_number_range_start: int, line_number: int):
-        queue_position_match = ReplacementAuthority.compute_queue_position_match(attribute_value)
+        queue_position_match = ReplacementAuthority.QUEUE_POSITION_PATTERN.fullmatch(attribute_value)
 
         invalid_value = queue_position_match.group('invalid_value')
         if invalid_value is not None:
