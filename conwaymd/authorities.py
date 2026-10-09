@@ -1543,8 +1543,8 @@ class PostSubstitutionDeclarationState(NamedTuple):
 
 
 class PostContinuationState(NamedTuple):
-    attribute_value: str
-    substitution: str
+    attribute_value: Optional[str]
+    substitution: Optional[str]
 
 
 class PostStageState(NamedTuple):
