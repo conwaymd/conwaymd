@@ -6,6 +6,7 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 The higher power that governs the conversion logic.
 """
 
+import functools
 import os
 import re
 import sys
@@ -106,21 +107,18 @@ class ReplacementAuthority:
     def is_comment(line: str) -> bool:
         return line.startswith('#')
 
-    @staticmethod
-    def compute_rules_inclusion_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [<][ ]
-                    (?:
-                        [/] (?P<included_file_name> [\S][\s\S]*? )
-                            |
-                        (?P<included_file_name_relative> [\S][\s\S]*? )
-                    )
-                [\s]*
-            ''',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    RULES_INCLUSION_PATTERN = re.compile(
+        pattern=r'''
+            [<][ ]
+                (?:
+                    [/] (?P<included_file_name> [\S][\s\S]*? )
+                        |
+                    (?P<included_file_name_relative> [\S][\s\S]*? )
+                )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def process_rules_inclusion_line(self, rules_inclusion_match: re.Match,
                                      rules_file_name: str, cmd_name: str, line_number: int):
@@ -153,17 +151,14 @@ class ReplacementAuthority:
         self._opened_file_names.append(included_file_name)
         self.legislate(replacement_rules, rules_file_name=included_file_name, cmd_name=cmd_name)
 
-    @staticmethod
-    def compute_class_declaration_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                (?P<class_name> [A-Za-z]+ ) [:]
-                [\s]+
-                [#] (?P<id_> [a-z0-9-.]+ )
-            ''',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    CLASS_DECLARATION_PATTERN = re.compile(
+        pattern=r'''
+            (?P<class_name> [A-Za-z]+ ) [:]
+            [\s]+
+            [#] (?P<id_> [a-z0-9-.]+ )
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def process_class_declaration_line(self, class_declaration_match: re.Match,
                                        rules_file_name: str, line_number: int) -> 'PostClassDeclarationState':
@@ -220,16 +215,13 @@ class ReplacementAuthority:
 
         return PostClassDeclarationState(class_name, replacement, line_number_range_start)
 
-    @staticmethod
-    def compute_attribute_declaration_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [-][ ] (?P<attribute_name> [a-z_]+ ) [:]
-                (?P<partial_attribute_value> [\s\S]* )
-            ''',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    ATTRIBUTE_DECLARATION_PATTERN = re.compile(
+        pattern=r'''
+            [-][ ] (?P<attribute_name> [a-z_]+ ) [:]
+            (?P<partial_attribute_value> [\s\S]* )
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def process_attribute_declaration_line(attribute_declaration_match: re.Match, class_name: Optional[str],
@@ -256,13 +248,10 @@ class ReplacementAuthority:
 
         return PostAttributeDeclarationState(attribute_name, attribute_value, line_number_range_start)
 
-    @staticmethod
-    def compute_substitution_declaration_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'[*][ ] (?P<partial_substitution> [\s\S]* )',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    SUBSTITUTION_DECLARATION_PATTERN = re.compile(
+        pattern=r'[*][ ] (?P<partial_substitution> [\s\S]* )',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def process_substitution_declaration_line(replacement: Optional['Replacement'],
@@ -281,13 +270,10 @@ class ReplacementAuthority:
 
         return PostSubstitutionDeclarationState(substitution, line_number_range_start)
 
-    @staticmethod
-    def compute_continuation_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'(?P<continuation> [\s]+ [\S][\s\S]* )',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    CONTINUATION_PATTERN = re.compile(
+        pattern=r'(?P<continuation> [\s]+ [\S][\s\S]* )',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def process_continuation_line(continuation_match: re.Match, attribute_name: Optional[str],
@@ -307,32 +293,29 @@ class ReplacementAuthority:
 
         return PostContinuationState(attribute_value, substitution)
 
-    @staticmethod
-    def compute_allowed_flag_matches(attribute_value: str) -> Iterable[re.Match]:
-        return re.finditer(
-            pattern=r'''
-                (?P<whitespace_only> \A [\s]* \Z )
+    ALLOWED_FLAG_PATTERN = re.compile(
+        pattern=r'''
+            (?P<whitespace_only> \A [\s]* \Z )
+                |
+            (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+                |
+            [\s]*
+            (?:
+                (?P<flag_letter> [a-z] ) = (?P<flag_name> [A-Z_]+ ) (?= [\s] | \Z )
                     |
-                (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
-                    |
-                [\s]*
-                (?:
-                    (?P<flag_letter> [a-z] ) = (?P<flag_name> [A-Z_]+ ) (?= [\s] | \Z )
-                        |
-                    (?P<invalid_syntax> [\S]+ )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+                (?P<invalid_syntax> [\S]+ )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_allowed_flags(replacement: 'ReplacementWithAllowedFlags', attribute_value: str,
                             rules_file_name: str, line_number_range_start: int, line_number: int):
         flag_name_from_letter: dict[str, str] = {}
 
-        for allowed_flag_match in ReplacementAuthority.compute_allowed_flag_matches(attribute_value):
+        for allowed_flag_match in ReplacementAuthority.ALLOWED_FLAG_PATTERN.finditer(attribute_value):
             if allowed_flag_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(f'invalid specification `` for attribute `allowed_flags`',
                                                  rules_file_name, line_number_range_start, line_number)
@@ -355,26 +338,23 @@ class ReplacementAuthority:
 
         replacement.flag_name_from_letter = flag_name_from_letter
 
-    @staticmethod
-    def compute_apply_mode_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<apply_mode> SIMULTANEOUS | SEQUENTIAL )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE
-        )
+    APPLY_MODE_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<apply_mode> SIMULTANEOUS | SEQUENTIAL )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE
+    )
 
     @staticmethod
     def stage_apply_mode(replacement: 'OrdinaryDictionaryReplacement', attribute_value: str,
                          rules_file_name: str, line_number_range_start: int, line_number: int):
-        apply_mode_match = ReplacementAuthority.compute_apply_mode_match(attribute_value)
+        apply_mode_match = ReplacementAuthority.APPLY_MODE_PATTERN.fullmatch(attribute_value)
 
         invalid_value = apply_mode_match.group('invalid_value')
         if invalid_value is not None:
@@ -385,30 +365,29 @@ class ReplacementAuthority:
         apply_mode = apply_mode_match.group('apply_mode')
         replacement.apply_substitutions_simultaneously = apply_mode == 'SIMULTANEOUS'
 
-    @staticmethod
-    def compute_attribute_specifications_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<empty_keyword> EMPTY )
-                        |
-                    (?P<attribute_specifications> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    ATTRIBUTE_SPECIFICATIONS_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<empty_keyword> EMPTY )
+                    |
+                (?P<attribute_specifications> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_attribute_specifications(replacement: 'ReplacementWithAttributeSpecifications', attribute_value: str,
                                        rules_file_name: str, line_number_range_start: int, line_number: int):
-        attribute_specifications_match = ReplacementAuthority.compute_attribute_specifications_match(attribute_value)
+        attribute_specifications_match = (
+            ReplacementAuthority.ATTRIBUTE_SPECIFICATIONS_PATTERN.fullmatch(attribute_value)
+        )
 
         invalid_value = attribute_specifications_match.group('invalid_value')
         if invalid_value is not None:
@@ -428,26 +407,23 @@ class ReplacementAuthority:
         attribute_specifications = attribute_specifications_match.group('attribute_specifications')
         replacement.attribute_specifications = attribute_specifications
 
-    @staticmethod
-    def compute_closing_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<closing_delimiter> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    CLOSING_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<closing_delimiter> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_closing_delimiter(replacement: 'FixedDelimitersReplacement', attribute_value: str,
                                 rules_file_name: str, line_number_range_start: int, line_number: int):
-        closing_delimiter_match = ReplacementAuthority.compute_closing_delimiter_match(attribute_value)
+        closing_delimiter_match = ReplacementAuthority.CLOSING_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = closing_delimiter_match.group('invalid_value')
         if invalid_value is not None:
@@ -458,30 +434,27 @@ class ReplacementAuthority:
         closing_delimiter = closing_delimiter_match.group('closing_delimiter')
         replacement.closing_delimiter = closing_delimiter
 
-    @staticmethod
-    def compute_concluding_replacement_matches(attribute_value: str) -> Iterable[re.Match]:
-        return re.finditer(
-            pattern=r'''
-                (?P<whitespace_only> \A [\s]* \Z )
+    CONCLUDING_REPLACEMENT_PATTERN = re.compile(
+        pattern=r'''
+            (?P<whitespace_only> \A [\s]* \Z )
+                |
+            (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+                |
+            (?:
+                [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
                     |
-                (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
-                    |
-                (?:
-                    [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
-                        |
-                    (?P<invalid_syntax> [\S]+ )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+                (?P<invalid_syntax> [\S]+ )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def stage_concluding_replacements(self, replacement: 'ReplacementWithConcludingReplacements', attribute_value: str,
                                       rules_file_name: str, line_number_range_start: int, line_number: int):
         concluding_replacements: list['Replacement'] = []
 
-        concluding_replacement_matches = ReplacementAuthority.compute_concluding_replacement_matches(attribute_value)
+        concluding_replacement_matches = ReplacementAuthority.CONCLUDING_REPLACEMENT_PATTERN.finditer(attribute_value)
         for concluding_replacement_match in concluding_replacement_matches:
             if concluding_replacement_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(f'invalid specification `` for attribute `concluding_replacements`',
@@ -514,30 +487,27 @@ class ReplacementAuthority:
 
         replacement.concluding_replacements = concluding_replacements
 
-    @staticmethod
-    def compute_content_replacement_matches(attribute_value: str) -> Iterable[re.Match]:
-        return re.finditer(
-            pattern=r'''
-                (?P<whitespace_only> \A [\s]* \Z )
+    CONTENT_REPLACEMENT_PATTERN = re.compile(
+        pattern=r'''
+            (?P<whitespace_only> \A [\s]* \Z )
+                |
+            (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+                |
+            (?:
+                [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
                     |
-                (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
-                    |
-                (?:
-                    [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
-                        |
-                    (?P<invalid_syntax> [\S]+ )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+                (?P<invalid_syntax> [\S]+ )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def stage_content_replacements(self, replacement: 'ReplacementWithContentReplacements', attribute_value: str,
                                    rules_file_name: str, line_number_range_start: int, line_number: int):
         content_replacements: list['Replacement'] = []
 
-        for content_replacement_match in ReplacementAuthority.compute_content_replacement_matches(attribute_value):
+        for content_replacement_match in ReplacementAuthority.CONTENT_REPLACEMENT_PATTERN.finditer(attribute_value):
             if content_replacement_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(f'invalid specification `` for attribute `content_replacements`',
                                                  rules_file_name, line_number_range_start, line_number)
@@ -569,33 +539,30 @@ class ReplacementAuthority:
 
         replacement.content_replacements = content_replacements
 
-    @staticmethod
-    def compute_delimiter_conversion_matches(attribute_value: str) -> Iterable[re.Match]:
-        return re.finditer(
-            pattern=r'''
-                (?P<whitespace_only> \A [\s]* \Z )
-                    |
-                [\s]*
-                (?:
-                    (?P<delimiter>
-                    (?P<delimiter_character> [\S] ) (?P=delimiter_character)?
-                )
-                    = (?P<tag_name> [a-z0-9]+ ) (?= [\s] | \Z )
-                    |
-                (?P<invalid_syntax> [\S]+ )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    DELIMITER_CONVERSION_PATTERN = re.compile(
+        pattern=r'''
+            (?P<whitespace_only> \A [\s]* \Z )
+                |
+            [\s]*
+            (?:
+                (?P<delimiter>
+                (?P<delimiter_character> [\S] ) (?P=delimiter_character)?
+            )
+                = (?P<tag_name> [a-z0-9]+ ) (?= [\s] | \Z )
+                |
+            (?P<invalid_syntax> [\S]+ )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_delimiter_conversion(replacement: 'InlineAssortedDelimitersReplacement', attribute_value: str,
                                    rules_file_name: str, line_number_range_start: int, line_number: int):
         tag_name_from_delimiter_length_from_character: dict[str, dict[int, str]] = {}
 
-        for delimiter_conversion_match in ReplacementAuthority.compute_delimiter_conversion_matches(attribute_value):
+        for delimiter_conversion_match in ReplacementAuthority.DELIMITER_CONVERSION_PATTERN.finditer(attribute_value):
             if delimiter_conversion_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(f'invalid specification `` for attribute `delimiter_conversion`',
                                                  rules_file_name, line_number_range_start, line_number)
@@ -620,28 +587,25 @@ class ReplacementAuthority:
 
         replacement.tag_name_from_delimiter_length_from_character = tag_name_from_delimiter_length_from_character
 
-    @staticmethod
-    def compute_ending_pattern_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<ending_pattern> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    ENDING_PATTERN_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<ending_pattern> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_ending_pattern(replacement: 'PartitioningReplacement', attribute_value: str,
                              rules_file_name: str, line_number_range_start: int, line_number: int):
-        ending_pattern_match = ReplacementAuthority.compute_ending_pattern_match(attribute_value)
+        ending_pattern_match = ReplacementAuthority.ENDING_PATTERN_PATTERN.fullmatch(attribute_value)
 
         invalid_value = ending_pattern_match.group('invalid_value')
         if invalid_value is not None:
@@ -669,28 +633,25 @@ class ReplacementAuthority:
 
         replacement.ending_pattern = ending_pattern
 
-    @staticmethod
-    def compute_epilogue_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<epilogue_delimiter> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    EPILOGUE_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<epilogue_delimiter> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_epilogue_delimiter(replacement: 'ExtensibleFenceReplacement', attribute_value: str,
                                  rules_file_name: str, line_number_range_start: int, line_number: int):
-        epilogue_delimiter_match = ReplacementAuthority.compute_epilogue_delimiter_match(attribute_value)
+        epilogue_delimiter_match = ReplacementAuthority.EPILOGUE_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = epilogue_delimiter_match.group('invalid_value')
         if invalid_value is not None:
@@ -704,29 +665,26 @@ class ReplacementAuthority:
         epilogue_delimiter = epilogue_delimiter_match.group('epilogue_delimiter')
         replacement.epilogue_delimiter = epilogue_delimiter
 
-    @staticmethod
-    def compute_extensible_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<extensible_delimiter>
-                        (?P<extensible_delimiter_character> [\S] )
-                        (?P=extensible_delimiter_character)*
-                    )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
+    EXTENSIBLE_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<extensible_delimiter>
+                    (?P<extensible_delimiter_character> [\S] )
+                    (?P=extensible_delimiter_character)*
                 )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_extensible_delimiter(replacement: 'ExtensibleFenceReplacement', attribute_value: str,
                                    rules_file_name: str, line_number_range_start: int, line_number: int):
-        extensible_delimiter_match = ReplacementAuthority.compute_extensible_delimiter_match(attribute_value)
+        extensible_delimiter_match = ReplacementAuthority.EXTENSIBLE_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = extensible_delimiter_match.group('invalid_value')
         if invalid_value is not None:
@@ -742,28 +700,25 @@ class ReplacementAuthority:
         replacement.extensible_delimiter_character = extensible_delimiter_character
         replacement.extensible_delimiter_min_length = extensible_delimiter_min_length
 
-    @staticmethod
-    def compute_negative_flag_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<negative_flag_name> [A-Z_]+ )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    NEGATIVE_FLAG_PATTEREN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<negative_flag_name> [A-Z_]+ )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_negative_flag(replacement: 'Replacement', attribute_value: str,
                             rules_file_name: str, line_number_range_start: int, line_number: int):
-        negative_flag_match = ReplacementAuthority.compute_negative_flag_match(attribute_value)
+        negative_flag_match = ReplacementAuthority.NEGATIVE_FLAG_PATTEREN.fullmatch(attribute_value)
 
         invalid_value = negative_flag_match.group('invalid_value')
         if invalid_value is not None:
@@ -777,26 +732,23 @@ class ReplacementAuthority:
         negative_flag_name = negative_flag_match.group('negative_flag_name')
         replacement.negative_flag_name = negative_flag_name
 
-    @staticmethod
-    def compute_opening_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<opening_delimiter> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    OPENING_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<opening_delimiter> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_opening_delimiter(replacement: 'FixedDelimitersReplacement', attribute_value: str,
                                 rules_file_name: str, line_number_range_start: int, line_number: int):
-        opening_delimiter_match = ReplacementAuthority.compute_opening_delimiter_match(attribute_value)
+        opening_delimiter_match = ReplacementAuthority.OPENING_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = opening_delimiter_match.group('invalid_value')
         if invalid_value is not None:
@@ -807,28 +759,25 @@ class ReplacementAuthority:
         opening_delimiter = opening_delimiter_match.group('opening_delimiter')
         replacement.opening_delimiter = opening_delimiter
 
-    @staticmethod
-    def compute_positive_flag_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<positive_flag_name> [A-Z_]+ )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    POSITIVE_FLAG_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<positive_flag_name> [A-Z_]+ )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_positive_flag(replacement: 'Replacement', attribute_value: str,
                             rules_file_name: str, line_number_range_start: int, line_number: int):
-        positive_flag_match = ReplacementAuthority.compute_positive_flag_match(attribute_value)
+        positive_flag_match = ReplacementAuthority.POSITIVE_FLAG_PATTERN.fullmatch(attribute_value)
 
         invalid_value = positive_flag_match.group('invalid_value')
         if invalid_value is not None:
@@ -842,28 +791,25 @@ class ReplacementAuthority:
         positive_flag_name = positive_flag_match.group('positive_flag_name')
         replacement.positive_flag_name = positive_flag_name
 
-    @staticmethod
-    def compute_prohibited_content_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<prohibited_content> BLOCKS | ANCHORED_BLOCKS )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    PROHIBITED_CONTENT_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<prohibited_content> BLOCKS | ANCHORED_BLOCKS )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_prohibited_content(replacement: 'ReplacementWithProhibitedContent', attribute_value: str,
                                  rules_file_name: str, line_number_range_start: int, line_number: int):
-        prohibited_content_match = ReplacementAuthority.compute_prohibited_content_match(attribute_value)
+        prohibited_content_match = ReplacementAuthority.PROHIBITED_CONTENT_PATTERN.fullmatch(attribute_value)
 
         invalid_value = prohibited_content_match.group('invalid_value')
         if invalid_value is not None:
@@ -879,28 +825,25 @@ class ReplacementAuthority:
         prohibited_content_regex = build_block_tag_regex(require_anchoring)
         replacement.prohibited_content_regex = prohibited_content_regex
 
-    @staticmethod
-    def compute_prologue_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<prologue_delimiter> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    PROLOGUE_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<prologue_delimiter> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_prologue_delimiter(replacement: 'ExtensibleFenceReplacement', attribute_value: str,
                                  rules_file_name: str, line_number_range_start: int, line_number: int):
-        prologue_delimiter_match = ReplacementAuthority.compute_prologue_delimiter_match(attribute_value)
+        prologue_delimiter_match = ReplacementAuthority.PROLOGUE_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = prologue_delimiter_match.group('invalid_value')
         if invalid_value is not None:
@@ -914,31 +857,28 @@ class ReplacementAuthority:
         prologue_delimiter = prologue_delimiter_match.group('prologue_delimiter')
         replacement.prologue_delimiter = prologue_delimiter
 
-    @staticmethod
-    def compute_queue_position_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<root_keyword> ROOT )
-                        |
-                    (?P<queue_position_type> BEFORE | AFTER )
-                    [ ]
-                    [#] (?P<queue_reference_id> [a-z-.]+ )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    QUEUE_POSITION_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<root_keyword> ROOT )
+                    |
+                (?P<queue_position_type> BEFORE | AFTER )
+                [ ]
+                [#] (?P<queue_reference_id> [a-z-.]+ )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def stage_queue_position(self, replacement: 'Replacement', attribute_value: str,
                              rules_file_name: str, line_number_range_start: int, line_number: int):
-        queue_position_match = ReplacementAuthority.compute_queue_position_match(attribute_value)
+        queue_position_match = ReplacementAuthority.QUEUE_POSITION_PATTERN.fullmatch(attribute_value)
 
         invalid_value = queue_position_match.group('invalid_value')
         if invalid_value is not None:
@@ -982,30 +922,27 @@ class ReplacementAuthority:
         replacement.queue_position_type = queue_position_type
         replacement.queue_reference_replacement = queue_reference_replacement
 
-    @staticmethod
-    def compute_replacement_matches(attribute_value: str) -> Iterable[re.Match]:
-        return re.finditer(
-            pattern=r'''
-                (?P<whitespace_only> \A [\s]* \Z )
+    REPLACEMENT_PATTERN = re.compile(
+        pattern=r'''
+            (?P<whitespace_only> \A [\s]* \Z )
+                |
+            (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+                |
+            (?:
+                [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
                     |
-                (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
-                    |
-                (?:
-                    [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
-                        |
-                    (?P<invalid_syntax> [\S]+ )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+                (?P<invalid_syntax> [\S]+ )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def stage_replacements(self, replacement: 'ReplacementSequence', attribute_value: str,
                            rules_file_name: str, line_number_range_start: int, line_number: int):
         matched_replacements: list['Replacement'] = []
 
-        for replacement_match in ReplacementAuthority.compute_replacement_matches(attribute_value):
+        for replacement_match in ReplacementAuthority.REPLACEMENT_PATTERN.finditer(attribute_value):
             if replacement_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(f'invalid specification `` for attribute `replacements`',
                                                  rules_file_name, line_number_range_start, line_number)
@@ -1036,26 +973,23 @@ class ReplacementAuthority:
 
         replacement.replacements = matched_replacements
 
-    @staticmethod
-    def compute_starting_pattern_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<starting_pattern> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    STARTING_PATTERN_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<starting_pattern> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_starting_pattern(replacement: 'PartitioningReplacement', attribute_value: str,
                                rules_file_name: str, line_number_range_start: int, line_number: int):
-        starting_pattern_match = ReplacementAuthority.compute_starting_pattern_match(attribute_value)
+        starting_pattern_match = ReplacementAuthority.STARTING_PATTERN_PATTERN.fullmatch(attribute_value)
 
         invalid_value = starting_pattern_match.group('invalid_value')
         if invalid_value is not None:
@@ -1080,26 +1014,23 @@ class ReplacementAuthority:
 
         replacement.starting_pattern = starting_pattern
 
-    @staticmethod
-    def compute_syntax_type_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<syntax_type> BLOCK | INLINE )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    SYNTAX_TYPE_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<syntax_type> BLOCK | INLINE )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_syntax_type(replacement: 'ReplacementWithSyntaxType', attribute_value: str,
                           rules_file_name: str, line_number_range_start: int, line_number: int):
-        syntax_type_match = ReplacementAuthority.compute_syntax_type_match(attribute_value)
+        syntax_type_match = ReplacementAuthority.SYNTAX_TYPE_PATTERN.fullmatch(attribute_value)
 
         invalid_value = syntax_type_match.group('invalid_value')
         if invalid_value is not None:
@@ -1110,28 +1041,25 @@ class ReplacementAuthority:
         syntax_type = syntax_type_match.group('syntax_type')
         replacement.syntax_type_is_block = syntax_type == 'BLOCK'
 
-    @staticmethod
-    def compute_tag_name_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<tag_name> [a-z0-9]+ )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    TAG_NAME_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<tag_name> [a-z0-9]+ )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_tag_name(replacement: 'ReplacementWithTagName', attribute_value: str,
                        rules_file_name: str, line_number_range_start: int, line_number: int):
-        tag_name_match = ReplacementAuthority.compute_tag_name_match(attribute_value)
+        tag_name_match = ReplacementAuthority.TAG_NAME_PATTERN.fullmatch(attribute_value)
 
         invalid_value = tag_name_match.group('invalid_value')
         if invalid_value is not None:
@@ -1145,14 +1073,12 @@ class ReplacementAuthority:
         tag_name = tag_name_match.group('tag_name')
         replacement.tag_name = tag_name
 
-    @staticmethod
-    def compute_substitution_match(substitution: str) -> Optional[re.Match]:
-        substitution_delimiters: list[str] = re.findall(pattern='[-]{2,}[>]', string=substitution)
-        if len(substitution_delimiters) == 0:
-            return None
+    SUBSTITUTION_DELIMITER_PATTERN = re.compile(pattern='[-]{2,}[>]')
 
-        longest_substitution_delimiter = max(substitution_delimiters, key=len)
-        return re.fullmatch(
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def subsitution_pattern(longest_substitution_delimiter: str) -> re.Pattern:
+        return re.compile(
             pattern=fr'''
                 [\s]*
                     (?:
@@ -1174,9 +1100,18 @@ class ReplacementAuthority:
                     )
                 [\s]*
             ''',
-            string=substitution,
             flags=re.ASCII | re.VERBOSE,
         )
+
+    @staticmethod
+    def compute_substitution_match(substitution: str) -> Optional[re.Match]:
+        substitution_delimiters: list[str] = ReplacementAuthority.SUBSTITUTION_DELIMITER_PATTERN.findall(substitution)
+        if len(substitution_delimiters) == 0:
+            return None
+
+        longest_substitution_delimiter = max(substitution_delimiters, key=len)
+
+        return ReplacementAuthority.subsitution_pattern(longest_substitution_delimiter).fullmatch(substitution)
 
     @staticmethod
     def stage_ordinary_substitution(replacement: 'ReplacementWithSubstitutions', substitution: str,
@@ -1444,7 +1379,7 @@ class ReplacementAuthority:
             if ReplacementAuthority.is_comment(line):
                 continue
 
-            rules_inclusion_match = ReplacementAuthority.compute_rules_inclusion_match(line)
+            rules_inclusion_match = ReplacementAuthority.RULES_INCLUSION_PATTERN.fullmatch(line)
             if rules_inclusion_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
@@ -1462,7 +1397,7 @@ class ReplacementAuthority:
                 self.process_rules_inclusion_line(rules_inclusion_match, rules_file_name, cmd_name, line_number)
                 continue
 
-            class_declaration_match = ReplacementAuthority.compute_class_declaration_match(line)
+            class_declaration_match = ReplacementAuthority.CLASS_DECLARATION_PATTERN.fullmatch(line)
             if class_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
@@ -1482,7 +1417,7 @@ class ReplacementAuthority:
                 )
                 continue
 
-            attribute_declaration_match = ReplacementAuthority.compute_attribute_declaration_match(line)
+            attribute_declaration_match = ReplacementAuthority.ATTRIBUTE_DECLARATION_PATTERN.fullmatch(line)
             if attribute_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
@@ -1500,7 +1435,7 @@ class ReplacementAuthority:
                 )
                 continue
 
-            substitution_declaration_match = ReplacementAuthority.compute_substitution_declaration_match(line)
+            substitution_declaration_match = ReplacementAuthority.SUBSTITUTION_DECLARATION_PATTERN.fullmatch(line)
             if substitution_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
@@ -1518,7 +1453,7 @@ class ReplacementAuthority:
                 )
                 continue
 
-            continuation_match = ReplacementAuthority.compute_continuation_match(line)
+            continuation_match = ReplacementAuthority.CONTINUATION_PATTERN.fullmatch(line)
             if continuation_match is not None:
                 attribute_value, substitution = (
                     ReplacementAuthority.process_continuation_line(
@@ -1599,14 +1534,15 @@ def escape_regex_substitute(substitute: str) -> str:
     return substitute.replace('\\', r'\\')
 
 
+BASE_NAME_PATTERN = re.compile(pattern=r'\A .* [/]', flags=re.VERBOSE)
+
+
 def extract_basename(name: str) -> str:
-    return re.sub(pattern=r'\A .* [/]', repl='', string=name, flags=re.VERBOSE)
+    return BASE_NAME_PATTERN.sub(repl='', string=name)
+
+
+CLEAN_URL_PATTERN = re.compile(pattern=r'(?P<last_separator> \A | [/] ) index \Z', flags=re.VERBOSE)
 
 
 def make_clean_url(cmd_name: str) -> str:
-    return re.sub(
-        pattern=r'(?P<last_separator> \A | [/] ) index \Z',
-        repl=r'\g<last_separator>',
-        string=cmd_name,
-        flags=re.VERBOSE,
-    )
+    return CLEAN_URL_PATTERN.sub(repl=r'\g<last_separator>', string=cmd_name)

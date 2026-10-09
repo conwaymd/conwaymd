@@ -6,6 +6,7 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 Common utility functions.
 """
 
+import functools
 import re
 from typing import Optional
 
@@ -23,6 +24,21 @@ def compute_longest_common_prefix(strings: list[str]) -> str:
     return prefix
 
 
+WHITESPACE_ONLY_FINAL_LINE_PATTERN = re.compile(
+    pattern=r'^ [^\S\n]+ \Z',
+    flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+)
+NON_EMPTY_INITIAL_WHITESPACE_PATTERN = re.compile(
+    pattern=r'^ [^\S\n]+ | ^ (?! $ )',
+    flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+)
+
+
+@functools.lru_cache(maxsize=None)
+def initial_indentation_pattern(longest_common_indentation: str) -> re.Pattern:
+    return re.compile(pattern=f'^ {re.escape(longest_common_indentation)}', flags=re.MULTILINE | re.VERBOSE)
+
+
 def de_indent(string: str) -> str:
     """
     De-indent a string.
@@ -35,27 +51,30 @@ def de_indent(string: str) -> str:
     of whitespace on all whitespace-only lines,
     even those lines which are not the last line.
     """
-    string = re.sub(
-        pattern=r'^ [^\S\n]+ \Z',
-        repl='',
-        string=string,
-        flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-    )
-    indentations = re.findall(
-        pattern=r'^ [^\S\n]+ | ^ (?! $ )',
-        string=string,
-        flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-    )
+    string = WHITESPACE_ONLY_FINAL_LINE_PATTERN.sub(repl='', string=string)
+    indentations = NON_EMPTY_INITIAL_WHITESPACE_PATTERN.findall(string)
     longest_common_indentation = compute_longest_common_prefix(indentations)
 
-    string = re.sub(
-        pattern=f'^ {re.escape(longest_common_indentation)}',
-        repl='',
-        string=string,
-        flags=re.MULTILINE | re.VERBOSE,
-    )
+    if longest_common_indentation == '':
+        return string
 
-    return string
+    return initial_indentation_pattern(longest_common_indentation).sub(repl='', string=string)
+
+
+NON_ENTITY_AMPERSAND_PATTERN = re.compile(
+    pattern='''
+        [&]
+        (?!
+            (?:
+                [a-zA-Z]{1,31}
+                    |
+                [#] (?: [0-9]{1,7} | [xX] [0-9a-fA-F]{1,6} )
+            )
+            [;]
+        )
+    ''',
+    flags=re.VERBOSE,
+)
 
 
 def escape_attribute_value_html(value: str) -> str:
@@ -69,25 +88,10 @@ def escape_attribute_value_html(value: str) -> str:
     - Decimal code points are any run of up to 7 digits.
     - Hexadecimal code points are any run of up to 6 digits.
     """
-    value = re.sub(
-        pattern='''
-            [&]
-            (?!
-                (?:
-                    [a-zA-Z]{1,31}
-                        |
-                    [#] (?: [0-9]{1,7} | [xX] [0-9a-fA-F]{1,6} )
-                )
-                [;]
-            )
-        ''',
-        repl='&amp;',
-        string=value,
-        flags=re.VERBOSE,
-    )
-    value = re.sub(pattern='<', repl='&lt;', string=value)
-    value = re.sub(pattern='>', repl='&gt;', string=value)
-    value = re.sub(pattern='"', repl='&quot;', string=value)
+    value = NON_ENTITY_AMPERSAND_PATTERN.sub(repl='&amp;', string=value)
+    value = value.replace('<', '&lt;')
+    value = value.replace('>', '&gt;')
+    value = value.replace('"', '&quot;')
 
     return value
 

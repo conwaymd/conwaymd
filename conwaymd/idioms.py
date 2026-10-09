@@ -65,43 +65,6 @@ BLOCK_TAG_NAMES = [
 ]
 
 
-def compute_attribute_specification_matches(attribute_specifications: str) -> Iterable[re.Match]:
-    return re.finditer(
-        pattern=r'''
-            [\s]*
-            (?:
-                (?P<name> [^\s=]+ ) =
-                (?:
-                    "(?P<double_quoted_value> [\s\S]*? )"
-                        |
-                    '(?P<single_quoted_value> [\s\S]*? )'
-                        |
-                    (?P<bare_value> [\S]* )
-                )
-                    |
-                [#] (?P<id_> [^\s"]+ )
-                    |
-                [.] (?P<class_> [^\s"]+ )
-                    |
-                [r] (?P<rowspan> [0-9]+ )
-                    |
-                [c] (?P<colspan> [0-9]+ )
-                    |
-                [w] (?P<width> [0-9]+ )
-                    |
-                [h] (?P<height> [0-9]+ )
-                    |
-                [-] (?P<delete_name> [\S]+ )
-                    |
-                (?P<boolean_name> [\S]+ )
-            ) ?
-            [\s]*
-        ''',
-        string=attribute_specifications,
-        flags=re.ASCII | re.VERBOSE,
-    )
-
-
 def extract_attribute_name_and_value(attribute_specification_match: re.Match,
                                      ) -> tuple[str, Optional[str]] | tuple[str] | None:
     """
@@ -167,6 +130,41 @@ def extract_attribute_name_and_value(attribute_specification_match: re.Match,
     return None
 
 
+ATTRIBUTE_SPECIFICATION_PATTERN = re.compile(
+    pattern=r'''
+        [\s]*
+        (?:
+            (?P<name> [^\s=]+ ) =
+            (?:
+                "(?P<double_quoted_value> [\s\S]*? )"
+                    |
+                '(?P<single_quoted_value> [\s\S]*? )'
+                    |
+                (?P<bare_value> [\S]* )
+            )
+                |
+            [#] (?P<id_> [^\s"]+ )
+                |
+            [.] (?P<class_> [^\s"]+ )
+                |
+            [r] (?P<rowspan> [0-9]+ )
+                |
+            [c] (?P<colspan> [0-9]+ )
+                |
+            [w] (?P<width> [0-9]+ )
+                |
+            [h] (?P<height> [0-9]+ )
+                |
+            [-] (?P<delete_name> [\S]+ )
+                |
+            (?P<boolean_name> [\S]+ )
+        ) ?
+        [\s]*
+    ''',
+    flags=re.ASCII | re.VERBOSE,
+)
+
+
 def build_attributes_sequence(attribute_specifications: str, use_protection: bool = False) -> str:
     """
     Convert CMD attribute specifications to an attribute sequence.
@@ -201,7 +199,7 @@ def build_attributes_sequence(attribute_specifications: str, use_protection: boo
     """
     attribute_value_from_name: dict[str, Optional[str]] = {}
 
-    for attribute_specification_match in compute_attribute_specification_matches(attribute_specifications):
+    for attribute_specification_match in ATTRIBUTE_SPECIFICATION_PATTERN.finditer(string=attribute_specifications):
         name_and_value = extract_attribute_name_and_value(attribute_specification_match)
 
         if name_and_value is None:  # invalid attribute specification

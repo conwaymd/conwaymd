@@ -34,6 +34,9 @@ def is_cmd_file(file_name: str) -> bool:
     return file_name.endswith('.cmd')
 
 
+CMD_NAME_PATTERN = re.compile(pattern=r'[.](cmd)? \Z', flags=re.VERBOSE)
+
+
 def extract_cmd_name(cmd_file_name_argument: str) -> str:
     """
     Extract name-without-extension from a CMD file name argument.
@@ -42,7 +45,7 @@ def extract_cmd_name(cmd_file_name_argument: str) -> str:
     The path is normalised by resolving `./` and `../`.
     """
     cmd_file_name_argument = os.path.normpath(cmd_file_name_argument)
-    cmd_name = re.sub(pattern=r'[.](cmd)? \Z', repl='', string=cmd_file_name_argument, flags=re.VERBOSE)
+    cmd_name = CMD_NAME_PATTERN.sub(repl='', string=cmd_file_name_argument)
 
     return cmd_name
 

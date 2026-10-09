@@ -4,6 +4,7 @@
 ## [Unreleased]
 
 - Fixed compiled regex should have methods called (rather than be passed as `pattern` parameter)
+- Changed all regex to be precompiled/cached
 - Improved typing/assertions
 
 
