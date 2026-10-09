@@ -699,28 +699,25 @@ class ReplacementAuthority:
         replacement.extensible_delimiter_character = extensible_delimiter_character
         replacement.extensible_delimiter_min_length = extensible_delimiter_min_length
 
-    @staticmethod
-    def compute_negative_flag_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<negative_flag_name> [A-Z_]+ )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    NEGATIVE_FLAG_PATTEREN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<negative_flag_name> [A-Z_]+ )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_negative_flag(replacement: 'Replacement', attribute_value: str,
                             rules_file_name: str, line_number_range_start: int, line_number: int):
-        negative_flag_match = ReplacementAuthority.compute_negative_flag_match(attribute_value)
+        negative_flag_match = ReplacementAuthority.NEGATIVE_FLAG_PATTEREN.fullmatch(attribute_value)
 
         invalid_value = negative_flag_match.group('invalid_value')
         if invalid_value is not None:
