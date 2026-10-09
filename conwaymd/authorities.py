@@ -790,28 +790,25 @@ class ReplacementAuthority:
         positive_flag_name = positive_flag_match.group('positive_flag_name')
         replacement.positive_flag_name = positive_flag_name
 
-    @staticmethod
-    def compute_prohibited_content_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<prohibited_content> BLOCKS | ANCHORED_BLOCKS )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    PROHIBITED_CONTENT_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<prohibited_content> BLOCKS | ANCHORED_BLOCKS )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_prohibited_content(replacement: 'ReplacementWithProhibitedContent', attribute_value: str,
                                  rules_file_name: str, line_number_range_start: int, line_number: int):
-        prohibited_content_match = ReplacementAuthority.compute_prohibited_content_match(attribute_value)
+        prohibited_content_match = ReplacementAuthority.PROHIBITED_CONTENT_PATTERN.fullmatch(attribute_value)
 
         invalid_value = prohibited_content_match.group('invalid_value')
         if invalid_value is not None:
