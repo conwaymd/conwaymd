@@ -586,28 +586,25 @@ class ReplacementAuthority:
 
         replacement.tag_name_from_delimiter_length_from_character = tag_name_from_delimiter_length_from_character
 
-    @staticmethod
-    def compute_ending_pattern_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<ending_pattern> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    ENDING_PATTERN_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<ending_pattern> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_ending_pattern(replacement: 'PartitioningReplacement', attribute_value: str,
                              rules_file_name: str, line_number_range_start: int, line_number: int):
-        ending_pattern_match = ReplacementAuthority.compute_ending_pattern_match(attribute_value)
+        ending_pattern_match = ReplacementAuthority.ENDING_PATTERN_PATTERN.fullmatch(attribute_value)
 
         invalid_value = ending_pattern_match.group('invalid_value')
         if invalid_value is not None:
