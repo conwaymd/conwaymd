@@ -1475,6 +1475,9 @@ class ReplacementAuthority:
             substitution_declaration_match = ReplacementAuthority.compute_substitution_declaration_match(line)
             if substitution_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
+                    assert class_name is not None
+                    assert replacement is not None
+                    assert line_number_range_start is not None
                     attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.stage(class_name, replacement, attribute_name, attribute_value, substitution,
                                    rules_file_name, cmd_name, line_number_range_start, line_number)
