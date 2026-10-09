@@ -150,17 +150,14 @@ class ReplacementAuthority:
         self._opened_file_names.append(included_file_name)
         self.legislate(replacement_rules, rules_file_name=included_file_name, cmd_name=cmd_name)
 
-    @staticmethod
-    def compute_class_declaration_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                (?P<class_name> [A-Za-z]+ ) [:]
-                [\s]+
-                [#] (?P<id_> [a-z0-9-.]+ )
-            ''',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    CLASS_DECLARATION_PATTERN = re.compile(
+        pattern=r'''
+            (?P<class_name> [A-Za-z]+ ) [:]
+            [\s]+
+            [#] (?P<id_> [a-z0-9-.]+ )
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def process_class_declaration_line(self, class_declaration_match: re.Match,
                                        rules_file_name: str, line_number: int) -> 'PostClassDeclarationState':
@@ -1459,7 +1456,7 @@ class ReplacementAuthority:
                 self.process_rules_inclusion_line(rules_inclusion_match, rules_file_name, cmd_name, line_number)
                 continue
 
-            class_declaration_match = ReplacementAuthority.compute_class_declaration_match(line)
+            class_declaration_match = ReplacementAuthority.CLASS_DECLARATION_PATTERN.fullmatch(string=line)
             if class_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
