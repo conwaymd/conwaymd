@@ -7,6 +7,7 @@ Classes for CMD replacement rules that are actually exposed to the user via CMD 
 """
 
 import copy
+import functools
 import re
 from typing import Callable, Optional
 
@@ -350,7 +351,7 @@ class RegexDictionaryReplacement(
     - concluding_replacements: (def) NONE | #«id» [...]
     ````
     """
-    _substitute_function_from_pattern: dict[str, Callable[[re.Match], str]]
+    _substitute_function_from_pattern: dict[re.Pattern, Callable[[re.Match], str]]
 
     def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
@@ -368,19 +369,20 @@ class RegexDictionaryReplacement(
     def _validate_mandatory_attributes(self):
         pass
 
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def compile_pattern(pattern: str) -> re.Pattern:
+        return re.compile(pattern, flags=re.ASCII | re.MULTILINE | re.VERBOSE)
+
     def _set_apply_method_variables(self):
         for pattern, substitute in self._substitute_from_pattern.items():
+            compiled_pattern = RegexDictionaryReplacement.compile_pattern(pattern)
             substitute_function = self.build_substitute_function(substitute)
-            self._substitute_function_from_pattern[pattern] = substitute_function
+            self._substitute_function_from_pattern[compiled_pattern] = substitute_function
 
     def _apply(self, string: str) -> str:
         for pattern, substitute_function in self._substitute_function_from_pattern.items():
-            string = re.sub(
-                pattern=pattern,
-                repl=substitute_function,
-                string=string,
-                flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-            )
+            string = pattern.sub(repl=substitute_function, string=string)
 
         return string
 
