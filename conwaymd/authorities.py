@@ -406,26 +406,23 @@ class ReplacementAuthority:
         attribute_specifications = attribute_specifications_match.group('attribute_specifications')
         replacement.attribute_specifications = attribute_specifications
 
-    @staticmethod
-    def compute_closing_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<closing_delimiter> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    CLOSING_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<closing_delimiter> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_closing_delimiter(replacement: 'FixedDelimitersReplacement', attribute_value: str,
                                 rules_file_name: str, line_number_range_start: int, line_number: int):
-        closing_delimiter_match = ReplacementAuthority.compute_closing_delimiter_match(attribute_value)
+        closing_delimiter_match = ReplacementAuthority.CLOSING_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = closing_delimiter_match.group('invalid_value')
         if invalid_value is not None:
