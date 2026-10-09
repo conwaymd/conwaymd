@@ -6,6 +6,7 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 The higher power that governs the conversion logic.
 """
 
+import functools
 import os
 import re
 import sys
@@ -1075,13 +1076,9 @@ class ReplacementAuthority:
     SUBSTITUTION_DELIMITER_PATTERN = re.compile(pattern='[-]{2,}[>]')
 
     @staticmethod
-    def compute_substitution_match(substitution: str) -> Optional[re.Match]:
-        substitution_delimiters: list[str] = ReplacementAuthority.SUBSTITUTION_DELIMITER_PATTERN.findall(substitution)
-        if len(substitution_delimiters) == 0:
-            return None
-
-        longest_substitution_delimiter = max(substitution_delimiters, key=len)
-        return re.fullmatch(
+    @functools.lru_cache(maxsize=None)
+    def subsitution_pattern(delimiter: str) -> re.Pattern:
+        return re.compile(
             pattern=fr'''
                 [\s]*
                     (?:
@@ -1092,7 +1089,7 @@ class ReplacementAuthority:
                         (?P<bare_pattern> [\s\S]*? )
                     )
                 [\s]*
-                    {re.escape(longest_substitution_delimiter)}
+                    {re.escape(delimiter)}
                     [\s]*
                     (?:
                         "(?P<double_quoted_substitute> [\s\S]*? )"
@@ -1103,9 +1100,18 @@ class ReplacementAuthority:
                     )
                 [\s]*
             ''',
-            string=substitution,
             flags=re.ASCII | re.VERBOSE,
         )
+
+    @staticmethod
+    def compute_substitution_match(substitution: str) -> Optional[re.Match]:
+        substitution_delimiters: list[str] = ReplacementAuthority.SUBSTITUTION_DELIMITER_PATTERN.findall(substitution)
+        if len(substitution_delimiters) == 0:
+            return None
+
+        longest_substitution_delimiter = max(substitution_delimiters, key=len)
+
+        return ReplacementAuthority.subsitution_pattern(longest_substitution_delimiter).fullmatch(substitution)
 
     @staticmethod
     def stage_ordinary_substitution(replacement: 'ReplacementWithSubstitutions', substitution: str,
