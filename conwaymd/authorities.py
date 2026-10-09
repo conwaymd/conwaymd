@@ -1072,9 +1072,11 @@ class ReplacementAuthority:
         tag_name = tag_name_match.group('tag_name')
         replacement.tag_name = tag_name
 
+    SUBSTITUTION_DELIMITER_PATTERN = re.compile(pattern='[-]{2,}[>]')
+
     @staticmethod
     def compute_substitution_match(substitution: str) -> Optional[re.Match]:
-        substitution_delimiters: list[str] = re.findall(pattern='[-]{2,}[>]', string=substitution)
+        substitution_delimiters: list[str] = ReplacementAuthority.SUBSTITUTION_DELIMITER_PATTERN.findall(substitution)
         if len(substitution_delimiters) == 0:
             return None
 
