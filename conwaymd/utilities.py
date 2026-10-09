@@ -61,6 +61,22 @@ def de_indent(string: str) -> str:
     return initial_indentation_pattern(longest_common_indentation).sub(repl='', string=string)
 
 
+NON_ENTITY_AMPERSAND_PATTERN = re.compile(
+    pattern='''
+        [&]
+        (?!
+            (?:
+                [a-zA-Z]{1,31}
+                    |
+                [#] (?: [0-9]{1,7} | [xX] [0-9a-fA-F]{1,6} )
+            )
+            [;]
+        )
+    ''',
+    flags=re.VERBOSE,
+)
+
+
 def escape_attribute_value_html(value: str) -> str:
     """
     Escape an attribute value that will be delimited by double quotes.
@@ -72,22 +88,7 @@ def escape_attribute_value_html(value: str) -> str:
     - Decimal code points are any run of up to 7 digits.
     - Hexadecimal code points are any run of up to 6 digits.
     """
-    value = re.sub(
-        pattern='''
-            [&]
-            (?!
-                (?:
-                    [a-zA-Z]{1,31}
-                        |
-                    [#] (?: [0-9]{1,7} | [xX] [0-9a-fA-F]{1,6} )
-                )
-                [;]
-            )
-        ''',
-        repl='&amp;',
-        string=value,
-        flags=re.VERBOSE,
-    )
+    value = NON_ENTITY_AMPERSAND_PATTERN.sub(repl='&amp;', string=value)
     value = re.sub(pattern='<', repl='&lt;', string=value)
     value = re.sub(pattern='>', repl='&gt;', string=value)
     value = re.sub(pattern='"', repl='&quot;', string=value)
