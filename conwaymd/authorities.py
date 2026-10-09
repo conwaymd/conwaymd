@@ -758,28 +758,25 @@ class ReplacementAuthority:
         opening_delimiter = opening_delimiter_match.group('opening_delimiter')
         replacement.opening_delimiter = opening_delimiter
 
-    @staticmethod
-    def compute_positive_flag_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<positive_flag_name> [A-Z_]+ )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    POSITIVE_FLAG_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<positive_flag_name> [A-Z_]+ )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_positive_flag(replacement: 'Replacement', attribute_value: str,
                             rules_file_name: str, line_number_range_start: int, line_number: int):
-        positive_flag_match = ReplacementAuthority.compute_positive_flag_match(attribute_value)
+        positive_flag_match = ReplacementAuthority.POSITIVE_FLAG_PATTERN.fullmatch(attribute_value)
 
         invalid_value = positive_flag_match.group('invalid_value')
         if invalid_value is not None:
