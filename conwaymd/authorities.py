@@ -222,14 +222,16 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def process_attribute_declaration_line(attribute_declaration_match: re.Match, class_name: str,
-                                           replacement: 'Replacement', attribute_value: Optional[str],
+    def process_attribute_declaration_line(attribute_declaration_match: re.Match, class_name: Optional[str],
+                                           replacement: Optional['Replacement'], attribute_value: Optional[str],
                                            rules_file_name: str, line_number: int,
                                            ) -> 'PostAttributeDeclarationState':
         if replacement is None:
             ReplacementAuthority.print_error(f'attribute declaration without an active class declaration',
                                              rules_file_name, line_number)
             sys.exit(GENERIC_ERROR_EXIT_CODE)
+
+        assert class_name is not None
 
         attribute_name = attribute_declaration_match.group('attribute_name')
         if attribute_name not in replacement.attribute_names:
@@ -1455,6 +1457,9 @@ class ReplacementAuthority:
             attribute_declaration_match = ReplacementAuthority.compute_attribute_declaration_match(line)
             if attribute_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
+                    assert class_name is not None
+                    assert replacement is not None
+                    assert line_number_range_start is not None
                     attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.stage(class_name, replacement, attribute_name, attribute_value, substitution,
                                    rules_file_name, cmd_name, line_number_range_start, line_number)
