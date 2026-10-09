@@ -1040,28 +1040,25 @@ class ReplacementAuthority:
         syntax_type = syntax_type_match.group('syntax_type')
         replacement.syntax_type_is_block = syntax_type == 'BLOCK'
 
-    @staticmethod
-    def compute_tag_name_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<tag_name> [a-z0-9]+ )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    TAG_NAME_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<tag_name> [a-z0-9]+ )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_tag_name(replacement: 'ReplacementWithTagName', attribute_value: str,
                        rules_file_name: str, line_number_range_start: int, line_number: int):
-        tag_name_match = ReplacementAuthority.compute_tag_name_match(attribute_value)
+        tag_name_match = ReplacementAuthority.TAG_NAME_PATTERN.fullmatch(attribute_value)
 
         invalid_value = tag_name_match.group('invalid_value')
         if invalid_value is not None:
