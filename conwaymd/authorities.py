@@ -1255,7 +1255,7 @@ class ReplacementAuthority:
         replacement.add_substitution(pattern, substitute)
 
     def stage(self, class_name: str, replacement: 'Replacement',
-              attribute_name: str, attribute_value: str, substitution: str,
+              attribute_name: Optional[str], attribute_value: Optional[str], substitution: Optional[str],
               rules_file_name: str, cmd_name: str, line_number_range_start: int, line_number: int) -> 'PostStageState':
         if substitution is not None:  # staging a substitution
             interpolation_value_from_key = {
@@ -1281,6 +1281,9 @@ class ReplacementAuthority:
                 sys.exit(GENERIC_ERROR_EXIT_CODE)
 
         else:  # staging an attribute declaration
+            assert attribute_name is not None
+            assert attribute_value is not None
+
             if attribute_name == 'allowed_flags':
                 ReplacementAuthority.stage_allowed_flags(replacement, attribute_value,
                                                          rules_file_name, line_number_range_start, line_number)
@@ -1394,6 +1397,9 @@ class ReplacementAuthority:
         for line_number, line in enumerate(replacement_rules.splitlines(), start=1):
             if ReplacementAuthority.is_whitespace_only(line):
                 if attribute_name is not None or substitution is not None:
+                    assert class_name is not None
+                    assert replacement is not None
+                    assert line_number_range_start is not None
                     attribute_name, attribute_value, substitution, line_number_range_start = (
                         self.stage(class_name, replacement, attribute_name, attribute_value, substitution,
                                    rules_file_name, cmd_name, line_number_range_start, line_number)
