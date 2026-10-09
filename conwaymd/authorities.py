@@ -1013,26 +1013,23 @@ class ReplacementAuthority:
 
         replacement.starting_pattern = starting_pattern
 
-    @staticmethod
-    def compute_syntax_type_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<syntax_type> BLOCK | INLINE )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    SYNTAX_TYPE_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<syntax_type> BLOCK | INLINE )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_syntax_type(replacement: 'ReplacementWithSyntaxType', attribute_value: str,
                           rules_file_name: str, line_number_range_start: int, line_number: int):
-        syntax_type_match = ReplacementAuthority.compute_syntax_type_match(attribute_value)
+        syntax_type_match = ReplacementAuthority.SYNTAX_TYPE_PATTERN.fullmatch(attribute_value)
 
         invalid_value = syntax_type_match.group('invalid_value')
         if invalid_value is not None:
