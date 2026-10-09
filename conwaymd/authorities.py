@@ -731,26 +731,23 @@ class ReplacementAuthority:
         negative_flag_name = negative_flag_match.group('negative_flag_name')
         replacement.negative_flag_name = negative_flag_name
 
-    @staticmethod
-    def compute_opening_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<opening_delimiter> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    OPENING_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<opening_delimiter> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_opening_delimiter(replacement: 'FixedDelimitersReplacement', attribute_value: str,
                                 rules_file_name: str, line_number_range_start: int, line_number: int):
-        opening_delimiter_match = ReplacementAuthority.compute_opening_delimiter_match(attribute_value)
+        opening_delimiter_match = ReplacementAuthority.OPENING_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = opening_delimiter_match.group('invalid_value')
         if invalid_value is not None:
