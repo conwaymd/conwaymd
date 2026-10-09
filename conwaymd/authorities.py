@@ -1077,7 +1077,7 @@ class ReplacementAuthority:
 
     @staticmethod
     @functools.lru_cache(maxsize=None)
-    def subsitution_pattern(delimiter: str) -> re.Pattern:
+    def subsitution_pattern(longest_substitution_delimiter: str) -> re.Pattern:
         return re.compile(
             pattern=fr'''
                 [\s]*
@@ -1089,7 +1089,7 @@ class ReplacementAuthority:
                         (?P<bare_pattern> [\s\S]*? )
                     )
                 [\s]*
-                    {re.escape(delimiter)}
+                    {re.escape(longest_substitution_delimiter)}
                     [\s]*
                     (?:
                         "(?P<double_quoted_substitute> [\s\S]*? )"

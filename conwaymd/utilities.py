@@ -6,6 +6,7 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 Common utility functions.
 """
 
+import functools
 import re
 from typing import Optional
 
@@ -23,6 +24,21 @@ def compute_longest_common_prefix(strings: list[str]) -> str:
     return prefix
 
 
+WHITESPACE_ONLY_FINAL_LINE_PATTERN = re.compile(
+    pattern=r'^ [^\S\n]+ \Z',
+    flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+)
+NON_EMPTY_INITIAL_WHITESPACE_PATTERN = re.compile(
+    pattern=r'^ [^\S\n]+ | ^ (?! $ )',
+    flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+)
+
+
+@functools.lru_cache(maxsize=None)
+def initial_indentation_pattern(longest_common_indentation: str) -> re.Pattern:
+    return re.compile(pattern=f'^ {re.escape(longest_common_indentation)}', flags=re.MULTILINE | re.VERBOSE)
+
+
 def de_indent(string: str) -> str:
     """
     De-indent a string.
@@ -35,25 +51,11 @@ def de_indent(string: str) -> str:
     of whitespace on all whitespace-only lines,
     even those lines which are not the last line.
     """
-    string = re.sub(
-        pattern=r'^ [^\S\n]+ \Z',
-        repl='',
-        string=string,
-        flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-    )
-    indentations = re.findall(
-        pattern=r'^ [^\S\n]+ | ^ (?! $ )',
-        string=string,
-        flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-    )
+    string = WHITESPACE_ONLY_FINAL_LINE_PATTERN.sub(repl='', string=string)
+    indentations = NON_EMPTY_INITIAL_WHITESPACE_PATTERN.findall(string)
     longest_common_indentation = compute_longest_common_prefix(indentations)
 
-    string = re.sub(
-        pattern=f'^ {re.escape(longest_common_indentation)}',
-        repl='',
-        string=string,
-        flags=re.MULTILINE | re.VERBOSE,
-    )
+    string = initial_indentation_pattern(longest_common_indentation).sub(repl='', string=string)
 
     return string
 
