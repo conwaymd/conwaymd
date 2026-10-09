@@ -24,6 +24,19 @@ from conwaymd.constants import STANDARD_RULES
 from conwaymd.utilities import none_to_empty_string
 
 
+RULES_AND_CONTENT_PATTERN = re.compile(
+    pattern=r'''
+        (?:
+            (?P<replacement_rules> [\s\S]*? )
+            (?P<delimiter> ^ [%]{3,} )
+            \n
+        ) ?
+        (?P<main_content> [\s\S]* )
+    ''',
+    flags=re.ASCII | re.MULTILINE | re.VERBOSE,
+)
+
+
 def extract_rules_and_content(cmd: str) -> tuple[str, str]:
     """
     Extract replacement rules and main content from CMD file content.
@@ -38,18 +51,7 @@ def extract_rules_and_content(cmd: str) -> tuple[str, str]:
             «main_content»
     according to the first occurrence of «delimiter».
     """
-    match = re.fullmatch(
-        pattern=r'''
-            (?:
-                (?P<replacement_rules> [\s\S]*? )
-                (?P<delimiter> ^ [%]{3,} )
-                \n
-            ) ?
-            (?P<main_content> [\s\S]* )
-        ''',
-        string=cmd,
-        flags=re.ASCII | re.MULTILINE | re.VERBOSE,
-    )
+    match = RULES_AND_CONTENT_PATTERN.fullmatch(string=cmd)
     assert match is not None
 
     replacement_rules = match.group('replacement_rules')
@@ -58,8 +60,14 @@ def extract_rules_and_content(cmd: str) -> tuple[str, str]:
     return replacement_rules, main_content
 
 
+NORMALISED_CMD_NAME_PATTERN = re.compile(
+    pattern=r'[.](cmd) \Z',
+    flags=re.VERBOSE,
+)
+
+
 def extract_separator_normalised_cmd_name(cmd_file_name: str) -> str:
-    cmd_name = re.sub(pattern=r'[.](cmd) \Z', repl='', string=none_to_empty_string(cmd_file_name), flags=re.VERBOSE)
+    cmd_name = NORMALISED_CMD_NAME_PATTERN.sub(repl='', string=none_to_empty_string(cmd_file_name))
     separator_normalised_cmd_name = cmd_name.replace('\\', '/')
 
     return separator_normalised_cmd_name
