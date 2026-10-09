@@ -538,33 +538,30 @@ class ReplacementAuthority:
 
         replacement.content_replacements = content_replacements
 
-    @staticmethod
-    def compute_delimiter_conversion_matches(attribute_value: str) -> Iterable[re.Match]:
-        return re.finditer(
-            pattern=r'''
-                (?P<whitespace_only> \A [\s]* \Z )
-                    |
-                [\s]*
-                (?:
-                    (?P<delimiter>
-                    (?P<delimiter_character> [\S] ) (?P=delimiter_character)?
-                )
-                    = (?P<tag_name> [a-z0-9]+ ) (?= [\s] | \Z )
-                    |
-                (?P<invalid_syntax> [\S]+ )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    DELIMITER_CONVERSION_PATTERN = re.compile(
+        pattern=r'''
+            (?P<whitespace_only> \A [\s]* \Z )
+                |
+            [\s]*
+            (?:
+                (?P<delimiter>
+                (?P<delimiter_character> [\S] ) (?P=delimiter_character)?
+            )
+                = (?P<tag_name> [a-z0-9]+ ) (?= [\s] | \Z )
+                |
+            (?P<invalid_syntax> [\S]+ )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_delimiter_conversion(replacement: 'InlineAssortedDelimitersReplacement', attribute_value: str,
                                    rules_file_name: str, line_number_range_start: int, line_number: int):
         tag_name_from_delimiter_length_from_character: dict[str, dict[int, str]] = {}
 
-        for delimiter_conversion_match in ReplacementAuthority.compute_delimiter_conversion_matches(attribute_value):
+        for delimiter_conversion_match in ReplacementAuthority.DELIMITER_CONVERSION_PATTERN.finditer(attribute_value):
             if delimiter_conversion_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(f'invalid specification `` for attribute `delimiter_conversion`',
                                                  rules_file_name, line_number_range_start, line_number)
