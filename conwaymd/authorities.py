@@ -214,16 +214,13 @@ class ReplacementAuthority:
 
         return PostClassDeclarationState(class_name, replacement, line_number_range_start)
 
-    @staticmethod
-    def compute_attribute_declaration_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [-][ ] (?P<attribute_name> [a-z_]+ ) [:]
-                (?P<partial_attribute_value> [\s\S]* )
-            ''',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    ATTRIBUTE_DECLARATION_PATTERN = re.compile(
+        pattern=r'''
+            [-][ ] (?P<attribute_name> [a-z_]+ ) [:]
+            (?P<partial_attribute_value> [\s\S]* )
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def process_attribute_declaration_line(attribute_declaration_match: re.Match, class_name: Optional[str],
@@ -1476,7 +1473,7 @@ class ReplacementAuthority:
                 )
                 continue
 
-            attribute_declaration_match = ReplacementAuthority.compute_attribute_declaration_match(line)
+            attribute_declaration_match = ReplacementAuthority.ATTRIBUTE_DECLARATION_PATTERN.fullmatch(string=line)
             if attribute_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
