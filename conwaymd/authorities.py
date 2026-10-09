@@ -269,13 +269,10 @@ class ReplacementAuthority:
 
         return PostSubstitutionDeclarationState(substitution, line_number_range_start)
 
-    @staticmethod
-    def compute_continuation_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'(?P<continuation> [\s]+ [\S][\s\S]* )',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    CONTINUATION_PATTERN = re.compile(
+        pattern=r'(?P<continuation> [\s]+ [\S][\s\S]* )',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def process_continuation_line(continuation_match: re.Match, attribute_name: Optional[str],
@@ -1506,7 +1503,7 @@ class ReplacementAuthority:
                 )
                 continue
 
-            continuation_match = ReplacementAuthority.compute_continuation_match(line)
+            continuation_match = ReplacementAuthority.CONTINUATION_PATTERN.fullmatch(line)
             if continuation_match is not None:
                 attribute_value, substitution = (
                     ReplacementAuthority.process_continuation_line(
