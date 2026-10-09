@@ -486,30 +486,27 @@ class ReplacementAuthority:
 
         replacement.concluding_replacements = concluding_replacements
 
-    @staticmethod
-    def compute_content_replacement_matches(attribute_value: str) -> Iterable[re.Match]:
-        return re.finditer(
-            pattern=r'''
-                (?P<whitespace_only> \A [\s]* \Z )
+    CONTENT_REPLACEMENT_PATTERN = re.compile(
+        pattern=r'''
+            (?P<whitespace_only> \A [\s]* \Z )
+                |
+            (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+                |
+            (?:
+                [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
                     |
-                (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
-                    |
-                (?:
-                    [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
-                        |
-                    (?P<invalid_syntax> [\S]+ )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+                (?P<invalid_syntax> [\S]+ )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def stage_content_replacements(self, replacement: 'ReplacementWithContentReplacements', attribute_value: str,
                                    rules_file_name: str, line_number_range_start: int, line_number: int):
         content_replacements: list['Replacement'] = []
 
-        for content_replacement_match in ReplacementAuthority.compute_content_replacement_matches(attribute_value):
+        for content_replacement_match in ReplacementAuthority.CONTENT_REPLACEMENT_PATTERN.finditer(attribute_value):
             if content_replacement_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(f'invalid specification `` for attribute `content_replacements`',
                                                  rules_file_name, line_number_range_start, line_number)
