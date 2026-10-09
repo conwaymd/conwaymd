@@ -68,7 +68,6 @@ def cmd_to_html(cmd: str, cmd_file_name: str, verbose_mode_enabled: bool = False
     """
     Convert CMD to HTML.
     """
-
     replacement_rules, main_content = extract_rules_and_content(cmd)
     separator_normalised_cmd_name = extract_separator_normalised_cmd_name(cmd_file_name)
 
