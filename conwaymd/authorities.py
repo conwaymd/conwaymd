@@ -972,26 +972,23 @@ class ReplacementAuthority:
 
         replacement.replacements = matched_replacements
 
-    @staticmethod
-    def compute_starting_pattern_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<starting_pattern> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    STARTING_PATTERN_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<starting_pattern> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_starting_pattern(replacement: 'PartitioningReplacement', attribute_value: str,
                                rules_file_name: str, line_number_range_start: int, line_number: int):
-        starting_pattern_match = ReplacementAuthority.compute_starting_pattern_match(attribute_value)
+        starting_pattern_match = ReplacementAuthority.STARTING_PATTERN_PATTERN.fullmatch(attribute_value)
 
         invalid_value = starting_pattern_match.group('invalid_value')
         if invalid_value is not None:
