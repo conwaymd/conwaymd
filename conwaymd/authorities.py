@@ -354,7 +354,7 @@ class ReplacementAuthority:
                     (?P<apply_mode> SIMULTANEOUS | SEQUENTIAL )
                         |
                     (?P<invalid_value> [\s\S]*? )
-                    )
+                )
                 [\s]*
             ''',
             string=attribute_value,
