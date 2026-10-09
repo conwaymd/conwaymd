@@ -1506,9 +1506,13 @@ class ReplacementAuthority:
 
         # At end of file
         if attribute_name is not None or substitution is not None:
+            assert class_name is not None
+            assert replacement is not None
+            assert line_number_range_start is not None
             self.stage(class_name, replacement, attribute_name, attribute_value, substitution,
                        rules_file_name, cmd_name, line_number_range_start, line_number)
         if replacement is not None:
+            assert class_name is not None
             self.commit(class_name, replacement, rules_file_name, line_number + 1)
 
     def execute(self, string: str) -> str:
