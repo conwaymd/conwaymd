@@ -824,28 +824,25 @@ class ReplacementAuthority:
         prohibited_content_regex = build_block_tag_regex(require_anchoring)
         replacement.prohibited_content_regex = prohibited_content_regex
 
-    @staticmethod
-    def compute_prologue_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<prologue_delimiter> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    PROLOGUE_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<prologue_delimiter> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_prologue_delimiter(replacement: 'ExtensibleFenceReplacement', attribute_value: str,
                                  rules_file_name: str, line_number_range_start: int, line_number: int):
-        prologue_delimiter_match = ReplacementAuthority.compute_prologue_delimiter_match(attribute_value)
+        prologue_delimiter_match = ReplacementAuthority.PROLOGUE_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = prologue_delimiter_match.group('invalid_value')
         if invalid_value is not None:
