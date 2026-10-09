@@ -632,28 +632,25 @@ class ReplacementAuthority:
 
         replacement.ending_pattern = ending_pattern
 
-    @staticmethod
-    def compute_epilogue_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<none_keyword> NONE )
-                        |
-                    (?P<epilogue_delimiter> [\S][\s\S]*? )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    EPILOGUE_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<none_keyword> NONE )
+                    |
+                (?P<epilogue_delimiter> [\S][\s\S]*? )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_epilogue_delimiter(replacement: 'ExtensibleFenceReplacement', attribute_value: str,
                                  rules_file_name: str, line_number_range_start: int, line_number: int):
-        epilogue_delimiter_match = ReplacementAuthority.compute_epilogue_delimiter_match(attribute_value)
+        epilogue_delimiter_match = ReplacementAuthority.EPILOGUE_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = epilogue_delimiter_match.group('invalid_value')
         if invalid_value is not None:
