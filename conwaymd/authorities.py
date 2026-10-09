@@ -1534,8 +1534,11 @@ def escape_regex_substitute(substitute: str) -> str:
     return substitute.replace('\\', r'\\')
 
 
+BASE_NAME_PATTERN = re.compile(pattern=r'\A .* [/]', flags=re.VERBOSE)
+
+
 def extract_basename(name: str) -> str:
-    return re.sub(pattern=r'\A .* [/]', repl='', string=name, flags=re.VERBOSE)
+    return BASE_NAME_PATTERN.sub(repl='', string=name)
 
 
 def make_clean_url(cmd_name: str) -> str:
