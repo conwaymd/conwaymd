@@ -4,6 +4,7 @@
 ## [Unreleased]
 
 - Fixed compiled regex should have methods called (rather than be passed as `pattern` parameter)
+- Improved typing/assertions
 
 
 ## [v6.0.0] Pattern/substitute interpolation (2026-01-07)
