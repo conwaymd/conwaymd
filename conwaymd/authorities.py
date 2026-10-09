@@ -247,13 +247,10 @@ class ReplacementAuthority:
 
         return PostAttributeDeclarationState(attribute_name, attribute_value, line_number_range_start)
 
-    @staticmethod
-    def compute_substitution_declaration_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'[*][ ] (?P<partial_substitution> [\s\S]* )',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    SUBSTITUTION_DECLARATION_PATTERN = re.compile(
+        pattern=r'[*][ ] (?P<partial_substitution> [\s\S]* )',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def process_substitution_declaration_line(replacement: Optional['Replacement'],
@@ -1435,7 +1432,7 @@ class ReplacementAuthority:
             if ReplacementAuthority.is_comment(line):
                 continue
 
-            rules_inclusion_match = ReplacementAuthority.RULES_INCLUSION_PATTERN.fullmatch(string=line)
+            rules_inclusion_match = ReplacementAuthority.RULES_INCLUSION_PATTERN.fullmatch(line)
             if rules_inclusion_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
@@ -1453,7 +1450,7 @@ class ReplacementAuthority:
                 self.process_rules_inclusion_line(rules_inclusion_match, rules_file_name, cmd_name, line_number)
                 continue
 
-            class_declaration_match = ReplacementAuthority.CLASS_DECLARATION_PATTERN.fullmatch(string=line)
+            class_declaration_match = ReplacementAuthority.CLASS_DECLARATION_PATTERN.fullmatch(line)
             if class_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
@@ -1473,7 +1470,7 @@ class ReplacementAuthority:
                 )
                 continue
 
-            attribute_declaration_match = ReplacementAuthority.ATTRIBUTE_DECLARATION_PATTERN.fullmatch(string=line)
+            attribute_declaration_match = ReplacementAuthority.ATTRIBUTE_DECLARATION_PATTERN.fullmatch(line)
             if attribute_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
@@ -1491,7 +1488,7 @@ class ReplacementAuthority:
                 )
                 continue
 
-            substitution_declaration_match = ReplacementAuthority.compute_substitution_declaration_match(line)
+            substitution_declaration_match = ReplacementAuthority.SUBSTITUTION_DECLARATION_PATTERN.fullmatch(line)
             if substitution_declaration_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
