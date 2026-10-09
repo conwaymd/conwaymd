@@ -664,29 +664,26 @@ class ReplacementAuthority:
         epilogue_delimiter = epilogue_delimiter_match.group('epilogue_delimiter')
         replacement.epilogue_delimiter = epilogue_delimiter
 
-    @staticmethod
-    def compute_extensible_delimiter_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<extensible_delimiter>
-                        (?P<extensible_delimiter_character> [\S] )
-                        (?P=extensible_delimiter_character)*
-                    )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
+    EXTENSIBLE_DELIMITER_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<extensible_delimiter>
+                    (?P<extensible_delimiter_character> [\S] )
+                    (?P=extensible_delimiter_character)*
                 )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_extensible_delimiter(replacement: 'ExtensibleFenceReplacement', attribute_value: str,
                                    rules_file_name: str, line_number_range_start: int, line_number: int):
-        extensible_delimiter_match = ReplacementAuthority.compute_extensible_delimiter_match(attribute_value)
+        extensible_delimiter_match = ReplacementAuthority.EXTENSIBLE_DELIMITER_PATTERN.fullmatch(attribute_value)
 
         invalid_value = extensible_delimiter_match.group('invalid_value')
         if invalid_value is not None:
