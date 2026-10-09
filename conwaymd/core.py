@@ -50,6 +50,7 @@ def extract_rules_and_content(cmd: str) -> tuple[str, str]:
         string=cmd,
         flags=re.ASCII | re.MULTILINE | re.VERBOSE,
     )
+    assert match is not None
 
     replacement_rules = match.group('replacement_rules')
     main_content = match.group('main_content')
