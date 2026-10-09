@@ -433,30 +433,27 @@ class ReplacementAuthority:
         closing_delimiter = closing_delimiter_match.group('closing_delimiter')
         replacement.closing_delimiter = closing_delimiter
 
-    @staticmethod
-    def compute_concluding_replacement_matches(attribute_value: str) -> Iterable[re.Match]:
-        return re.finditer(
-            pattern=r'''
-                (?P<whitespace_only> \A [\s]* \Z )
+    CONCLUDING_REPLACEMENT_PATTERN = re.compile(
+        pattern=r'''
+            (?P<whitespace_only> \A [\s]* \Z )
+                |
+            (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+                |
+            (?:
+                [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
                     |
-                (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
-                    |
-                (?:
-                    [#] (?P<id_> [a-z0-9-.]+ ) (?= [\s] | \Z )
-                        |
-                    (?P<invalid_syntax> [\S]+ )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+                (?P<invalid_syntax> [\S]+ )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def stage_concluding_replacements(self, replacement: 'ReplacementWithConcludingReplacements', attribute_value: str,
                                       rules_file_name: str, line_number_range_start: int, line_number: int):
         concluding_replacements: list['Replacement'] = []
 
-        concluding_replacement_matches = ReplacementAuthority.compute_concluding_replacement_matches(attribute_value)
+        concluding_replacement_matches = ReplacementAuthority.CONCLUDING_REPLACEMENT_PATTERN.finditer(attribute_value)
         for concluding_replacement_match in concluding_replacement_matches:
             if concluding_replacement_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(f'invalid specification `` for attribute `concluding_replacements`',
