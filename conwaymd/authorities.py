@@ -1541,10 +1541,8 @@ def extract_basename(name: str) -> str:
     return BASE_NAME_PATTERN.sub(repl='', string=name)
 
 
+CLEAN_URL_PATTERN = re.compile(pattern=r'(?P<last_separator> \A | [/] ) index \Z', flags=re.VERBOSE)
+
+
 def make_clean_url(cmd_name: str) -> str:
-    return re.sub(
-        pattern=r'(?P<last_separator> \A | [/] ) index \Z',
-        repl=r'\g<last_separator>',
-        string=cmd_name,
-        flags=re.VERBOSE,
-    )
+    return CLEAN_URL_PATTERN.sub(repl=r'\g<last_separator>', string=cmd_name)
