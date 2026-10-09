@@ -292,32 +292,29 @@ class ReplacementAuthority:
 
         return PostContinuationState(attribute_value, substitution)
 
-    @staticmethod
-    def compute_allowed_flag_matches(attribute_value: str) -> Iterable[re.Match]:
-        return re.finditer(
-            pattern=r'''
-                (?P<whitespace_only> \A [\s]* \Z )
+    ALLOWED_FLAG_PATTERN = re.compile(
+        pattern=r'''
+            (?P<whitespace_only> \A [\s]* \Z )
+                |
+            (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
+                |
+            [\s]*
+            (?:
+                (?P<flag_letter> [a-z] ) = (?P<flag_name> [A-Z_]+ ) (?= [\s] | \Z )
                     |
-                (?P<none_keyword> \A [\s]* NONE [\s]* \Z )
-                    |
-                [\s]*
-                (?:
-                    (?P<flag_letter> [a-z] ) = (?P<flag_name> [A-Z_]+ ) (?= [\s] | \Z )
-                        |
-                    (?P<invalid_syntax> [\S]+ )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE,
-        )
+                (?P<invalid_syntax> [\S]+ )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     @staticmethod
     def stage_allowed_flags(replacement: 'ReplacementWithAllowedFlags', attribute_value: str,
                             rules_file_name: str, line_number_range_start: int, line_number: int):
         flag_name_from_letter: dict[str, str] = {}
 
-        for allowed_flag_match in ReplacementAuthority.compute_allowed_flag_matches(attribute_value):
+        for allowed_flag_match in ReplacementAuthority.ALLOWED_FLAG_PATTERN.finditer(attribute_value):
             if allowed_flag_match.group('whitespace_only') is not None:
                 ReplacementAuthority.print_error(f'invalid specification `` for attribute `allowed_flags`',
                                                  rules_file_name, line_number_range_start, line_number)
