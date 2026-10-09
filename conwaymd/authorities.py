@@ -1399,13 +1399,14 @@ class ReplacementAuthority:
             self._replacement_queue.append(replacement)
         else:
             queue_reference_replacement = replacement.queue_reference_replacement
+            assert queue_reference_replacement is not None
             queue_reference_index = self._replacement_queue.index(queue_reference_replacement)
             if queue_position_type == 'BEFORE':
                 insertion_index = queue_reference_index
             elif queue_position_type == 'AFTER':
                 insertion_index = queue_reference_index + 1
             else:
-                insertion_index = None
+                assert False
             self._replacement_queue.insert(insertion_index, replacement)
 
         return PostCommitState(class_name=None, replacement=None, attribute_name=None, attribute_value=None,
