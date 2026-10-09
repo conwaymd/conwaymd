@@ -106,21 +106,18 @@ class ReplacementAuthority:
     def is_comment(line: str) -> bool:
         return line.startswith('#')
 
-    @staticmethod
-    def compute_rules_inclusion_match(line: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [<][ ]
-                    (?:
-                        [/] (?P<included_file_name> [\S][\s\S]*? )
-                            |
-                        (?P<included_file_name_relative> [\S][\s\S]*? )
-                    )
-                [\s]*
-            ''',
-            string=line,
-            flags=re.ASCII | re.VERBOSE,
-        )
+    RULES_INCLUSION_PATTERN = re.compile(
+        pattern=r'''
+            [<][ ]
+                (?:
+                    [/] (?P<included_file_name> [\S][\s\S]*? )
+                        |
+                    (?P<included_file_name_relative> [\S][\s\S]*? )
+                )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE,
+    )
 
     def process_rules_inclusion_line(self, rules_inclusion_match: re.Match,
                                      rules_file_name: str, cmd_name: str, line_number: int):
@@ -1444,7 +1441,7 @@ class ReplacementAuthority:
             if ReplacementAuthority.is_comment(line):
                 continue
 
-            rules_inclusion_match = ReplacementAuthority.compute_rules_inclusion_match(line)
+            rules_inclusion_match = ReplacementAuthority.RULES_INCLUSION_PATTERN.fullmatch(string=line)
             if rules_inclusion_match is not None:
                 if attribute_name is not None or substitution is not None:
                     assert class_name is not None
