@@ -167,7 +167,7 @@ def extract_attribute_name_and_value(attribute_specification_match: re.Match,
     return None
 
 
-def build_attributes_sequence(attribute_specifications: Optional[str], use_protection: bool = False) -> str:
+def build_attributes_sequence(attribute_specifications: str, use_protection: bool = False) -> str:
     """
     Convert CMD attribute specifications to an attribute sequence.
 
