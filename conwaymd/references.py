@@ -23,9 +23,9 @@ class Reference:
     """
     _attribute_specifications: Optional[str]
     _uri: str
-    _title: str
+    _title: Optional[str]
 
-    def __init__(self, attribute_specifications: Optional[str], uri: str, title: str):
+    def __init__(self, attribute_specifications: Optional[str], uri: str, title: Optional[str]):
         self._attribute_specifications = attribute_specifications
         self._uri = uri
         self._title = title
@@ -39,7 +39,7 @@ class Reference:
         return self._uri
 
     @property
-    def title(self) -> str:
+    def title(self) -> Optional[str]:
         return self._title
 
 
@@ -52,7 +52,7 @@ class ReferenceMaster:
     def __init__(self):
         self._reference_from_label = {}
 
-    def store_definition(self, label: str, attribute_specifications: Optional[str], uri: str, title: str):
+    def store_definition(self, label: str, attribute_specifications: Optional[str], uri: str, title: Optional[str]):
         label = ReferenceMaster.normalise_label(label)
         self._reference_from_label[label] = Reference(attribute_specifications, uri, title)
 
@@ -78,4 +78,4 @@ class ReferenceMaster:
 class ReferenceDefinition(NamedTuple):
     attribute_specifications: Optional[str]
     uri: str
-    title: str
+    title: Optional[str]
