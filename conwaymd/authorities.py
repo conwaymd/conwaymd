@@ -13,7 +13,17 @@ import traceback
 from typing import Iterable, NamedTuple, Optional
 
 from conwaymd._version import __version__
-from conwaymd.bases import Replacement, ReplacementWithSubstitutions
+from conwaymd.bases import (
+    Replacement,
+    ReplacementWithAllowedFlags,
+    ReplacementWithAttributeSpecifications,
+    ReplacementWithConcludingReplacements,
+    ReplacementWithContentReplacements,
+    ReplacementWithProhibitedContent,
+    ReplacementWithSubstitutions,
+    ReplacementWithSyntaxType,
+    ReplacementWithTagName,
+)
 from conwaymd.constants import CMD_REPLACEMENT_SYNTAX_HELP, GENERIC_ERROR_EXIT_CODE
 from conwaymd.employables import (
     DeIndentationReplacement,
@@ -318,7 +328,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_allowed_flags(replacement: 'Replacement', attribute_value: str,
+    def stage_allowed_flags(replacement: 'ReplacementWithAllowedFlags', attribute_value: str,
                             rules_file_name: str, line_number_range_start: int, line_number: int):
         flag_name_from_letter: dict[str, str] = {}
 
@@ -362,7 +372,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_apply_mode(replacement: 'Replacement', attribute_value: str,
+    def stage_apply_mode(replacement: 'OrdinaryDictionaryReplacement', attribute_value: str,
                          rules_file_name: str, line_number_range_start: int, line_number: int):
         apply_mode_match = ReplacementAuthority.compute_apply_mode_match(attribute_value)
 
@@ -396,7 +406,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_attribute_specifications(replacement: 'Replacement', attribute_value: str,
+    def stage_attribute_specifications(replacement: 'ReplacementWithAttributeSpecifications', attribute_value: str,
                                        rules_file_name: str, line_number_range_start: int, line_number: int):
         attribute_specifications_match = ReplacementAuthority.compute_attribute_specifications_match(attribute_value)
 
@@ -435,7 +445,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_closing_delimiter(replacement: 'Replacement', attribute_value: str,
+    def stage_closing_delimiter(replacement: 'FixedDelimitersReplacement', attribute_value: str,
                                 rules_file_name: str, line_number_range_start: int, line_number: int):
         closing_delimiter_match = ReplacementAuthority.compute_closing_delimiter_match(attribute_value)
 
@@ -467,7 +477,7 @@ class ReplacementAuthority:
             flags=re.ASCII | re.VERBOSE,
         )
 
-    def stage_concluding_replacements(self, replacement: 'Replacement', attribute_value: str,
+    def stage_concluding_replacements(self, replacement: 'ReplacementWithConcludingReplacements', attribute_value: str,
                                       rules_file_name: str, line_number_range_start: int, line_number: int):
         concluding_replacements: list['Replacement'] = []
 
@@ -523,7 +533,7 @@ class ReplacementAuthority:
             flags=re.ASCII | re.VERBOSE,
         )
 
-    def stage_content_replacements(self, replacement: 'Replacement', attribute_value: str,
+    def stage_content_replacements(self, replacement: 'ReplacementWithContentReplacements', attribute_value: str,
                                    rules_file_name: str, line_number_range_start: int, line_number: int):
         content_replacements: list['Replacement'] = []
 
@@ -581,7 +591,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_delimiter_conversion(replacement: 'Replacement', attribute_value: str,
+    def stage_delimiter_conversion(replacement: 'InlineAssortedDelimitersReplacement', attribute_value: str,
                                    rules_file_name: str, line_number_range_start: int, line_number: int):
         tag_name_from_delimiter_length_from_character: dict[str, dict[int, str]] = {}
 
@@ -629,7 +639,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_ending_pattern(replacement: 'Replacement', attribute_value: str,
+    def stage_ending_pattern(replacement: 'PartitioningReplacement', attribute_value: str,
                              rules_file_name: str, line_number_range_start: int, line_number: int):
         ending_pattern_match = ReplacementAuthority.compute_ending_pattern_match(attribute_value)
 
@@ -678,7 +688,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_epilogue_delimiter(replacement: 'Replacement', attribute_value: str,
+    def stage_epilogue_delimiter(replacement: 'ExtensibleFenceReplacement', attribute_value: str,
                                  rules_file_name: str, line_number_range_start: int, line_number: int):
         epilogue_delimiter_match = ReplacementAuthority.compute_epilogue_delimiter_match(attribute_value)
 
@@ -714,7 +724,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_extensible_delimiter(replacement: 'Replacement', attribute_value: str,
+    def stage_extensible_delimiter(replacement: 'ExtensibleFenceReplacement', attribute_value: str,
                                    rules_file_name: str, line_number_range_start: int, line_number: int):
         extensible_delimiter_match = ReplacementAuthority.compute_extensible_delimiter_match(attribute_value)
 
@@ -784,7 +794,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_opening_delimiter(replacement: 'Replacement', attribute_value: str,
+    def stage_opening_delimiter(replacement: 'FixedDelimitersReplacement', attribute_value: str,
                                 rules_file_name: str, line_number_range_start: int, line_number: int):
         opening_delimiter_match = ReplacementAuthority.compute_opening_delimiter_match(attribute_value)
 
@@ -851,7 +861,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_prohibited_content(replacement: 'Replacement', attribute_value: str,
+    def stage_prohibited_content(replacement: 'ReplacementWithProhibitedContent', attribute_value: str,
                                  rules_file_name: str, line_number_range_start: int, line_number: int):
         prohibited_content_match = ReplacementAuthority.compute_prohibited_content_match(attribute_value)
 
@@ -888,7 +898,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_prologue_delimiter(replacement: 'Replacement', attribute_value: str,
+    def stage_prologue_delimiter(replacement: 'ExtensibleFenceReplacement', attribute_value: str,
                                  rules_file_name: str, line_number_range_start: int, line_number: int):
         prologue_delimiter_match = ReplacementAuthority.compute_prologue_delimiter_match(attribute_value)
 
@@ -991,7 +1001,7 @@ class ReplacementAuthority:
             flags=re.ASCII | re.VERBOSE,
         )
 
-    def stage_replacements(self, replacement: 'Replacement', attribute_value: str,
+    def stage_replacements(self, replacement: 'ReplacementSequence', attribute_value: str,
                            rules_file_name: str, line_number_range_start: int, line_number: int):
         matched_replacements: list['Replacement'] = []
 
@@ -1043,7 +1053,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_starting_pattern(replacement: 'Replacement', attribute_value: str,
+    def stage_starting_pattern(replacement: 'PartitioningReplacement', attribute_value: str,
                                rules_file_name: str, line_number_range_start: int, line_number: int):
         starting_pattern_match = ReplacementAuthority.compute_starting_pattern_match(attribute_value)
 
@@ -1087,7 +1097,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_syntax_type(replacement: 'Replacement', attribute_value: str,
+    def stage_syntax_type(replacement: 'ReplacementWithSyntaxType', attribute_value: str,
                           rules_file_name: str, line_number_range_start: int, line_number: int):
         syntax_type_match = ReplacementAuthority.compute_syntax_type_match(attribute_value)
 
@@ -1119,7 +1129,7 @@ class ReplacementAuthority:
         )
 
     @staticmethod
-    def stage_tag_name(replacement: 'Replacement', attribute_value: str,
+    def stage_tag_name(replacement: 'ReplacementWithTagName', attribute_value: str,
                        rules_file_name: str, line_number_range_start: int, line_number: int):
         tag_name_match = ReplacementAuthority.compute_tag_name_match(attribute_value)
 
@@ -1287,64 +1297,81 @@ class ReplacementAuthority:
             assert attribute_value is not None
 
             if attribute_name == 'allowed_flags':
+                assert isinstance(replacement, ReplacementWithAllowedFlags)
                 ReplacementAuthority.stage_allowed_flags(replacement, attribute_value,
                                                          rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'apply_mode':
+                assert isinstance(replacement, OrdinaryDictionaryReplacement)
                 ReplacementAuthority.stage_apply_mode(replacement, attribute_value,
                                                       rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'attribute_specifications':
+                assert isinstance(replacement, ReplacementWithAttributeSpecifications)
                 ReplacementAuthority.stage_attribute_specifications(replacement, attribute_value,
                                                                     rules_file_name,
                                                                     line_number_range_start, line_number)
             elif attribute_name == 'closing_delimiter':
+                assert isinstance(replacement, FixedDelimitersReplacement)
                 ReplacementAuthority.stage_closing_delimiter(replacement, attribute_value,
                                                              rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'concluding_replacements':
+                assert isinstance(replacement, ReplacementWithConcludingReplacements)
                 self.stage_concluding_replacements(replacement, attribute_value,
                                                    rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'content_replacements':
+                assert isinstance(replacement, ReplacementWithContentReplacements)
                 self.stage_content_replacements(replacement, attribute_value,
                                                 rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'delimiter_conversion':
+                assert isinstance(replacement, InlineAssortedDelimitersReplacement)
                 ReplacementAuthority.stage_delimiter_conversion(replacement, attribute_value,
                                                                 rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'ending_pattern':
+                assert isinstance(replacement, PartitioningReplacement)
                 ReplacementAuthority.stage_ending_pattern(replacement, attribute_value,
                                                           rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'epilogue_delimiter':
+                assert isinstance(replacement, ExtensibleFenceReplacement)
                 ReplacementAuthority.stage_epilogue_delimiter(replacement, attribute_value,
                                                               rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'extensible_delimiter':
+                assert isinstance(replacement, ExtensibleFenceReplacement)
                 ReplacementAuthority.stage_extensible_delimiter(replacement, attribute_value,
                                                                 rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'negative_flag':
                 ReplacementAuthority.stage_negative_flag(replacement, attribute_value,
                                                          rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'opening_delimiter':
+                assert isinstance(replacement, FixedDelimitersReplacement)
                 ReplacementAuthority.stage_opening_delimiter(replacement, attribute_value,
                                                              rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'positive_flag':
                 ReplacementAuthority.stage_positive_flag(replacement, attribute_value,
                                                          rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'prohibited_content':
+                assert isinstance(replacement, ReplacementWithProhibitedContent)
                 ReplacementAuthority.stage_prohibited_content(replacement, attribute_value,
                                                               rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'prologue_delimiter':
+                assert isinstance(replacement, ExtensibleFenceReplacement)
                 ReplacementAuthority.stage_prologue_delimiter(replacement, attribute_value,
                                                               rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'queue_position':
                 self.stage_queue_position(replacement, attribute_value,
                                           rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'replacements':
+                assert isinstance(replacement, ReplacementSequence)
                 self.stage_replacements(replacement, attribute_value,
                                         rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'starting_pattern':
+                assert isinstance(replacement, PartitioningReplacement)
                 ReplacementAuthority.stage_starting_pattern(replacement, attribute_value,
                                                             rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'syntax_type':
+                assert isinstance(replacement, ReplacementWithSyntaxType)
                 ReplacementAuthority.stage_syntax_type(replacement, attribute_value,
                                                        rules_file_name, line_number_range_start, line_number)
             elif attribute_name == 'tag_name':
+                assert isinstance(replacement, ReplacementWithTagName)
                 ReplacementAuthority.stage_tag_name(replacement, attribute_value,
                                                     rules_file_name, line_number_range_start, line_number)
 
