@@ -306,6 +306,7 @@ class OrdinaryDictionaryReplacement(
         return substitute_function
 
     def simultaneous_apply(self, string: str) -> str:
+        assert self._simultaneous_substitute_function is not None
         if len(self._substitute_from_pattern) > 0:
             string = self._simultaneous_regex_pattern_compiled.sub(
                 repl=self._simultaneous_substitute_function,
@@ -496,6 +497,7 @@ class FixedDelimitersReplacement(
                                                                    self._attribute_specifications, self._tag_name)
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
@@ -696,6 +698,7 @@ class ExtensibleFenceReplacement(
         )
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
@@ -852,6 +855,7 @@ class PartitioningReplacement(
         self._substitute_function = self.build_substitute_function(self._attribute_specifications, self._tag_name)
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
@@ -1004,8 +1008,8 @@ class InlineAssortedDelimitersReplacement(
         )
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         string_has_changed = True
-
         while string_has_changed:
             new_string = self._regex_pattern_compiled.sub(repl=self._substitute_function, string=string)
             string_has_changed = new_string != string
@@ -1158,6 +1162,7 @@ class HeadingReplacement(
         self._substitute_function = HeadingReplacement.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
@@ -1258,6 +1263,7 @@ class ReferenceDefinitionReplacement(
         self._substitute_function = self.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
@@ -1367,6 +1373,7 @@ class SpecifiedImageReplacement(
         self._substitute_function = SpecifiedImageReplacement.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
@@ -1500,6 +1507,7 @@ class ReferencedImageReplacement(
         self._substitute_function = self.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
@@ -1632,6 +1640,7 @@ class ExplicitLinkReplacement(
         )
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
@@ -1735,6 +1744,7 @@ class SpecifiedLinkReplacement(
         self._substitute_function = SpecifiedLinkReplacement.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
@@ -1866,6 +1876,7 @@ class ReferencedLinkReplacement(
         self._substitute_function = self.build_substitute_function(self._attribute_specifications)
 
     def _apply(self, string: str) -> str:
+        assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
             string=string,
