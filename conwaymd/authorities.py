@@ -337,26 +337,23 @@ class ReplacementAuthority:
 
         replacement.flag_name_from_letter = flag_name_from_letter
 
-    @staticmethod
-    def compute_apply_mode_match(attribute_value: str) -> Optional[re.Match]:
-        return re.fullmatch(
-            pattern=r'''
-                [\s]*
-                (?:
-                    (?P<apply_mode> SIMULTANEOUS | SEQUENTIAL )
-                        |
-                    (?P<invalid_value> [\s\S]*? )
-                )
-                [\s]*
-            ''',
-            string=attribute_value,
-            flags=re.ASCII | re.VERBOSE
-        )
+    APPLY_MODE_PATTERN = re.compile(
+        pattern=r'''
+            [\s]*
+            (?:
+                (?P<apply_mode> SIMULTANEOUS | SEQUENTIAL )
+                    |
+                (?P<invalid_value> [\s\S]*? )
+            )
+            [\s]*
+        ''',
+        flags=re.ASCII | re.VERBOSE
+    )
 
     @staticmethod
     def stage_apply_mode(replacement: 'OrdinaryDictionaryReplacement', attribute_value: str,
                          rules_file_name: str, line_number_range_start: int, line_number: int):
-        apply_mode_match = ReplacementAuthority.compute_apply_mode_match(attribute_value)
+        apply_mode_match = ReplacementAuthority.APPLY_MODE_PATTERN.fullmatch(attribute_value)
 
         invalid_value = apply_mode_match.group('invalid_value')
         if invalid_value is not None:
