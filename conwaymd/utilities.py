@@ -55,9 +55,10 @@ def de_indent(string: str) -> str:
     indentations = NON_EMPTY_INITIAL_WHITESPACE_PATTERN.findall(string)
     longest_common_indentation = compute_longest_common_prefix(indentations)
 
-    string = initial_indentation_pattern(longest_common_indentation).sub(repl='', string=string)
+    if longest_common_indentation == '':
+        return string
 
-    return string
+    return initial_indentation_pattern(longest_common_indentation).sub(repl='', string=string)
 
 
 def escape_attribute_value_html(value: str) -> str:
