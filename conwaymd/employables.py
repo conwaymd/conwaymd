@@ -1922,11 +1922,9 @@ class ReferencedLinkReplacement(
             except UnrecognisedLabelException:
                 return match.group()
 
-            if href is not None:
-                href_protected = PlaceholderMaster.protect(href)
-                href_attribute_specification = f'href={href_protected}'
-            else:
-                href_attribute_specification = ''
+            assert href is not None
+            href_protected = PlaceholderMaster.protect(href)
+            href_attribute_specification = f'href={href_protected}'
 
             if title is not None:
                 title_protected = PlaceholderMaster.protect(title)
