@@ -79,10 +79,9 @@ class PlaceholderMaster:
         It just so happens that the act of replacing occurrences
         of «marker» is equivalent to protecting them with a placeholder.
         """
-        return re.sub(
-            pattern=PlaceholderMaster.MARKER,
-            repl=PlaceholderMaster.protect(PlaceholderMaster.MARKER),
-            string=string,
+        return string.replace(
+            PlaceholderMaster.MARKER,
+            PlaceholderMaster.protect(PlaceholderMaster.MARKER),
         )
 
     @staticmethod
