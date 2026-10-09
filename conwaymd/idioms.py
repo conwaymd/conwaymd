@@ -199,7 +199,7 @@ def build_attributes_sequence(attribute_specifications: str, use_protection: boo
     For example, `id=x #y .a .b name=value .=c class="d"` shall be converted to the attribute sequence
     ` id="y" class="a b c d" name="value"`.
     """
-    attribute_value_from_name: dict[str, str] = {}
+    attribute_value_from_name: dict[str, Optional[str]] = {}
 
     for attribute_specification_match in compute_attribute_specification_matches(attribute_specifications):
         name_and_value = extract_attribute_name_and_value(attribute_specification_match)
