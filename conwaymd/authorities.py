@@ -1379,7 +1379,7 @@ class ReplacementAuthority:
         return PostCommitState(class_name=None, replacement=None, attribute_name=None, attribute_value=None,
                                substitution=None, line_number_range_start=None)
 
-    def legislate(self, replacement_rules: str, rules_file_name: str, cmd_name: str):
+    def legislate(self, replacement_rules: Optional[str], rules_file_name: str, cmd_name: str):
         if replacement_rules is None:
             return
 
