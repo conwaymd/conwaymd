@@ -483,6 +483,10 @@ class FixedDelimitersReplacement(
             raise MissingAttributeException('closing_delimiter')
 
     def _set_apply_method_variables(self):
+        assert self._syntax_type_is_block is not None
+        assert self._opening_delimiter is not None
+        assert self._closing_delimiter is not None
+
         self._has_flags = len(self._flag_name_from_letter) > 0
         self._regex_pattern_compiled = re.compile(
             pattern=FixedDelimitersReplacement.build_regex_pattern(self._syntax_type_is_block,
@@ -675,6 +679,10 @@ class ExtensibleFenceReplacement(
             raise MissingAttributeException('extensible_delimiter')
 
     def _set_apply_method_variables(self):
+        assert self._syntax_type_is_block is not None
+        assert self._extensible_delimiter_character is not None
+        assert self._extensible_delimiter_min_length is not None
+
         self._has_flags = len(self._flag_name_from_letter) > 0
         self._regex_pattern_compiled = re.compile(
             pattern=ExtensibleFenceReplacement.build_regex_pattern(
@@ -844,6 +852,8 @@ class PartitioningReplacement(
             raise MissingAttributeException('starting_pattern')
 
     def _set_apply_method_variables(self):
+        assert self._starting_pattern is not None
+
         self._regex_pattern_compiled = re.compile(
             pattern=PartitioningReplacement.build_regex_pattern(
                 self._starting_pattern,
