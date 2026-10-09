@@ -89,9 +89,9 @@ def escape_attribute_value_html(value: str) -> str:
     - Hexadecimal code points are any run of up to 6 digits.
     """
     value = NON_ENTITY_AMPERSAND_PATTERN.sub(repl='&amp;', string=value)
-    value = re.sub(pattern='<', repl='&lt;', string=value)
-    value = re.sub(pattern='>', repl='&gt;', string=value)
-    value = re.sub(pattern='"', repl='&quot;', string=value)
+    value = value.replace('<', '&lt;')
+    value = value.replace('>', '&gt;')
+    value = value.replace('"', '&quot;')
 
     return value
 
