@@ -43,11 +43,6 @@ class PlaceholderMaster:
     _RUN_CODE_POINT_MIN = ord(_RUN_CHARACTER_MIN)
     _REPLACEMENT_CODE_POINT = ord(_REPLACEMENT_CHARACTER)
 
-    _PLACEHOLDER_PATTERN_COMPILED = re.compile(
-        pattern=f'{MARKER} (?P<run_characters> [{_RUN_CHARACTER_MIN}-{_RUN_CHARACTER_MAX}]* ) {MARKER}',
-        flags=re.VERBOSE,
-    )
-
     @staticmethod
     def _unprotect_substitute_function(placeholder_match: re.Match) -> str:
         run_characters = placeholder_match.group('run_characters')
@@ -108,12 +103,17 @@ class PlaceholderMaster:
 
         return placeholder
 
+    _PLACEHOLDER_PATTERN = re.compile(
+        pattern=f'{MARKER} (?P<run_characters> [{_RUN_CHARACTER_MIN}-{_RUN_CHARACTER_MAX}]* ) {MARKER}',
+        flags=re.VERBOSE,
+    )
+
     @staticmethod
     def unprotect(string: str) -> str:
         """
         Unprotect a string by restoring placeholders to their strings.
         """
-        return PlaceholderMaster._PLACEHOLDER_PATTERN_COMPILED.sub(
+        return PlaceholderMaster._PLACEHOLDER_PATTERN.sub(
             repl=PlaceholderMaster._unprotect_substitute_function,
             string=string,
         )
