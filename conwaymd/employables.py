@@ -708,6 +708,11 @@ class ExtensibleFenceReplacement(
         )
 
     def _apply(self, string: str) -> str:
+        assert isinstance(self._extensible_delimiter_min_length, int)
+        extensible_delimiter = self._extensible_delimiter_character * self._extensible_delimiter_min_length
+        if extensible_delimiter not in string:
+            return string
+
         assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
             repl=self._substitute_function,
