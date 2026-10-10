@@ -66,14 +66,14 @@ NON_ENTITY_AMPERSAND_PATTERN = re.compile(
         [&]
         (?!
             (?:
-                [a-zA-Z]{1,31}
+                [a-z]{1,31}
                     |
-                [#] (?: [0-9]{1,7} | [xX] [0-9a-fA-F]{1,6} )
+                [#] (?: [0-9]{1,7} | [x] [0-9a-f]{1,6} )
             )
             [;]
         )
     ''',
-    flags=re.VERBOSE,
+    flags=re.IGNORECASE | re.VERBOSE,
 )
 
 
