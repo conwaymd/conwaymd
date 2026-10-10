@@ -6,6 +6,7 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 Placeholder protection.
 """
 
+import functools
 import re
 import warnings
 
@@ -85,6 +86,7 @@ class PlaceholderMaster:
         )
 
     @staticmethod
+    @functools.lru_cache(maxsize=None)
     def protect(string: str) -> str:
         """
         Protect a string by converting it to a placeholder.
@@ -108,6 +110,7 @@ class PlaceholderMaster:
     )
 
     @staticmethod
+    @functools.lru_cache(maxsize=None)
     def unprotect(string: str) -> str:
         """
         Unprotect a string by restoring placeholders to their strings.
