@@ -4,7 +4,7 @@
 ## [Unreleased]
 
 - Fixed `is_whitespace_only` regex not compiled
-- Cached placeholder methods
+- Cached placeholder and attribute sequence methods
 
 
 ## [v6.1.0] Regex precompilation (2026-10-10)

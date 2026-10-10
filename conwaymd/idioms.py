@@ -6,6 +6,7 @@ Licensed under "MIT No Attribution" (MIT-0), see LICENSE.
 Common idioms.
 """
 
+import functools
 import re
 from typing import Optional
 
@@ -164,6 +165,7 @@ ATTRIBUTE_SPECIFICATION_PATTERN = re.compile(
 )
 
 
+@functools.lru_cache(maxsize=None)
 def build_attributes_sequence(attribute_specifications: str, use_protection: bool = False) -> str:
     """
     Convert CMD attribute specifications to an attribute sequence.
