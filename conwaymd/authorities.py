@@ -99,9 +99,11 @@ class ReplacementAuthority:
     def print_traceback(exception: Exception):
         traceback.print_exception(type(exception), exception, exception.__traceback__)
 
+    ASCII_WHITESPACE_PATTERN = re.compile(pattern=r'[\s]*', flags=re.ASCII)
+
     @staticmethod
     def is_whitespace_only(line: str) -> bool:
-        return bool(re.fullmatch(pattern=r'[\s]*', string=line, flags=re.ASCII))
+        return bool(ReplacementAuthority.ASCII_WHITESPACE_PATTERN.fullmatch(string=line))
 
     @staticmethod
     def is_comment(line: str) -> bool:
