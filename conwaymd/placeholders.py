@@ -26,12 +26,12 @@ class PlaceholderMaster:
     this replaces occurrences of «marker» themselves with a placeholder,
     lest those occurrences of «marker» be confounding.
     The very last call to PlaceholderMaster should be to unprotect the text
-     (restoring the strings were protected with a placeholder).
+    (restoring the strings were protected with a placeholder).
 
     It is assumed the user will not define replacement rules
     that tamper with strings of the form `«marker»«run_characters»«marker»`.
     Note that the user should not be using Private Use Area code points in the first place,
-     see <https://www.w3.org/TR/charmod/#C073>.
+    see <https://www.w3.org/TR/charmod/#C073>.
     """
     def __new__(cls):
         raise TypeError('PlaceholderMaster cannot be instantiated')
