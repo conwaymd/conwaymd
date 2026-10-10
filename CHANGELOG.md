@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v6.2.0] Regex precompilation II (2026-10-11)
+
 - Fixed `is_whitespace_only` regex not compiled
 - Cached placeholder methods, attribute sequence method, etc.
 - Added early exit for `ExtensibleFenceReplacement`
@@ -238,7 +241,8 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 - Initial release.
 
 
-[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v6.1.0...HEAD
+[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v6.2.0...HEAD
+[v6.2.0]: https://github.com/conwaymd/conwaymd/compare/v6.1.0...v6.2.0
 [v6.1.0]: https://github.com/conwaymd/conwaymd/compare/v6.0.0...v6.1.0
 [v6.0.0]: https://github.com/conwaymd/conwaymd/compare/v5.1.0...v6.0.0
 [v5.1.0]: https://github.com/conwaymd/conwaymd/compare/v5.0.1...v5.1.0
