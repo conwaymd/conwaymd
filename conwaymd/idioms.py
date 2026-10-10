@@ -7,11 +7,10 @@ Common idioms.
 """
 
 import re
-from typing import Iterable, Optional
+from typing import Optional
 
 from conwaymd.placeholders import PlaceholderMaster
 from conwaymd.utilities import escape_attribute_value_html
-
 
 ATTRIBUTE_NAME_FROM_ABBREVIATION = {
     '#': 'id',

@@ -11,7 +11,7 @@ import os
 import re
 import sys
 import traceback
-from typing import Iterable, NamedTuple, Optional
+from typing import NamedTuple, Optional
 
 from conwaymd._version import __version__
 from conwaymd.bases import (
