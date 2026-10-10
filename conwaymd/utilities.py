@@ -77,6 +77,7 @@ NON_ENTITY_AMPERSAND_PATTERN = re.compile(
 )
 
 
+@functools.lru_cache(maxsize=None)
 def escape_attribute_value_html(value: str) -> str:
     """
     Escape an attribute value that will be delimited by double quotes.
