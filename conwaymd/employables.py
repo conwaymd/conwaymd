@@ -600,20 +600,20 @@ class ExtensibleFenceReplacement(
     _prologue_delimiter: str
     _extensible_delimiter_character: Optional[str]
     _extensible_delimiter_min_length: Optional[int]
-    _extensible_delimiter: Optional[str]
     _epilogue_delimiter: str
     _regex_pattern_compiled: Optional[re.Pattern]
     _substitute_function: Optional[Callable[[re.Match], str]]
+    _necessary_substring: Optional[str]
 
     def __init__(self, id_: str, verbose_mode_enabled: bool):
         super().__init__(id_, verbose_mode_enabled)
         self._prologue_delimiter = ''
         self._extensible_delimiter_character = None
         self._extensible_delimiter_min_length = None
-        self._extensible_delimiter = None
         self._epilogue_delimiter = ''
         self._regex_pattern_compiled = None
         self._substitute_function = None
+        self._necessary_substring = None
 
     @property
     def attribute_names(self) -> tuple[str, ...]:
@@ -688,7 +688,6 @@ class ExtensibleFenceReplacement(
         assert self._extensible_delimiter_min_length is not None
 
         self._has_flags = len(self._flag_name_from_letter) > 0
-        self._extensible_delimiter = self._extensible_delimiter_character * self._extensible_delimiter_min_length
         self._regex_pattern_compiled = re.compile(
             pattern=ExtensibleFenceReplacement.build_regex_pattern(
                 self._syntax_type_is_block,
@@ -709,11 +708,15 @@ class ExtensibleFenceReplacement(
             self._attribute_specifications,
             self._tag_name,
         )
+        self._necessary_substring = (
+            self._prologue_delimiter
+            + self._extensible_delimiter_character * self._extensible_delimiter_min_length
+        )
 
     def _apply(self, string: str) -> str:
-        assert self._extensible_delimiter is not None
-        if self._extensible_delimiter not in string:
-            return string
+        assert self._necessary_substring is not None
+        if self._necessary_substring not in string:
+            return string  # fast exit
 
         assert self._substitute_function is not None
         return self._regex_pattern_compiled.sub(
