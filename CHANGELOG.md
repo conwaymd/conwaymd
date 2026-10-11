@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v6.2.1] Necessary substring precomputation (2026-10-11)
+
 - Fixed early exit substring for `ExtensibleFenceReplacement` should be precomputed
 
 
@@ -243,7 +246,8 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 - Initial release.
 
 
-[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v6.2.0...HEAD
+[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v6.2.1...HEAD
+[v6.2.1]: https://github.com/conwaymd/conwaymd/compare/v6.2.0...v6.2.1
 [v6.2.0]: https://github.com/conwaymd/conwaymd/compare/v6.1.0...v6.2.0
 [v6.1.0]: https://github.com/conwaymd/conwaymd/compare/v6.0.0...v6.1.0
 [v6.0.0]: https://github.com/conwaymd/conwaymd/compare/v5.1.0...v6.0.0
