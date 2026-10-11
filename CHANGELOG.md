@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Fixed early exit substring for `ExtensibleFenceReplacement` should be precomputed
+
 
 ## [v6.2.0] Regex precompilation II (2026-10-11)
 
