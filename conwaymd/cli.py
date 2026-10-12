@@ -140,17 +140,7 @@ def write_cache(cached_details_from_cmd_name: dict[str, dict],
         sys.exit(GENERIC_ERROR_EXIT_CODE)
 
 
-def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: Optional[dict[str, dict]],
-                       verbose_mode_enabled: bool, uses_command_line_argument: bool,
-                       ) -> tuple[str, Optional[dict[str, str]]]:
-    """
-    Generate (or leave unchanged) the HTML file corresponding to a CMD file.
-
-    Return the tuple (normalised CMD name-without-extension, optional dictionary of cached details).
-    """
-    cmd_name = extract_cmd_name(cmd_file_name_argument)
-    cmd_file_name = f'{cmd_name}.cmd'
-
+def read_cmd_file(cmd_file_name_argument: str, cmd_file_name: str, uses_command_line_argument: bool) -> str:
     try:
         with open(cmd_file_name, 'r', encoding='utf-8') as cmd_file:
             cmd = cmd_file.read()
@@ -161,6 +151,21 @@ def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name
         else:
             error_message = f'file `{cmd_file_name}` not found for `{cmd_file_name}` in cmd_file_name_list'
             raise FileNotFoundError(error_message) from file_not_found_error
+
+    return cmd
+
+
+def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: Optional[dict[str, dict]],
+                       verbose_mode_enabled: bool, uses_command_line_argument: bool,
+                       ) -> tuple[str, Optional[dict[str, str]]]:
+    """
+    Generate (or leave unchanged) the HTML file corresponding to a CMD file.
+
+    Return the tuple (normalised CMD name-without-extension, optional dictionary of cached details).
+    """
+    cmd_name = extract_cmd_name(cmd_file_name_argument)
+    cmd_file_name = f'{cmd_name}.cmd'
+    cmd = read_cmd_file(cmd_file_name_argument, cmd_file_name, uses_command_line_argument)
 
     html_file_name = f'{cmd_name}.html'
 
