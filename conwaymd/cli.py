@@ -187,9 +187,8 @@ def determine_matching_cached_details(cmd_name: str, cmd_digest: str, html_file_
             html_binary = html_binary_file.read()
     except OSError:
         return None
-    else:
-        html_digest = hashlib.sha256(html_binary).hexdigest()
 
+    html_digest = hashlib.sha256(html_binary).hexdigest()
     if html_digest != cached_html_digest:
         return None
 
