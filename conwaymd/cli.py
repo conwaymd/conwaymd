@@ -183,12 +183,12 @@ def determine_matching_cached_details(cmd_name: str, cmd_digest: str, html_file_
         return None
 
     try:
-        with open(html_file_name, 'rb') as html_binary_file:
-            html_binary = html_binary_file.read()
-    except OSError:
+        with open(html_file_name, 'r', encoding='utf-8') as html_file:
+            html = html_file.read()
+    except (OSError, UnicodeDecodeError):
         return None
 
-    html_digest = hashlib.sha256(html_binary).hexdigest()
+    html_digest = hashlib.sha256(html.encode('utf-8')).hexdigest()
     if html_digest != cached_html_digest:
         return None
 
