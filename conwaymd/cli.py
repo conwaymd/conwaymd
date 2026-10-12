@@ -166,6 +166,44 @@ def write_html_file(html_file_name: str, html: str):
         print(f'success: wrote to `{html_file_name}`')
 
 
+def determine_matching_cached_details(cmd_name: str, cmd_digest: str, html_file_name: str,
+                                      cached_details_from_cmd_name: dict[str, dict]) -> Optional[dict[str, str]]:
+    try:
+        cached_details = cached_details_from_cmd_name[cmd_name]
+        cached_version = cached_details[VERSION_KEY]
+        cached_cmd_digest = cached_details[CMD_DIGEST_KEY]
+        cached_html_digest = cached_details[HTML_DIGEST_KEY]
+    except KeyError:
+        return None
+
+    if __version__ != cached_version:
+        return None
+
+    if cmd_digest != cached_cmd_digest:
+        return None
+
+    try:
+        with open(html_file_name, 'rb') as html_binary_file:
+            html_binary = html_binary_file.read()
+    except OSError:
+        return None
+    else:
+        html_digest = hashlib.sha256(html_binary).hexdigest()
+
+    if html_digest != cached_html_digest:
+        return None
+
+    return {
+        VERSION_KEY: cached_version,
+        CMD_DIGEST_KEY: cached_cmd_digest,
+        HTML_DIGEST_KEY: cached_html_digest,
+    }
+
+
+def skip_html_file(html_file_name: str):
+    print(f'success: skipped `{html_file_name}` per cache')
+
+
 def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: Optional[dict[str, dict]],
                        cache_mode_enabled: bool, verbose_mode_enabled: bool, uses_command_line_argument: bool,
                        ) -> tuple[str, Optional[dict[str, str]]]:
@@ -181,46 +219,33 @@ def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name
 
     html_file_name = f'{cmd_name}.html'
 
-    if cached_details_from_cmd_name is None:
-        cmd_digest = None  # no caching logic required
-    else:
+    if cache_mode_enabled:
+        assert cached_details_from_cmd_name is not None
         cmd_digest = hashlib.sha256(cmd.encode('utf-8')).hexdigest()
 
-        try:
-            cached_details = cached_details_from_cmd_name[cmd_name]
-            cached_version = cached_details[VERSION_KEY]
-            cached_cmd_digest = cached_details[CMD_DIGEST_KEY]
-            cached_html_digest = cached_details[HTML_DIGEST_KEY]
-        except KeyError:
-            pass
-        else:
-            if __version__ == cached_version:
-                if cmd_digest == cached_cmd_digest:
-                    try:
-                        with open(html_file_name, 'rb') as html_binary_file:
-                            html_binary = html_binary_file.read()
-                    except OSError:
-                        pass
-                    else:
-                        html_digest = hashlib.sha256(html_binary).hexdigest()
-                        if html_digest == cached_html_digest:
-                            print(f'success: left `{html_file_name}` unchanged per cache')
-                            return cmd_name, cached_details
+        matching_cached_details = determine_matching_cached_details(cmd_name, cmd_digest, html_file_name,
+                                                                    cached_details_from_cmd_name)
+        if matching_cached_details is not None:
+            skip_html_file(html_file_name)
+            return cmd_name, matching_cached_details
+    else:
+        cmd_digest = None
 
     html = cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled)
 
     write_html_file(html_file_name, html)
 
-    if cmd_digest is None:
+    if not cache_mode_enabled:
         return cmd_name, None
-    else:
-        new_html_digest = hashlib.sha256(html.encode('utf-8')).hexdigest()
-        new_cached_details = {
-            VERSION_KEY: __version__,
-            CMD_DIGEST_KEY: cmd_digest,
-            HTML_DIGEST_KEY: new_html_digest,
-        }
-        return cmd_name, new_cached_details
+
+    assert cmd_digest is not None
+    new_html_digest = hashlib.sha256(html.encode('utf-8')).hexdigest()
+    new_cached_details = {
+        VERSION_KEY: __version__,
+        CMD_DIGEST_KEY: cmd_digest,
+        HTML_DIGEST_KEY: new_html_digest,
+    }
+    return cmd_name, new_cached_details
 
 
 def main():
