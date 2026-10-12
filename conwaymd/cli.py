@@ -114,7 +114,8 @@ def read_cache() -> dict[str, dict]:
     }
 
 
-def generate_html_file(cmd_file_name_argument: str, verbose_mode_enabled: bool, uses_command_line_argument: bool):
+def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: dict[str, dict],
+                       verbose_mode_enabled: bool, uses_command_line_argument: bool):
     cmd_name = extract_cmd_name(cmd_file_name_argument)
     cmd_file_name = f'{cmd_name}.cmd'
     try:
@@ -164,11 +165,13 @@ def main():
             if is_cmd_file(file_name)
         ]
         for cmd_file_name in sorted(cmd_file_names):
-            generate_html_file(cmd_file_name, verbose_mode_enabled, uses_command_line_argument=False)
+            generate_html_file(cmd_file_name, cached_details_from_cmd_name, verbose_mode_enabled,
+                               uses_command_line_argument=False)
 
     else:
         for cmd_file_name_argument in cmd_file_name_arguments:
-            generate_html_file(cmd_file_name_argument, verbose_mode_enabled, uses_command_line_argument=True)
+            generate_html_file(cmd_file_name_argument, cached_details_from_cmd_name, verbose_mode_enabled,
+                               uses_command_line_argument=True)
 
 
 if __name__ == '__main__':
