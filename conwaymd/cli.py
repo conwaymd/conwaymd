@@ -155,6 +155,17 @@ def read_cmd_file(cmd_file_name_argument: str, cmd_file_name: str, uses_command_
     return cmd
 
 
+def write_html_file(html_file_name: str, html: str):
+    try:
+        with open(html_file_name, 'w', encoding='utf-8') as html_file:
+            html_file.write(html)
+    except OSError:
+        print(f'error: cannot write to `{html_file_name}`', file=sys.stderr)
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+    else:
+        print(f'success: wrote to `{html_file_name}`')
+
+
 def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: Optional[dict[str, dict]],
                        verbose_mode_enabled: bool, uses_command_line_argument: bool,
                        ) -> tuple[str, Optional[dict[str, str]]]:
@@ -197,14 +208,7 @@ def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name
 
     html = cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled)
 
-    try:
-        with open(html_file_name, 'w', encoding='utf-8') as html_file:
-            html_file.write(html)
-    except OSError:
-        print(f'error: cannot write to `{html_file_name}`', file=sys.stderr)
-        sys.exit(GENERIC_ERROR_EXIT_CODE)
-    else:
-        print(f'success: wrote to `{html_file_name}`')
+    write_html_file(html_file_name, html)
 
     if cmd_digest is None:
         return cmd_name, None
