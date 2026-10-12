@@ -167,7 +167,7 @@ def write_html_file(html_file_name: str, html: str):
 
 
 def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: Optional[dict[str, dict]],
-                       verbose_mode_enabled: bool, uses_command_line_argument: bool,
+                       cache_mode_enabled: bool, verbose_mode_enabled: bool, uses_command_line_argument: bool,
                        ) -> tuple[str, Optional[dict[str, str]]]:
     """
     Generate (or leave unchanged) the HTML file corresponding to a CMD file.
@@ -249,13 +249,15 @@ def main():
             if is_cmd_file(file_name)
         ]
         for cmd_file_name in sorted(cmd_file_names):
-            item = generate_html_file(cmd_file_name, cached_details_from_cmd_name, verbose_mode_enabled,
+            item = generate_html_file(cmd_file_name, cached_details_from_cmd_name,
+                                      cache_mode_enabled, verbose_mode_enabled,
                                       uses_command_line_argument=False)
             new_caching_items.append(item)
 
     else:
         for cmd_file_name_argument in cmd_file_name_arguments:
-            item = generate_html_file(cmd_file_name_argument, cached_details_from_cmd_name, verbose_mode_enabled,
+            item = generate_html_file(cmd_file_name_argument, cached_details_from_cmd_name,
+                                      cache_mode_enabled, verbose_mode_enabled,
                                       uses_command_line_argument=True)
             new_caching_items.append(item)
 
