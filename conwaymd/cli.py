@@ -8,15 +8,20 @@ Command-line interface.
 
 import argparse
 import ast
+import hashlib
 import os
 import re
 import sys
+from typing import Optional
 
 from conwaymd._version import __version__
 from conwaymd.constants import COMMAND_LINE_ERROR_EXIT_CODE, GENERIC_ERROR_EXIT_CODE
 from conwaymd.core import cmd_to_html
 
 CACHE_FILE_NAME = '.cmdcache'
+VERSION_KEY = 'version'
+CMD_DIGEST_KEY = 'cmd_digest'
+HTML_DIGEST_KEY = 'html_digest'
 
 DESCRIPTION = '''
     Convert Conway-Markdown (CMD) to HTML.
@@ -114,8 +119,14 @@ def read_cache() -> dict[str, dict]:
     }
 
 
-def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: dict[str, dict],
-                       verbose_mode_enabled: bool, uses_command_line_argument: bool):
+def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: Optional[dict[str, dict]],
+                       verbose_mode_enabled: bool, uses_command_line_argument: bool,
+                       ) -> tuple[str, Optional[dict[str, str]]]:
+    """
+    Generate (or leave unchanged) the HTML file corresponding to a CMD file.
+
+    Return the tuple (normalised CMD name-without-extension, optional dictionary of cached details).
+    """
     cmd_name = extract_cmd_name(cmd_file_name_argument)
     cmd_file_name = f'{cmd_name}.cmd'
     try:
@@ -129,16 +140,55 @@ def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name
             error_message = f'file `{cmd_file_name}` not found for `{cmd_file_name}` in cmd_file_name_list'
             raise FileNotFoundError(error_message) from file_not_found_error
 
+    html_file_name = f'{cmd_name}.html'
+
+    if cached_details_from_cmd_name is None:
+        cmd_digest = None  # no caching logic required
+    else:
+        cmd_digest = hashlib.sha256(cmd.encode('utf-8')).hexdigest()
+
+        try:
+            cached_details = cached_details_from_cmd_name[cmd_name]
+            cached_version = cached_details[VERSION_KEY]
+            cached_cmd_digest = cached_details[CMD_DIGEST_KEY]
+            cached_html_digest = cached_details[HTML_DIGEST_KEY]
+        except KeyError:
+            pass
+        else:
+            if __version__ == cached_version:
+                if cmd_digest == cached_cmd_digest:
+                    try:
+                        with open(html_file_name, 'rb') as html_binary_file:
+                            html_binary = html_binary_file.read()
+                    except OSError:
+                        pass
+                    else:
+                        html_digest = hashlib.sha256(html_binary).hexdigest()
+                        if html_digest == cached_html_digest:
+                            print(f'success: left `{html_file_name}` unchanged per cache')
+                            return cmd_name, cached_details
+
     html = cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled)
 
-    html_file_name = f'{cmd_name}.html'
     try:
         with open(html_file_name, 'w', encoding='utf-8') as html_file:
             html_file.write(html)
-        print(f'success: wrote to `{html_file_name}`')
     except OSError:
         print(f'error: cannot write to `{html_file_name}`', file=sys.stderr)
         sys.exit(GENERIC_ERROR_EXIT_CODE)
+    else:
+        print(f'success: wrote to `{html_file_name}`')
+
+    if cmd_digest is None:
+        return cmd_name, None
+    else:
+        new_html_digest = hashlib.sha256(html.encode('utf-8')).hexdigest()
+        new_cached_details = {
+            VERSION_KEY: __version__,
+            CMD_DIGEST_KEY: cmd_digest,
+            HTML_DIGEST_KEY: new_html_digest,
+        }
+        return cmd_name, new_cached_details
 
 
 def main():
