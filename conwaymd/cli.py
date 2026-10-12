@@ -176,6 +176,7 @@ def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name
     """
     cmd_name = extract_cmd_name(cmd_file_name_argument)
     cmd_file_name = f'{cmd_name}.cmd'
+
     cmd = read_cmd_file(cmd_file_name_argument, cmd_file_name, uses_command_line_argument)
 
     html_file_name = f'{cmd_name}.html'
