@@ -7,6 +7,7 @@ Command-line interface.
 """
 
 import argparse
+import ast
 import os
 import re
 import sys
@@ -14,6 +15,8 @@ import sys
 from conwaymd._version import __version__
 from conwaymd.constants import COMMAND_LINE_ERROR_EXIT_CODE, GENERIC_ERROR_EXIT_CODE
 from conwaymd.core import cmd_to_html
+
+CACHE_FILE_NAME = '.cmdcache'
 
 DESCRIPTION = '''
     Convert Conway-Markdown (CMD) to HTML.
@@ -25,8 +28,8 @@ CMD_FILE_NAME_HELP = '''
 ALL_MODE_HELP = '''
     convert all CMD files under the working directory
 '''
-CACHE_MODE_HELP = '''
-    utilise `.cmdcache` to skip unchanged files
+CACHE_MODE_HELP = f'''
+    utilise `{CACHE_FILE_NAME}` to skip unchanged files
 '''
 VERBOSE_MODE_HELP = '''
     run in verbose mode (prints every replacement applied)
@@ -89,6 +92,28 @@ def parse_command_line_arguments() -> argparse.Namespace:
     return argument_parser.parse_args()
 
 
+def read_cache() -> dict[str, dict]:
+    try:
+        with open(CACHE_FILE_NAME, 'r', encoding='utf-8') as cache_file:
+            cache_file_content = cache_file.read()
+    except OSError:
+        return {}
+
+    try:
+        cached_details_from_cmd_name = ast.literal_eval(cache_file_content)
+    except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+        return {}
+
+    if not isinstance(cached_details_from_cmd_name, dict):
+        return {}
+
+    return {
+        cmd_name: cached_details
+        for cmd_name, cached_details in cached_details_from_cmd_name.items()
+        if isinstance(cmd_name, str) and isinstance(cached_details, dict)
+    }
+
+
 def generate_html_file(cmd_file_name_argument: str, verbose_mode_enabled: bool, uses_command_line_argument: bool):
     cmd_name = extract_cmd_name(cmd_file_name_argument)
     cmd_file_name = f'{cmd_name}.cmd'
@@ -121,6 +146,11 @@ def main():
     all_mode_enabled = parsed_arguments.all_mode_enabled
     cache_mode_enabled = parsed_arguments.cache_mode_enabled
     verbose_mode_enabled = parsed_arguments.verbose_mode_enabled
+
+    if cache_mode_enabled:
+        cached_details_from_cmd_name = read_cache()
+    else:
+        cached_details_from_cmd_name = None
 
     if all_mode_enabled:
         if len(cmd_file_name_arguments) > 0:
