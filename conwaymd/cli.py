@@ -261,7 +261,8 @@ def main():
                                       uses_command_line_argument=True)
             new_caching_items.append(item)
 
-    if cached_details_from_cmd_name is not None:
+    if cache_mode_enabled:
+        assert cached_details_from_cmd_name is not None
         write_cache(cached_details_from_cmd_name, new_caching_items)
 
 
