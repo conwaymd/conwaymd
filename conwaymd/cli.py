@@ -119,6 +119,27 @@ def read_cache() -> dict[str, dict]:
     }
 
 
+def write_cache(cached_details_from_cmd_name: dict[str, dict],
+                new_caching_tuples: list[tuple[str, Optional[dict[str, str]]]]):
+    new_cached_details_from_cmd_name = {
+        **cached_details_from_cmd_name,
+        **{
+            cmd_name: new_cached_details
+            for cmd_name, new_cached_details in new_caching_tuples
+            if new_cached_details is not None
+        }
+    }
+
+    cache_content = str(new_cached_details_from_cmd_name)
+
+    try:
+        with open(CACHE_FILE_NAME, 'w', encoding='utf-8') as cache_file:
+            cache_file.write(cache_content)
+    except OSError:
+        print(f'error: cannot write to `{CACHE_FILE_NAME}`', file=sys.stderr)
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+
+
 def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: Optional[dict[str, dict]],
                        verbose_mode_enabled: bool, uses_command_line_argument: bool,
                        ) -> tuple[str, Optional[dict[str, str]]]:
@@ -203,6 +224,8 @@ def main():
     else:
         cached_details_from_cmd_name = None
 
+    new_caching_tuples: list[tuple[str, Optional[dict[str, str]]]] = []
+
     if all_mode_enabled:
         if len(cmd_file_name_arguments) > 0:
             print('error: option -a (or --all) cannot be used with positional argument', file=sys.stderr)
@@ -215,13 +238,18 @@ def main():
             if is_cmd_file(file_name)
         ]
         for cmd_file_name in sorted(cmd_file_names):
-            generate_html_file(cmd_file_name, cached_details_from_cmd_name, verbose_mode_enabled,
-                               uses_command_line_argument=False)
+            new_caching_tuple = generate_html_file(cmd_file_name, cached_details_from_cmd_name,
+                                                   verbose_mode_enabled, uses_command_line_argument=False)
+            new_caching_tuples.append(new_caching_tuple)
 
     else:
         for cmd_file_name_argument in cmd_file_name_arguments:
-            generate_html_file(cmd_file_name_argument, cached_details_from_cmd_name, verbose_mode_enabled,
-                               uses_command_line_argument=True)
+            new_caching_tuple = generate_html_file(cmd_file_name_argument, cached_details_from_cmd_name,
+                                                   verbose_mode_enabled, uses_command_line_argument=True)
+            new_caching_tuples.append(new_caching_tuple)
+
+    if cached_details_from_cmd_name is not None:
+        write_cache(cached_details_from_cmd_name, new_caching_tuples)
 
 
 if __name__ == '__main__':
