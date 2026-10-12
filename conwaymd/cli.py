@@ -25,6 +25,9 @@ CMD_FILE_NAME_HELP = '''
 ALL_MODE_HELP = '''
     convert all CMD files under the working directory
 '''
+CACHE_MODE_HELP = '''
+    utilise `.cmdcache` to skip unchanged files
+'''
 VERBOSE_MODE_HELP = '''
     run in verbose mode (prints every replacement applied)
 '''
@@ -62,6 +65,12 @@ def parse_command_line_arguments() -> argparse.Namespace:
         dest='all_mode_enabled',
         action='store_true',
         help=ALL_MODE_HELP,
+    )
+    argument_parser.add_argument(
+        '-c', '--cache',
+        dest='cache_mode_enabled',
+        action='store_true',
+        help=CACHE_MODE_HELP,
     )
     argument_parser.add_argument(
         '-x', '--verbose',
@@ -110,6 +119,7 @@ def main():
     parsed_arguments = parse_command_line_arguments()
     cmd_file_name_arguments = parsed_arguments.cmd_file_name_arguments
     all_mode_enabled = parsed_arguments.all_mode_enabled
+    cache_mode_enabled = parsed_arguments.cache_mode_enabled
     verbose_mode_enabled = parsed_arguments.verbose_mode_enabled
 
     if all_mode_enabled:
