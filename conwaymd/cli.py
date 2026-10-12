@@ -120,12 +120,12 @@ def read_cache() -> dict[str, dict]:
 
 
 def write_cache(cached_details_from_cmd_name: dict[str, dict],
-                new_caching_tuples: list[tuple[str, Optional[dict[str, str]]]]):
+                new_caching_items: list[tuple[str, Optional[dict[str, str]]]]):
     new_cached_details_from_cmd_name = {
         **cached_details_from_cmd_name,
         **{
             cmd_name: new_cached_details
-            for cmd_name, new_cached_details in new_caching_tuples
+            for cmd_name, new_cached_details in new_caching_items
             if new_cached_details is not None
         }
     }
