@@ -34,7 +34,7 @@ ALL_MODE_HELP = '''
     convert all CMD files under the working directory
 '''
 CACHE_MODE_HELP = f'''
-    utilise `{CACHE_FILE_NAME}` to skip unchanged CMD files
+    skip unchanged CMD files (WARNING: inclusions-agnostic)
 '''
 VERBOSE_MODE_HELP = '''
     run in verbose mode (prints every replacement applied)
