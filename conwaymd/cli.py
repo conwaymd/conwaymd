@@ -7,13 +7,21 @@ Command-line interface.
 """
 
 import argparse
+import ast
+import hashlib
 import os
 import re
 import sys
+from typing import Optional
 
 from conwaymd._version import __version__
 from conwaymd.constants import COMMAND_LINE_ERROR_EXIT_CODE, GENERIC_ERROR_EXIT_CODE
 from conwaymd.core import cmd_to_html
+
+CACHE_FILE_NAME = '.cmdcache'
+VERSION_KEY = 'version'
+CMD_DIGEST_KEY = 'cmd_digest'
+HTML_DIGEST_KEY = 'html_digest'
 
 DESCRIPTION = '''
     Convert Conway-Markdown (CMD) to HTML.
@@ -24,6 +32,9 @@ CMD_FILE_NAME_HELP = '''
 '''
 ALL_MODE_HELP = '''
     convert all CMD files under the working directory
+'''
+CACHE_MODE_HELP = f'''
+    skip unchanged CMD files (WARNING: inclusions-agnostic)
 '''
 VERBOSE_MODE_HELP = '''
     run in verbose mode (prints every replacement applied)
@@ -64,6 +75,12 @@ def parse_command_line_arguments() -> argparse.Namespace:
         help=ALL_MODE_HELP,
     )
     argument_parser.add_argument(
+        '-c', '--cache',
+        dest='cache_mode_enabled',
+        action='store_true',
+        help=CACHE_MODE_HELP,
+    )
+    argument_parser.add_argument(
         '-x', '--verbose',
         dest='verbose_mode_enabled',
         action='store_true',
@@ -80,9 +97,50 @@ def parse_command_line_arguments() -> argparse.Namespace:
     return argument_parser.parse_args()
 
 
-def generate_html_file(cmd_file_name_argument: str, verbose_mode_enabled: bool, uses_command_line_argument: bool):
-    cmd_name = extract_cmd_name(cmd_file_name_argument)
-    cmd_file_name = f'{cmd_name}.cmd'
+def read_cache() -> dict[str, dict]:
+    try:
+        with open(CACHE_FILE_NAME, 'r', encoding='utf-8') as cache_file:
+            cache_file_content = cache_file.read()
+    except OSError:
+        return {}
+
+    try:
+        cached_details_from_cmd_name = ast.literal_eval(cache_file_content)
+    except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+        return {}
+
+    if not isinstance(cached_details_from_cmd_name, dict):
+        return {}
+
+    return {
+        cmd_name: cached_details
+        for cmd_name, cached_details in cached_details_from_cmd_name.items()
+        if isinstance(cmd_name, str) and isinstance(cached_details, dict)
+    }
+
+
+def write_cache(cached_details_from_cmd_name: dict[str, dict],
+                new_caching_items: list[tuple[str, Optional[dict[str, str]]]]):
+    new_cached_details_from_cmd_name = {
+        **cached_details_from_cmd_name,
+        **{
+            cmd_name: new_cached_details
+            for cmd_name, new_cached_details in new_caching_items
+            if new_cached_details is not None
+        }
+    }
+
+    cache_content = str(new_cached_details_from_cmd_name)
+
+    try:
+        with open(CACHE_FILE_NAME, 'w', encoding='utf-8') as cache_file:
+            cache_file.write(cache_content)
+    except OSError:
+        print(f'error: cannot write to `{CACHE_FILE_NAME}`', file=sys.stderr)
+        sys.exit(GENERIC_ERROR_EXIT_CODE)
+
+
+def read_cmd_file(cmd_file_name_argument: str, cmd_file_name: str, uses_command_line_argument: bool) -> str:
     try:
         with open(cmd_file_name, 'r', encoding='utf-8') as cmd_file:
             cmd = cmd_file.read()
@@ -94,23 +152,114 @@ def generate_html_file(cmd_file_name_argument: str, verbose_mode_enabled: bool, 
             error_message = f'file `{cmd_file_name}` not found for `{cmd_file_name}` in cmd_file_name_list'
             raise FileNotFoundError(error_message) from file_not_found_error
 
-    html = cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled)
+    return cmd
 
-    html_file_name = f'{cmd_name}.html'
+
+def write_html_file(html_file_name: str, html: str):
     try:
         with open(html_file_name, 'w', encoding='utf-8') as html_file:
             html_file.write(html)
-        print(f'success: wrote to `{html_file_name}`')
-    except IOError:
+    except OSError:
         print(f'error: cannot write to `{html_file_name}`', file=sys.stderr)
         sys.exit(GENERIC_ERROR_EXIT_CODE)
+    else:
+        print(f'success: wrote to `{html_file_name}`')
+
+
+def determine_matching_cached_details(cmd_name: str, cmd_digest: str, html_file_name: str,
+                                      cached_details_from_cmd_name: dict[str, dict]) -> Optional[dict[str, str]]:
+    try:
+        cached_details = cached_details_from_cmd_name[cmd_name]
+        cached_version = cached_details[VERSION_KEY]
+        cached_cmd_digest = cached_details[CMD_DIGEST_KEY]
+        cached_html_digest = cached_details[HTML_DIGEST_KEY]
+    except KeyError:
+        return None
+
+    if __version__ != cached_version:
+        return None
+
+    if cmd_digest != cached_cmd_digest:
+        return None
+
+    try:
+        with open(html_file_name, 'r', encoding='utf-8') as html_file:
+            html = html_file.read()
+    except (OSError, UnicodeDecodeError):
+        return None
+
+    html_digest = hashlib.sha256(html.encode('utf-8')).hexdigest()
+    if html_digest != cached_html_digest:
+        return None
+
+    return {
+        VERSION_KEY: cached_version,
+        CMD_DIGEST_KEY: cached_cmd_digest,
+        HTML_DIGEST_KEY: cached_html_digest,
+    }
+
+
+def skip_html_file(html_file_name: str):
+    print(f'success: skipped `{html_file_name}` per cache')
+
+
+def generate_html_file(cmd_file_name_argument: str, cached_details_from_cmd_name: Optional[dict[str, dict]],
+                       cache_mode_enabled: bool, verbose_mode_enabled: bool, uses_command_line_argument: bool,
+                       ) -> tuple[str, Optional[dict[str, str]]]:
+    """
+    Generate (or leave unchanged) the HTML file corresponding to a CMD file.
+
+    Return the caching item-tuple (normalised CMD name-without-extension, optional dictionary of cached details).
+    """
+    cmd_name = extract_cmd_name(cmd_file_name_argument)
+    cmd_file_name = f'{cmd_name}.cmd'
+
+    cmd = read_cmd_file(cmd_file_name_argument, cmd_file_name, uses_command_line_argument)
+
+    html_file_name = f'{cmd_name}.html'
+
+    if cache_mode_enabled:
+        assert cached_details_from_cmd_name is not None
+        cmd_digest = hashlib.sha256(cmd.encode('utf-8')).hexdigest()
+
+        matching_cached_details = determine_matching_cached_details(cmd_name, cmd_digest, html_file_name,
+                                                                    cached_details_from_cmd_name)
+        if matching_cached_details is not None:
+            skip_html_file(html_file_name)
+            return cmd_name, matching_cached_details
+    else:
+        cmd_digest = None
+
+    html = cmd_to_html(cmd, cmd_file_name, verbose_mode_enabled)
+
+    write_html_file(html_file_name, html)
+
+    if not cache_mode_enabled:
+        return cmd_name, None
+
+    assert cmd_digest is not None
+    new_html_digest = hashlib.sha256(html.encode('utf-8')).hexdigest()
+    new_cached_details = {
+        VERSION_KEY: __version__,
+        CMD_DIGEST_KEY: cmd_digest,
+        HTML_DIGEST_KEY: new_html_digest,
+    }
+    return cmd_name, new_cached_details
 
 
 def main():
     parsed_arguments = parse_command_line_arguments()
     cmd_file_name_arguments = parsed_arguments.cmd_file_name_arguments
     all_mode_enabled = parsed_arguments.all_mode_enabled
+    cache_mode_enabled = parsed_arguments.cache_mode_enabled
     verbose_mode_enabled = parsed_arguments.verbose_mode_enabled
+
+    if cache_mode_enabled:
+        cached_details_from_cmd_name = read_cache()
+    else:
+        cached_details_from_cmd_name = None
+
+    new_caching_items: list[tuple[str, Optional[dict[str, str]]]] = []
 
     if all_mode_enabled:
         if len(cmd_file_name_arguments) > 0:
@@ -124,11 +273,21 @@ def main():
             if is_cmd_file(file_name)
         ]
         for cmd_file_name in sorted(cmd_file_names):
-            generate_html_file(cmd_file_name, verbose_mode_enabled, uses_command_line_argument=False)
+            item = generate_html_file(cmd_file_name, cached_details_from_cmd_name,
+                                      cache_mode_enabled, verbose_mode_enabled,
+                                      uses_command_line_argument=False)
+            new_caching_items.append(item)
 
     else:
         for cmd_file_name_argument in cmd_file_name_arguments:
-            generate_html_file(cmd_file_name_argument, verbose_mode_enabled, uses_command_line_argument=True)
+            item = generate_html_file(cmd_file_name_argument, cached_details_from_cmd_name,
+                                      cache_mode_enabled, verbose_mode_enabled,
+                                      uses_command_line_argument=True)
+            new_caching_items.append(item)
+
+    if cache_mode_enabled:
+        assert cached_details_from_cmd_name is not None
+        write_cache(cached_details_from_cmd_name, new_caching_items)
 
 
 if __name__ == '__main__':

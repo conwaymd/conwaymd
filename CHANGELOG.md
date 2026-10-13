@@ -3,6 +3,8 @@
 
 ## [Unreleased]
 
+- Implemented basic caching mechanism (command line option `-c, --cache`)
+
 
 ## [v6.2.1] Necessary substring precomputation (2026-10-11)
 
