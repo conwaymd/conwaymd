@@ -3,6 +3,9 @@
 
 ## [Unreleased]
 
+
+## [v6.3.0] Caching (2026-10-13)
+
 - Implemented basic caching mechanism (command line option `-c, --cache`)
 
 
@@ -248,7 +251,8 @@ Much of the syntax is incompatible with legacy CMD (v3.1.0 or earlier).
 - Initial release.
 
 
-[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v6.2.1...HEAD
+[Unreleased]: https://github.com/conwaymd/conwaymd/compare/v6.3.0...HEAD
+[v6.3.0]: https://github.com/conwaymd/conwaymd/compare/v6.2.1...v6.3.0
 [v6.2.1]: https://github.com/conwaymd/conwaymd/compare/v6.2.0...v6.2.1
 [v6.2.0]: https://github.com/conwaymd/conwaymd/compare/v6.1.0...v6.2.0
 [v6.1.0]: https://github.com/conwaymd/conwaymd/compare/v6.0.0...v6.1.0
